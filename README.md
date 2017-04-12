@@ -4,8 +4,8 @@ This project contains a series of Jupyter notebook and Python modules with the a
 
 The project contains the following didacting notebooks:
 
-* Lanczos method: here we should find the experiences about the well-knows Haydock recursion method to find matrix elements of the resolvent
-** Symmetric (Hermitian) matrices
-** Arbitrary Matrices
+Lanczos method: here we should find the experiences about the well-knows Haydock recursion method to find matrix elements of the resolvent
+* Symmetric (Hermitian) matrices
+* Arbitrary Matrices
 
 To be continued
