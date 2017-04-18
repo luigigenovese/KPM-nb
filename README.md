@@ -9,5 +9,3 @@ Lanczos method: here we should find the experiences about the well-knows Haydock
 * Arbitrary Matrices
 
 To be continued
-
-gallino2
