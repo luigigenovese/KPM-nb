@@ -16,6 +16,10 @@ def norm(u):
     return out
 
 def nonHermitian_eigensystem(H):
+    """
+    Compute eigenvalues and left and right eigenvectors of H (all written as column vectors in the matrix
+    vl and vr). The left vectors are normalized so that < vl_n | vr_m > = d_nm   
+    """
     er,vr = np.linalg.eig(H)
     es,vl = np.linalg.eig(H.H)
     es = es.conj()
@@ -26,6 +30,9 @@ def nonHermitian_eigensystem(H):
     ind = es.argsort()[::-1] 
     es = es[ind]
     vl = vl[:,ind]
+    for i in ind:
+        vldotvr = sp(vl[:,i],vr[:,i])
+        vl[:,i] = vl[:,i]/vldotvr.conjugate()
     return er,vr,vl
 
 def validate_eigensystem(H,e,w):
@@ -53,7 +60,7 @@ def resolvent_nonHermitian(u0,e,wr,wl,omega,eta=1.e-2):
     for ind,E in enumerate(e):
         u0dotphin = sp(u0,wr[:,ind])
         chindotu0 = sp(wl[:,ind],u0)
-        G+=u0dotphin*chindotu0/sp(wl[:,ind],wr[:,ind])*1.0/(omega-E+1j*eta)
+        G+=u0dotphin*chindotu0*1.0/(omega-E+1j*eta)
     G = -1/np.pi*G.imag
     return G
 
