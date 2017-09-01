@@ -1,3 +1,5 @@
+
+
 #This modyle contains the method needed for the analysis of the completeness relation
 import numpy as np
 import matplotlib.pyplot as plt
@@ -62,3 +64,13 @@ def crplot(e_v,cr,label1,label2,rhoPlot=True):
             plt.semilogy(27.211*np.array(e_v),cr[p],'-',label='Orb_'+str(p)+'_'+label2)
     plt.legend()
     plt.title('Completeness relation '+label1, fontsize=14)
+
+def validate_eigensystem(H,e,w):
+    """
+    Inspect the validity of the eigensystem e,w as eigenvalues and 
+    eigenvectors of the matrix H    
+    """
+    for ind,e in enumerate(e):
+        isok = np.allclose(H.dot(w[:,ind]),e*w[:,ind],atol=1.e-12)
+        if not isok: print('Eigenvalue',ind,'is false')
+    print('Validation terminated')
