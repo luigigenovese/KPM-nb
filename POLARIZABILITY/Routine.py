@@ -34,8 +34,8 @@ def completeness_relation(data):
     # we quantify the magnitude of the missing part
     psiprimeEx = 1.0-psiprimeEx
     psiprimeEz = 1.0-psiprimeEz
-    print 'psiprimeEx Norm ',np.sqrt(psiprimeEx)
-    print 'psiprimeEz Norm ',np.sqrt(psiprimeEz)
+    print 'sqrt(1-psiprimeEx)',np.sqrt(psiprimeEx)  #radice quadrata
+    print 'sqrt(1-psiprimeEz)',np.sqrt(psiprimeEz)
     # and we find the maximum value
     referenceEx=np.max(psiprimeEx)
     referenceEz=np.max(psiprimeEz)
@@ -56,9 +56,9 @@ def crplot(e_v,cr,label1,label2,rhoPlot=True):
         sm=0.0
         nval=0
         for coeff in cr:
-            sm+=np.array(coeff)**2
+            sm+=np.array(coeff)#**2  #c'era il quadrato ma non credo che abbia senso
             nval+=1
-        plt.semilogy(27.211*np.array(e_v),sm/nval,'-',label='Rho_'+label2)
+        plt.semilogy(27.211*np.array(e_v),sm/nval,'-',label='Rho_'+label2) #avendo diviso per reference che senso hanno questi numeri?
     else:
         for p,coeff in enumerate(cr):
             plt.semilogy(27.211*np.array(e_v),cr[p],'-',label='Orb_'+str(p)+'_'+label2)
