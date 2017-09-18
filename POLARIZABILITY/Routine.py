@@ -74,3 +74,39 @@ def validate_eigensystem(H,e,w):
         isok = np.allclose(H.dot(w[:,ind]),e*w[:,ind],atol=1.e-12)
         if not isok: print('Eigenvalue',ind,'is false')
     print('Validation terminated')
+
+def transition_indexes(np,nalpha,indexes):
+    """
+    Returns the list of the indices in the bigdft convention that correspond to the 
+    couple iorb-ialpha with given spin.
+    paramerers: np = tuple of (norbu,norbd) occupied orbitals: when of length 1 assumed spin averaged
+                nalpha = tuple of (norbu, norbd)virtual orbitals: when of length 1 assumed spin averaged
+                indexes = list of tuples of (iorb,ialpha,ispin) desired indices in python convention (start from 0)
+    """
+    nspin=len(np)
+    inds=[]
+    for iorb,ialpha,ispin in indexes:
+        jspin=ispin if nspin==2 else 0
+        ind=ialpha+iorb*nalpha[jspin] #local index of the spin subspace
+        if ispin==1: ind+=np[0]*nalpha[0] #spin 2 comes after spin one
+        inds.append(ind)
+    return inds
+def collection_indexes(np,nalpha,nvirt_small):
+    #ugly triple loop
+    harvest=[]
+    for ispin in [0,1]:
+        jspin=ispin if len(np)==2 else 0
+        for ip in range(np[jspin]):
+            for ialpha in range(nvirt_small[jspin]):
+                harvest.append([ip,ialpha,ispin])
+    return harvest
+
+def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
+    """
+    Extract from a large Coupling Matrix a submatrix that only consider a subset of the original vectors.
+    Use the convention of the transition_indices function for np and nalpha and nvirt_small
+    """
+    import numpy
+    harvest=collection_indexes(np,nalpha,nvirt_small)
+    inds=numpy.array(transition_indexes(np,nalpha,harvest))
+    return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
