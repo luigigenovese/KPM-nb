@@ -34,7 +34,7 @@ def completeness_relation(data):
     # we quantify the magnitude of the missing part
     psiprimeEx = 1.0-psiprimeEx
     psiprimeEz = 1.0-psiprimeEz
-    print 'sqrt(1-psiprimeEx)',np.sqrt(psiprimeEx)  #radice quadrata
+    print 'sqrt(1-psiprimeEx)',np.sqrt(psiprimeEx)
     print 'sqrt(1-psiprimeEz)',np.sqrt(psiprimeEz)
     # and we find the maximum value
     referenceEx=np.max(psiprimeEx)
@@ -58,12 +58,68 @@ def crplot(e_v,cr,label1,label2,rhoPlot=True):
         for coeff in cr:
             sm+=np.array(coeff)#**2  #c'era il quadrato ma non credo che abbia senso
             nval+=1
-        plt.semilogy(27.211*np.array(e_v),sm/nval,'-',label='Rho_'+label2) #avendo diviso per reference che senso hanno questi numeri?
+        plt.semilogy(27.211*np.array(e_v),sm/nval,'-',label='Rho_'+label2)
     else:
         for p,coeff in enumerate(cr):
             plt.semilogy(27.211*np.array(e_v),cr[p],'-',label='Orb_'+str(p)+'_'+label2)
     plt.legend()
     plt.title('Completeness relation '+label1, fontsize=14)
+
+def completeness_relation_new(data):
+    """
+    Evalute the completenss of the expansion of the pertubed occupied orbitals on the basis of the (occupied and virtual)
+    unperturbed ones. The input represents the list of data for a given value of rmult and for a given direction of the 
+    field
+    """
+    coeff_occ = data.log['<psi_i|psi_j>'] 
+    coeff_occ=np.double(np.array(coeff_occ))
+    
+    coeff_vrt = data.log['<psiv_i|D psi_j>']
+    coeff_vrt=np.double(np.array(coeff_vrt))
+    
+    n_occ,n_vrt = coeff_vrt.shape
+    print 'no_occ',n_occ, 'n_vrt', n_vrt
+    en = data.evals[0][0]
+    e_v=[]
+    e_o=[]
+    for o in range(n_occ):
+        e_o.append(en[o])
+    for v in range(n_occ,n_occ+n_vrt):
+        e_v.append(en[v])
+
+    # compute the norm of the perturbed orbitals projected on the basis of the occupied states
+    psiprime=np.array([ 0.0 for i in range(n_occ)])
+    for o in range(n_occ):
+        psiprime += coeff_occ[o]**2
+    # we quantify the magnitude of the missing part
+    psiprime = 1.0-psiprime
+    print 'sqrt(1-psiprime)',np.sqrt(psiprime) 
+    # and we find the maximum value
+    reference=np.max(psiprime)
+    # we add the contribution of the empty orbitals
+    cr=[[] for p in range(n_occ)]
+    for p in range(n_occ):
+        for v in range(n_vrt):
+            psiprime[p] -= coeff_vrt[p][v]**2
+            cr[p].append(psiprime[p]/reference)
+    return e_v,cr
+
+def crplot_new(e_v,cr,label1,rhoPlot=True, legendPlot=False):
+ 
+    if rhoPlot:
+        sm=0.0
+        nval=0
+        for coeff in cr:
+            sm+=np.array(coeff)
+            nval+=1
+        plt.semilogy(27.211*np.array(e_v),sm/nval,'-',label='Rho')
+    else:
+        for p,coeff in enumerate(cr):
+            plt.semilogy(27.211*np.array(e_v),cr[p],'-',label='Orb_'+str(p))
+    if legendPlot:
+        plt.legend()
+    plt.title('Completeness relation '+label1, fontsize=14)
+
 
 def validate_eigensystem(H,e,w):
     """
