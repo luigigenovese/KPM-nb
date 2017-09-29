@@ -120,6 +120,40 @@ def crplot_new(e_v,cr,label1,rhoPlot=True, legendPlot=False):
         plt.legend()
     plt.title('Completeness relation '+label1, fontsize=14)
 
+def evalS_nvirt(data):
+    """
+    The input represents the list of data for a given value of rmult and for a given direction of the field
+    """
+    coeff_occ = data.log['<psi_i|psi_j>'] 
+    coeff_occ=np.double(np.array(coeff_occ))
+    
+    coeff_vrt = data.log['<psiv_i|D psi_j>']
+    coeff_vrt=np.double(np.array(coeff_vrt))
+    
+    n_occ,n_vrt = coeff_vrt.shape
+    print 'no_occ',n_occ, 'n_vrt', n_vrt
+    en = data.evals[0][0]
+    e_v=[]
+    for v in range(n_occ,n_occ+n_vrt):
+        e_v.append(27.211*en[v])
+    
+    sum_occ = 0.0
+    for p in range(n_occ):
+        for q in range(n_occ):
+            sum_occ += coeff_occ[p][q]**2
+    
+    R = n_occ - sum_occ
+    print 'R = ', R
+    
+    S_nvirt = []
+    s = 0.0
+    for alpha in range(n_vrt):
+        for q in range(n_occ):
+            s += coeff_vrt[q][alpha]**2
+        S_nvirt.append(R-s)
+    
+    return e_v, S_nvirt
+
 
 def validate_eigensystem(H,e,w):
     """
