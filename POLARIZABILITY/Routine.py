@@ -33,7 +33,8 @@ def evalS_nvirt(data):
         S_nvirt.append(R-s)
 	
     # rescale by the number of occupied orbitals
-    S_nvirt = [x/n_occ for x in S_nvirt]	
+    #S_nvirt = [x/n_occ for x in S_nvirt]
+    S_nvirt = [x/R for x in S_nvirt]	
     
     return S_nvirt
 
