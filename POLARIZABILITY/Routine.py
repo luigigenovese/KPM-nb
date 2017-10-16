@@ -65,6 +65,7 @@ def transition_indexes(np,nalpha,indexes):
         if ispin==1: ind+=np[0]*nalpha[0] #spin 2 comes after spin one
         inds.append(ind)
     return inds
+
 def collection_indexes(np,nalpha,nvirt_small):
     #ugly triple loop
     harvest=[]
@@ -85,7 +86,38 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     inds=numpy.array(transition_indexes(np,nalpha,harvest))
     return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
-
+def alphaWeight(numOrb,nalpha,numExc,C_E2,E2, writeRes = True):
+    """
+    Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
+    numExc = number of eigenvectors considered: from the lowest one up to numExc-1
+    weight is a list. weight[i] contains the contribution of all the virtual orbitals to C_E2[i]		 
+    """
+    weight = []
+    for excInd in range(numExc):
+        alphaProj = [0.0 for i in range(nalpha)]
+        for alpha in range(nalpha):
+            # sum over all the occupied orbital and spin 
+            indexes = []
+            for p in range(numOrb):
+                for spin in [0,1]:
+                    indexes.append([p,alpha,spin])
+            # extract the value of the index of C_E2
+            elements = transition_indexes([numOrb],[nalpha],indexes)
+            for el in elements:
+                alphaProj[alpha] += C_E2[excInd][el]**2
+        weight.append(alphaProj)
+    
+    if writeRes:
+        for excInd in range(numExc):
+            print 'Exctation number :', excInd, ' energy = ', E2[excInd]
+	    sumOverThreshold = 0.0        
+	    for i,a in enumerate(weight[excInd]):
+                if a > 0.1:
+                    sumOverThreshold+=a
+                    print '  virtual state :', i, ' weight = ', a
+            print 'sumOverThreshold = ', sumOverThreshold
+            print ''
+    return weight
 
 
 ######################### OLD ROUTINES ###################################
