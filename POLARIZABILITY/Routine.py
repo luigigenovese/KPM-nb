@@ -109,13 +109,14 @@ def alphaWeight(numOrb,nalpha,numExc,C_E2,E2, writeRes = True):
     
     if writeRes:
         for excInd in range(numExc):
-            print 'Exctation number :', excInd, ' energy = ', E2[excInd]
+            print 'Exctation number :', excInd+1, ' energy = ', np.sqrt(E2[excInd])
 	    sumOverThreshold = 0.0        
 	    for i,a in enumerate(weight[excInd]):
                 if a > 0.1:
                     sumOverThreshold+=a
-                    print '  virtual state :', i, ' weight = ', a
-            print 'sumOverThreshold = ', sumOverThreshold
+                    print '  virtual state :', i+1, ' weight = ', a
+            diffe = 1.0 - sumOverThreshold
+            print '1 - sumOverThreshold = ', '%.3e' % diffe
             print ''
     return weight
 
