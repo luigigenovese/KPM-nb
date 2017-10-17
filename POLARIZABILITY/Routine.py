@@ -86,15 +86,16 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     inds=numpy.array(transition_indexes(np,nalpha,harvest))
     return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
-def alphaWeight(numOrb,nalpha,numExc,C_E2,E2, writeRes = True):
+def weight(numOrb,nalpha,exc,C_E2,E2, writeRes = True):
     """
     Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
-    numExc = number of eigenvectors considered: from the lowest one up to numExc-1
-    weight is a list. weight[i] contains the contribution of all the virtual orbitals to C_E2[i]		 
+    exc = list with the index of the eigenvectors considered
+    weightP and weightAlpha are list. weightP[i] and weightAlpha[i] contain the contribution of all 
+    the occupied and virtual orbitals to C_E2[i], respectively
     """
-    weight = []
-    for excInd in range(numExc):
-        alphaProj = [0.0 for i in range(nalpha)]
+    weightAlpha = []
+    for excInd in exc:
+        alphaProj = np.zeros(nalpha)
         for alpha in range(nalpha):
             # sum over all the occupied orbital and spin 
             indexes = []
@@ -105,23 +106,50 @@ def alphaWeight(numOrb,nalpha,numExc,C_E2,E2, writeRes = True):
             elements = transition_indexes([numOrb],[nalpha],indexes)
             for el in elements:
                 alphaProj[alpha] += C_E2[excInd][el]**2
-        weight.append(alphaProj)
+        weightAlpha.append(alphaProj)
+        
+    weightP = []
+    for excInd in exc:
+        pProj = np.zeros(numOrb)
+        for p in range(numOrb):
+            # sum over all the virtual orbital and spin 
+            indexes = []
+            for alpha in range(nalpha):
+                for spin in [0,1]:
+                    indexes.append([p,alpha,spin])
+            # extract the value of the index of C_E2
+            elements = transition_indexes([numOrb],[nalpha],indexes)
+            for el in elements:
+                pProj[p] += C_E2[excInd][el]**2
+        weightP.append(pProj)
     
     if writeRes:
-        for excInd in range(numExc):
+        for ind, excInd in enumerate(exc):
             print 'Exctation number :', excInd+1, ' energy = ', np.sqrt(E2[excInd])
-	    sumOverThreshold = 0.0        
-	    for i,a in enumerate(weight[excInd]):
+            print '  ******* occupied state contribution ********'
+            sumOverThresholdP = 0.0 
+            for i,a in enumerate(weightP[ind]):
                 if a > 0.1:
-                    sumOverThreshold+=a
-                    print '  virtual state :', i+1, ' weight = ', a
-            diffe = 1.0 - sumOverThreshold
-            print '1 - sumOverThreshold = ', '%.3e' % diffe
+                    sumOverThresholdP+=a
+                    print '  occupied state :', i+1, ' weight = ', a
+            diffeP = 1.0 - sumOverThresholdP
+            print '  1 - sumOverThreshold p = ', '%.3e' % diffeP
+            
+            print '  ******* virtual state contribution *********'
+            sumOverThresholdA = 0.0        
+            for i,a in enumerate(weightAlpha[ind]):
+                if a > 0.1:
+                    sumOverThresholdA+=a
+                    print '  virtual state  :', i+1, ' weight = ', a
+            diffeA = 1.0 - sumOverThresholdA
+            print '  1 - sumOverThreshold alpha = ', '%.3e' % diffeA
             print ''
-    return weight
+    
+    return weightP,weightAlpha
 
 
 ######################### OLD ROUTINES ###################################
+
 
 def completeness_relation_new(data):
     """
