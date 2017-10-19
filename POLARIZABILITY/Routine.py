@@ -86,7 +86,99 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     inds=numpy.array(transition_indexes(np,nalpha,harvest))
     return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
-def weight(numOrb,nalpha,exc,C_E2,E2, writeRes = True):
+def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
+    """
+    Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
+    nalpha = list with numbers of virtual states considered
+    exc = list with the index of the eigenvectors considered
+    weightP and weightAlpha are structured list. weightP[alpha][i] and weightAlpha[alpha][i] contain 
+    the contribution of all the occupied and virtual orbitals (of the system with alpha virtual states) 
+    to C_E2[i], respectively
+    """
+    weightAlpha = []
+    for na in nalpha: 
+        weight = []
+        for excInd in exc:
+            alphaProj = np.zeros(na)
+            for alpha in range(na):
+                # sum over all the occupied orbital and spin 
+                indexes = []
+                for p in range(numOrb):
+                    for spin in [0,1]:
+                        indexes.append([p,alpha,spin])
+                # extract the value of the index of C_E2
+                elements = transition_indexes([numOrb],[na],indexes)
+                for el in elements:
+                    alphaProj[alpha] += eigenproblems[na][2][excInd][el]**2
+            weight.append(alphaProj)
+        weightAlpha.append(weight)
+        
+    weightP = []
+    for na in nalpha:
+        weight =[]
+        for excInd in exc:
+            pProj = np.zeros(numOrb)
+            for p in range(numOrb):
+                # sum over all the virtual orbital and spin 
+                indexes = []
+                for alpha in range(na):
+                    for spin in [0,1]:
+                        indexes.append([p,alpha,spin])
+                # extract the value of the index of C_E2
+                elements = transition_indexes([numOrb],[na],indexes)
+                for el in elements:
+                    pProj[p] += eigenproblems[na][2][excInd][el]**2
+            weight.append(pProj)
+        weightP.append(weight)
+    
+    if writeRes:
+        for inda,na in enumerate(nalpha):
+            print 'nalpha = ', na
+            print ''
+            for ind, excInd in enumerate(exc):
+                print 'Excitation number :', excInd+1, ' energy = ', 27.211*np.sqrt(eigenproblems[na][1][excInd])
+                print '  ******* occupied state contribution ********'
+                sumOverThresholdP = 0.0 
+                for i,a in enumerate(weightP[inda][ind]):
+                    if a > 0.1:
+                        sumOverThresholdP+=a
+                        print '  occupied state :', i+1, ' weight = ', a
+                diffeP = 1.0 - sumOverThresholdP
+                print '  1 - sumOverThreshold p = ', '%.3e' % diffeP
+            
+                print '  ******* virtual state contribution *********'
+                sumOverThresholdA = 0.0        
+                for i,a in enumerate(weightAlpha[inda][ind]):
+                    if a > 0.1:
+                        sumOverThresholdA+=a
+                        print '  virtual state  :', i+1, ' weight = ', a
+                diffeA = 1.0 - sumOverThresholdA
+                print '  1 - sumOverThreshold alpha = ', '%.3e' % diffeA
+                print ''
+    
+    return weightP,weightAlpha
+
+def findTransition(wP,wAlpha,threshold = 0.1):
+    """
+    For each na and excitation index this routine classifies the excitation in term of the 
+    states mainly involved (above the threshold)
+    """
+    pVal = np.where(wP > threshold)[0]
+    alphaVal = np.where(wAlpha > threshold)[0]
+    tr = ''
+    for p in pVal:
+        tr+=str(p+1)
+    tr+=str('to')
+    for p in alphaVal:
+        tr+=str(p+1)
+    
+    return tr
+
+
+######################### OLD ROUTINES ###################################
+
+
+def weightOld(numOrb,nalpha,exc,C_E2,E2, writeRes = True):
     """
     Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
     exc = list with the index of the eigenvectors considered
@@ -125,7 +217,7 @@ def weight(numOrb,nalpha,exc,C_E2,E2, writeRes = True):
     
     if writeRes:
         for ind, excInd in enumerate(exc):
-            print 'Exctation number :', excInd+1, ' energy = ', np.sqrt(E2[excInd])
+            print 'Excitation number :', excInd+1, ' energy = ', 27.211*np.sqrt(E2[excInd])
             print '  ******* occupied state contribution ********'
             sumOverThresholdP = 0.0 
             for i,a in enumerate(weightP[ind]):
@@ -146,9 +238,6 @@ def weight(numOrb,nalpha,exc,C_E2,E2, writeRes = True):
             print ''
     
     return weightP,weightAlpha
-
-
-######################### OLD ROUTINES ###################################
 
 
 def completeness_relation_new(data):
