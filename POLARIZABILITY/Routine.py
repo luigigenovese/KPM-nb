@@ -174,6 +174,13 @@ def findTransition(wP,wAlpha,threshold = 0.1):
     
     return tr
 
+def weightCut(w, threshold = 0.1):
+    wCut = np.zeros(len(w))
+    for i,ww in enumerate(w):
+        if ww < threshold:
+            wCut[i] = ww
+    return wCut
+
 
 ######################### OLD ROUTINES ###################################
 
