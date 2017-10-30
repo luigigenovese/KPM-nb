@@ -90,7 +90,7 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
     """
     Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
     nalpha = list with numbers of virtual states considered
-    exc = list with the index of the eigenvectors considered
+    exc = list with the excitations considered (1 for the first excitation and so on...) 
     weightP and weightAlpha are structured list. weightP[alpha][i] and weightAlpha[alpha][i] contain 
     the contribution of all the occupied and virtual orbitals (of the system with alpha virtual states) 
     to C_E2[i], respectively
@@ -109,7 +109,7 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
                 # extract the value of the index of C_E2
                 elements = transition_indexes([numOrb],[na],indexes)
                 for el in elements:
-                    alphaProj[alpha] += eigenproblems[na][2][excInd][el]**2
+                    alphaProj[alpha] += eigenproblems[na][2][excInd-1][el]**2
             weight.append(alphaProj)
         weightAlpha.append(weight)
         
@@ -127,7 +127,7 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
                 # extract the value of the index of C_E2
                 elements = transition_indexes([numOrb],[na],indexes)
                 for el in elements:
-                    pProj[p] += eigenproblems[na][2][excInd][el]**2
+                    pProj[p] += eigenproblems[na][2][excInd-1][el]**2
             weight.append(pProj)
         weightP.append(weight)
     
@@ -136,7 +136,7 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
             print 'nalpha = ', na
             print ''
             for ind, excInd in enumerate(exc):
-                print 'Excitation number :', excInd+1, ' energy = ', 27.211*np.sqrt(eigenproblems[na][1][excInd])
+                print 'Excitation level :', excInd, ' energy = ', 27.211*np.sqrt(eigenproblems[na][1][excInd-1])
                 print '  ******* occupied state contribution ********'
                 sumOverThresholdP = 0.0 
                 for i,a in enumerate(weightP[inda][ind]):
@@ -158,6 +158,10 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
     
     return weightP,weightAlpha
 
+def engMax(Data,numOrb,na):
+    em = 27.211*Data.evals[0][0][numOrb + na -1]
+    return em
+
 def findTransition(wP,wAlpha,threshold = 0.1):
     """
     For each na and excitation index this routine classifies the excitation in term of the 
@@ -167,12 +171,123 @@ def findTransition(wP,wAlpha,threshold = 0.1):
     alphaVal = np.where(wAlpha > threshold)[0]
     tr = ''
     for p in pVal:
-        tr+=str(p+1)
+        tr+=str(p+1)+str(',')
+    tr=tr[:-1]
     tr+=str('to')
     for p in alphaVal:
-        tr+=str(p+1)
-    
+        tr+=str(p+1)+str(',')
+    tr=tr[:-1]
+
     return tr
+
+def buildExcitations(numOrb,nalpha,exc,eigenproblems): 
+    excitations = {}
+    weightP,weightAlpha = weight(numOrb,nalpha,exc,eigenproblems, False)
+ 
+    for a,na in enumerate(nalpha):
+        transitions = {}
+        for i,e in enumerate(exc):
+            tr = findTransition(weightP[a][i],weightAlpha[a][i])
+            ind=0
+            while tr+'-'+str(ind) in transitions:
+                ind+=1
+            tr=tr + '-' + str(ind)
+            transitions[tr] = {'weightP' : weightP[a][i], 'weightAlpha' : weightAlpha[a][i], 'level' : [e], 'eng' : 27.211*np.sqrt(eigenproblems[na][1][e-1]) }
+        excitations[na] = {'Cmat' : eigenproblems[na][0], 'E2': eigenproblems[na][1], 'C_E2' : eigenproblems[na][2], 'transitions' : transitions}
+    
+    return excitations
+
+def removeDegenarices(excitations,degTol = 1.e-4): 
+    # removes the degeneracies (looking for pairs of states with the same energy)
+    for na,e in excitations.iteritems():
+        engs = []
+        for k,v in e['transitions'].iteritems():
+            engs.append([k,v['eng']])
+    
+        for i in range(len(engs)-1):
+            for j in range(i+1,len(engs)):
+                if np.allclose(engs[i][1],engs[j][1],degTol) and engs[i][0] in e['transitions'].keys() and engs[j][0] in e['transitions'].keys():
+                    trnew = engs[i][0]+'+'+engs[j][0]
+                    wP = 0.5 * (e['transitions'][engs[i][0]]['weightP'] + e['transitions'][engs[j][0]]['weightP'])
+                    wA = 0.5 * (e['transitions'][engs[i][0]]['weightAlpha'] + e['transitions'][engs[j][0]]['weightAlpha'])
+                    eng = 0.5 * (engs[i][1]+engs[j][1])
+                    levi = e['transitions'][engs[i][0]]['level'][0]
+                    levj = e['transitions'][engs[j][0]]['level'][0]
+                    excitations[na]['transitions'][trnew] = {'weightP' : wP, 'weightAlpha' : wA, 'level' : [levi,levj], 'eng' : eng }
+                    del excitations[na]['transitions'][engs[i][0]]
+                    del excitations[na]['transitions'][engs[j][0]]
+    
+    return excitations
+
+def allTransitions(excitations):
+    allTr = []
+    for e in excitations.values():
+        for ind in e['transitions']:
+            allTr.append(ind)
+    allTr=list(set(allTr))
+    
+    eng = []
+    for a in allTr:
+        notCounted = True
+        for na,e in excitations.iteritems():
+            if notCounted:
+                for ind,v in e['transitions'].iteritems():
+                    if a == ind:
+                        eng.append(v['eng'])
+                        notCounted = False
+                        break
+    eng =np.array(eng)
+    sortind = np.argsort(eng)
+    allTr = [allTr[s] for s in sortind]
+    return allTr
+
+def stableTransitions(excitations, stableTol = 1e-4):
+    allTr = allTransitions(excitations)
+    stableTr = []
+    for tr in allTr:
+        engTr = []
+        for e in excitations.values():
+            for ind,v in e['transitions'].iteritems():
+                if tr == ind:
+                    engTr.append(v['eng'])
+        deltaE = max(engTr) - min(engTr)
+        if len(engTr) > 1 and deltaE < stableTol:
+            stableTr.append([tr,0.5*(max(engTr) + min(engTr)),deltaE])
+    return stableTr
+
+def pltTrLevel(selTr,excitations,Data,numOrb,plotEng = True):
+    for s in selTr:
+        for na, e in excitations.iteritems():
+            for tr,val in e['transitions'].iteritems():
+                if s in val['level']:
+                    if plotEng:
+                       plt.scatter(engMax(Data,numOrb,na),val['eng'])
+                       plt.annotate(tr,xy=(engMax(Data,numOrb,na),val['eng']))
+                    else: 
+                       plt.scatter(na,val['eng'])
+                       plt.annotate(tr,xy=(na,val['eng']))
+    plt.show()
+
+def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
+    for s in selLab:
+        alpha = []
+        val = []
+        for na, e in excitations.iteritems():
+            if plotEng:
+               alpha.append(engMax(Data,numOrb,na))
+            else:
+               alpha.append(na)
+            for tr,v in e['transitions'].iteritems():
+                if s == tr:
+                    val.append(v['eng'])
+        if len(alpha) == len(val):        
+           #print s, alpha, val
+           plt.plot(alpha,val)
+           plt.scatter(alpha,val,label=s)
+           plt.legend(loc=(1.1,0))
+        else:
+           print 'energy of the transition '+str(s)+' not found for all the na'
+           print s, alpha, val
 
 def weightCut(w, threshold = 0.1):
     wCut = np.zeros(len(w))
@@ -181,70 +296,32 @@ def weightCut(w, threshold = 0.1):
             wCut[i] = ww
     return wCut
 
+def sotPlot(selLab,excitations):
+    sot = {}
+    for s in selLab:
+        alpha = []
+        out = []
+        for na,e in excitations.iteritems():
+            for ind,v in e['transitions'].iteritems():
+                if ind == s:
+                    sW = 0.0
+                    for w in weightCut(v['weightAlpha']):
+                        sW+=w
+                    alpha.append(na)
+                    out.append(sW)
+                    sot[s] = [alpha,out]
+                    
+    for tr,val in sot.iteritems():
+        plt.semilogy(val[0],val[1],label=tr)
+    plt.legend(loc=(1.1,0.0))    
+    return sot
+
+def sotPlotNorm(sot):
+    for tr,val in sot.iteritems():
+        plt.plot(val[0],val[1]/val[1][0],label=tr)
+    plt.legend(loc=(1.1,0.0))   
 
 ######################### OLD ROUTINES ###################################
-
-
-def weightOld(numOrb,nalpha,exc,C_E2,E2, writeRes = True):
-    """
-    Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
-    exc = list with the index of the eigenvectors considered
-    weightP and weightAlpha are list. weightP[i] and weightAlpha[i] contain the contribution of all 
-    the occupied and virtual orbitals to C_E2[i], respectively
-    """
-    weightAlpha = []
-    for excInd in exc:
-        alphaProj = np.zeros(nalpha)
-        for alpha in range(nalpha):
-            # sum over all the occupied orbital and spin 
-            indexes = []
-            for p in range(numOrb):
-                for spin in [0,1]:
-                    indexes.append([p,alpha,spin])
-            # extract the value of the index of C_E2
-            elements = transition_indexes([numOrb],[nalpha],indexes)
-            for el in elements:
-                alphaProj[alpha] += C_E2[excInd][el]**2
-        weightAlpha.append(alphaProj)
-        
-    weightP = []
-    for excInd in exc:
-        pProj = np.zeros(numOrb)
-        for p in range(numOrb):
-            # sum over all the virtual orbital and spin 
-            indexes = []
-            for alpha in range(nalpha):
-                for spin in [0,1]:
-                    indexes.append([p,alpha,spin])
-            # extract the value of the index of C_E2
-            elements = transition_indexes([numOrb],[nalpha],indexes)
-            for el in elements:
-                pProj[p] += C_E2[excInd][el]**2
-        weightP.append(pProj)
-    
-    if writeRes:
-        for ind, excInd in enumerate(exc):
-            print 'Excitation number :', excInd+1, ' energy = ', 27.211*np.sqrt(E2[excInd])
-            print '  ******* occupied state contribution ********'
-            sumOverThresholdP = 0.0 
-            for i,a in enumerate(weightP[ind]):
-                if a > 0.1:
-                    sumOverThresholdP+=a
-                    print '  occupied state :', i+1, ' weight = ', a
-            diffeP = 1.0 - sumOverThresholdP
-            print '  1 - sumOverThreshold p = ', '%.3e' % diffeP
-            
-            print '  ******* virtual state contribution *********'
-            sumOverThresholdA = 0.0        
-            for i,a in enumerate(weightAlpha[ind]):
-                if a > 0.1:
-                    sumOverThresholdA+=a
-                    print '  virtual state  :', i+1, ' weight = ', a
-            diffeA = 1.0 - sumOverThresholdA
-            print '  1 - sumOverThreshold alpha = ', '%.3e' % diffeA
-            print ''
-    
-    return weightP,weightAlpha
 
 
 def completeness_relation_new(data):
