@@ -194,7 +194,8 @@ def buildExcitations(numOrb,nalpha,exc,eigenproblems):
             tr=tr + '-' + str(ind)
             transitions[tr] = {'weightP' : weightP[a][i], 'weightAlpha' : weightAlpha[a][i], 'level' : [e], 'eng' : 27.211*np.sqrt(eigenproblems[na][1][e-1]) }
         excitations[na] = {'Cmat' : eigenproblems[na][0], 'E2': eigenproblems[na][1], 'C_E2' : eigenproblems[na][2], 'transitions' : transitions}
-    
+        #excitations[na] = {'transitions' : transitions}
+
     return excitations
 
 def removeDegenarices(excitations,degTol = 1.e-4): 
@@ -219,7 +220,7 @@ def removeDegenarices(excitations,degTol = 1.e-4):
     
     return excitations
 
-def allTransitions(excitations):
+def allTransitions_old(excitations):
     allTr = []
     for e in excitations.values():
         for ind in e['transitions']:
@@ -233,6 +234,34 @@ def allTransitions(excitations):
             if notCounted:
                 for ind,v in e['transitions'].iteritems():
                     if a == ind:
+                        eng.append(v['eng'])
+                        notCounted = False
+                        break
+    eng =np.array(eng)
+    sortind = np.argsort(eng)
+    allTr = [allTr[s] for s in sortind]
+    return allTr
+
+def allTransitions(excitations):
+    allTr = []
+    nalpha = []
+    for na,e in excitations.iteritems():
+        nalpha.append(na)
+        for ind in e['transitions']:
+            allTr.append(ind)
+    allTr=list(set(allTr))
+    nalpha = list(reversed(nalpha))
+    
+    # sort the transitions according to their energy (start to look for the transition in the
+    # configuration with the highest number of virtual orbitals)
+    eng = []
+    for a in allTr:
+        notCounted = True
+        for na in nalpha:
+            if notCounted:
+                for ind,v in excitations[na]['transitions'].iteritems():
+                    if a == ind:
+                        #print 'transition :' + str(a) + ' found first for na = ' + str(na)
                         eng.append(v['eng'])
                         notCounted = False
                         break
