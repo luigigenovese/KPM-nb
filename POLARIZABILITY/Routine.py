@@ -281,7 +281,6 @@ def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
                 if s == tr:
                     val.append(v['eng'])
         if len(alpha) == len(val):        
-           #print s, alpha, val
            plt.plot(alpha,val)
            plt.scatter(alpha,val,label=s)
            plt.legend(loc=(1.1,0))
@@ -320,6 +319,22 @@ def sotPlotNorm(sot):
     for tr,val in sot.iteritems():
         plt.plot(val[0],val[1]/val[1][0],label=tr)
     plt.legend(loc=(1.1,0.0))   
+
+def weightAlphaPlot(selexc,excitations,Data,numOrb,plotEng = True):
+    offs = 0.0
+    for na, e in excitations.iteritems():
+        if selexc in e['transitions'].keys():
+            if plotEng:
+                alpha = []
+                for a in range(1,na+1):
+                    alpha.append(27.211*Data.evals[0][0][numOrb + a -1])
+            else:
+                alpha = np.linspace(1,na,na)
+            wCut = weightCut(e['transitions'][selexc]['weightAlpha'])
+            plt.plot(alpha,offs+wCut, label = 'Nalpha='+str(na))
+            offs+=1.2*max(wCut)
+    plt.title('Transition '+selexc, fontsize = 14)
+    plt.legend()
 
 ######################### OLD ROUTINES ###################################
 
