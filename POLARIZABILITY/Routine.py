@@ -193,8 +193,7 @@ def buildExcitations(numOrb,nalpha,exc,eigenproblems):
                 ind+=1
             tr=tr + '-' + str(ind)
             transitions[tr] = {'weightP' : weightP[a][i], 'weightAlpha' : weightAlpha[a][i], 'level' : [e], 'eng' : 27.211*np.sqrt(eigenproblems[na][1][e-1]) }
-        excitations[na] = {'Cmat' : eigenproblems[na][0], 'E2': eigenproblems[na][1], 'C_E2' : eigenproblems[na][2], 'transitions' : transitions}
-        #excitations[na] = {'transitions' : transitions}
+        excitations[na] = {'Cmat' : eigenproblems[na][0], 'E2': eigenproblems[na][1], 'C_E2' : eigenproblems[na][2],  'dipoles' : eigenproblems[na][3], 'transitions' : transitions}
 
     return excitations
 
