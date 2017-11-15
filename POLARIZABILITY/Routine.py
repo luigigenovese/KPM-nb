@@ -219,28 +219,6 @@ def removeDegenarices(excitations,degTol = 1.e-4):
     
     return excitations
 
-def allTransitions_old(excitations):
-    allTr = []
-    for e in excitations.values():
-        for ind in e['transitions']:
-            allTr.append(ind)
-    allTr=list(set(allTr))
-    
-    eng = []
-    for a in allTr:
-        notCounted = True
-        for na,e in excitations.iteritems():
-            if notCounted:
-                for ind,v in e['transitions'].iteritems():
-                    if a == ind:
-                        eng.append(v['eng'])
-                        notCounted = False
-                        break
-    eng =np.array(eng)
-    sortind = np.argsort(eng)
-    allTr = [allTr[s] for s in sortind]
-    return allTr
-
 def allTransitions(excitations):
     allTr = []
     nalpha = []
@@ -249,38 +227,43 @@ def allTransitions(excitations):
         for ind in e['transitions']:
             allTr.append(ind)
     allTr=list(set(allTr))
-    nalpha = list(reversed(nalpha))
+    # check that nalpha[-1] correspond to the highest value of nalpha
+    if nalpha[-1] != max(nalpha): print 'PROBLEM WITH NALPHA LIST SORT'
     
-    # sort the transitions according to their energy (start to look for the transition in the
-    # configuration with the highest number of virtual orbitals)
-    eng = []
-    for a in allTr:
-        notCounted = True
+    # remove the transitions that do not appear for all the values of nalpha
+    for tr in allTr[::-1]:
+        appear = True
         for na in nalpha:
-            if notCounted:
-                for ind,v in excitations[na]['transitions'].iteritems():
-                    if a == ind:
-                        #print 'transition :' + str(a) + ' found first for na = ' + str(na)
-                        eng.append(v['eng'])
-                        notCounted = False
-                        break
+            if tr not in excitations[na]['transitions']: 
+                appear = False
+        if appear == False:
+            allTr.remove(tr)
+            #print 'removed transition : ', tr
+    
+    # sort the transitions according to their energy
+    eng = []
+    for tr in allTr:
+        eng.append(excitations[nalpha[-1]]['transitions'][tr]['eng'])
+        
     eng =np.array(eng)
     sortind = np.argsort(eng)
     allTr = [allTr[s] for s in sortind]
-    return allTr
+    eng = [eng[s] for s in sortind]
+    
+    return allTr, eng
 
 def stableTransitions(excitations, stableTol = 1e-4):
-    allTr = allTransitions(excitations)
+    allTr, eng = allTransitions(excitations)
+    
     stableTr = []
     for tr in allTr:
         engTr = []
-        for e in excitations.values():
-            for ind,v in e['transitions'].iteritems():
-                if tr == ind:
-                    engTr.append(v['eng'])
+        for na in excitations:
+            engTr.append(excitations[na]['transitions'][tr]['eng'])
         deltaE = max(engTr) - min(engTr)
-        if len(engTr) > 1 and deltaE < stableTol:
+        if deltaE < stableTol:
             stableTr.append([tr,0.5*(max(engTr) + min(engTr)),deltaE])
+    
     return stableTr
 
 def pltTrLevel(selTr,excitations,Data,numOrb,plotEng = True):
@@ -307,14 +290,10 @@ def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
                alpha.append(na)
             for tr,v in e['transitions'].iteritems():
                 if s == tr:
-                    val.append(v['eng'])
-        if len(alpha) == len(val):        
-           plt.plot(alpha,val)
-           plt.scatter(alpha,val,label=s)
-           plt.legend(loc=(1.1,0))
-        else:
-           print 'energy of the transition '+str(s)+' not found for all the na'
-           print s, alpha, val
+                    val.append(v['eng']) 
+        plt.plot(alpha,val)
+        plt.scatter(alpha,val,label=s)
+        plt.legend(loc=(1.1,0))
 
 def weightCut(w, threshold = 0.1):
     wCut = np.zeros(len(w))
@@ -362,7 +341,22 @@ def weightAlphaPlot(selexc,excitations,Data,numOrb,plotEng = True):
             plt.plot(alpha,offs+wCut, label = 'Nalpha='+str(na))
             offs+=1.2*max(wCut)
     plt.title('Transition '+selexc, fontsize = 14)
-    plt.legend()
+    plt.legend(loc=(1.1,0.0))   
+
+def oscillatorStrenght(excitations):
+    allTr, eng = allTransitions(excitations)
+    osStr = []
+    
+    na = excitations.keys()[-1]
+    print 'Oscillator strenght computed for nalpha = ', na
+    for tr in allTr:
+        level = excitations[na]['transitions'][tr]['level']
+        os = 0.0
+        for l in level:
+            os+= (np.dot(excitations[na]['C_E2'][l],excitations[na]['dipoles'][:,2]))**2
+        osStr.append(os)
+    
+    return osStr
 
 ######################### OLD ROUTINES ###################################
 
