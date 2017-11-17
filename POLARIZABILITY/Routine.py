@@ -343,7 +343,19 @@ def weightAlphaPlot(selexc,excitations,Data,numOrb,plotEng = True):
     plt.title('Transition '+selexc, fontsize = 14)
     plt.legend(loc=(1.1,0.0))   
 
-def oscillatorStrenght(excitations):
+def oscillatorStrenght(na,tr,excitations):
+    oscStrenght = 0.0
+    
+    level = excitations[na]['transitions'][tr]['level']
+    for l in level:
+        oscStrenght+= (np.dot(excitations[na]['C_E2'][l],excitations[na]['dipoles'][:,2]))**2
+    
+    return oscStrenght
+
+
+######################### OLD ROUTINES ###################################
+
+def oscillatorStrenght_old(excitations):
     allTr, eng = allTransitions(excitations)
     osStr = []
     
@@ -357,9 +369,6 @@ def oscillatorStrenght(excitations):
         osStr.append(os)
     
     return osStr
-
-######################### OLD ROUTINES ###################################
-
 
 def completeness_relation_new(data):
     """
