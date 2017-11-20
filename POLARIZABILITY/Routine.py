@@ -227,10 +227,12 @@ def allTransitions(excitations):
         for ind in e['transitions']:
             allTr.append(ind)
     allTr=list(set(allTr))
+    print 'Number of distinct transisitons = ', len(allTr)
     # check that nalpha[-1] correspond to the highest value of nalpha
     if nalpha[-1] != max(nalpha): print 'PROBLEM WITH NALPHA LIST SORT'
     
     # remove the transitions that do not appear for all the values of nalpha
+    remTrans = 0
     for tr in allTr[::-1]:
         appear = True
         for na in nalpha:
@@ -238,7 +240,9 @@ def allTransitions(excitations):
                 appear = False
         if appear == False:
             allTr.remove(tr)
+            remTrans+=1
             #print 'removed transition : ', tr
+    print 'Number of transisitons removed = ', remTrans   
     
     # sort the transitions according to their energy
     eng = []
