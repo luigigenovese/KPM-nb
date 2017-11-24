@@ -86,6 +86,103 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     inds=numpy.array(transition_indexes(np,nalpha,harvest))
     return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
+def solveEigenProblems(numOrb,virtMax,Cmat,dipoles,nalpha):
+    """
+    Build the dictionary with the solutions of the eigenproblems for each choice of na
+    We perform the transpose of the matrix with eigenvectors to have them sorted as row vectors
+    """
+    eigenproblems = {}
+    for na in nalpha:
+        C_ext,dipoles_ext=extract_subset([numOrb],[virtMax],Cmat,dipoles,[na])
+        print C_ext.shape
+        E2,C_E2 = np.linalg.eigh(C_ext)
+        C_E2 = C_E2.T
+    	eigenproblems[na] = {'Cmat':C_ext,'eigenvalues':E2,'eigenvectors':C_E2,'dipoles':dipoles_ext}
+    
+    return eigenproblems
+
+def evalOscStrenght(eigenproblems):
+    """
+    return f[na][eigenvalue index][x_i component] that contains the square
+    of the oscillator strenght
+    """
+    f = {}
+    
+    for na,e in eigenproblems.iteritems():
+        f[na] = []
+        numEigenvalues = len(e['eigenvalues'])
+        for i in range(numEigenvalues):
+            f[na].append(np.dot(e['eigenvectors'][i],e['dipoles'])**2)
+    
+    return f 
+
+def evalOscStrenghtAvg(eigenproblems):
+    """
+    return fAvg[na][eigenvalue index] that contains the spatial average
+    of the oscillator strenght
+    """
+    fAvg = {}
+    f = evalOscStrenght(eigenproblems)
+    
+    for na,e in eigenproblems.iteritems():
+        fAvg[na] = []
+        numEigenvalues = len(e['eigenvalues'])
+        for i in range(numEigenvalues):
+            s = 0.0
+            for x in range(3):
+                s+=f[na][i][x]/3.0
+            fAvg[na].append(s)
+    
+    return fAvg       
+
+def evalStatPol(eigenproblems):
+    """
+    return statPol[na] that contains the vector of the statical polarizability computed
+    with na virtual orbitals
+    """    
+    statPol = {}
+    
+    f = evalOscStrenght(eigenproblems)
+    for na,e in eigenproblems.iteritems():
+        alpha = []
+        for x in range(3):
+            val = 0.0
+            E2 = e['eigenvalues']
+            for i in range(len(E2)):
+                val+= 2.0*f[na][i][x]/E2[i]
+            alpha.append(val)
+        statPol[na] = alpha
+    
+    return statPol
+
+def evalSpectrum(eigenproblems,nalphaPlot, domega = 0.005, eta = 1.0e-2):
+    """
+    return a dictionary with the values of omega (in eV) and the real and
+    imaginary part of the spectrum for each value of na
+    """
+    spectrum = {}
+    fAvg = evalOscStrenghtAvg(eigenproblems)
+    #fAvg = evalOscStrenght(eigenproblems) # only z component
+    
+    for na in nalphaPlot:
+        if na in eigenproblems.keys():
+            spectrum[na] = {}
+            omegaMax = np.sqrt(eigenproblems[na]['eigenvalues'][-1])
+            npoint = int(omegaMax/domega)
+            print 'for na = ', na, ' numpoint = ', npoint, ' omegaMax = ', omegaMax
+            omega = np.linspace(0.0,omegaMax,npoint)
+            spectrum[na]['omega'] = 27.211*omega
+        
+            sp = np.zeros(npoint,dtype=np.complex)
+            for ind,o in enumerate(omega):
+                for i,E in enumerate(eigenproblems[na]['eigenvalues']):
+                    sp[ind]+=2.0*fAvg[na][i]/(complex(o,2*eta)**2-E)
+                    #sp[ind]+=2.0*fAvg[na][i][2]/(complex(o,2*eta)**2-E) #only z component
+            spectrum[na]['realPart'] = -np.real(sp)
+            spectrum[na]['imagPart'] = -np.imag(sp)
+    
+    return spectrum
+
 def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
     """
     Compute the contribution of the virtual orbitals to the eigenvectors of the coupling matrix
