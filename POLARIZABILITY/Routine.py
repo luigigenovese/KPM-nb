@@ -206,7 +206,7 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
                 # extract the value of the index of C_E2
                 elements = transition_indexes([numOrb],[na],indexes)
                 for el in elements:
-                    alphaProj[alpha] += eigenproblems[na][2][excInd-1][el]**2
+                    alphaProj[alpha] += eigenproblems[na]['eigenvectors'][excInd-1][el]**2
             weight.append(alphaProj)
         weightAlpha.append(weight)
         
@@ -224,7 +224,7 @@ def weight(numOrb,nalpha,exc,eigenproblems, writeRes = True):
                 # extract the value of the index of C_E2
                 elements = transition_indexes([numOrb],[na],indexes)
                 for el in elements:
-                    pProj[p] += eigenproblems[na][2][excInd-1][el]**2
+                    pProj[p] += eigenproblems[na]['eigenvectors'][excInd-1][el]**2
             weight.append(pProj)
         weightP.append(weight)
     
@@ -282,37 +282,38 @@ def buildExcitations(numOrb,nalpha,exc,eigenproblems):
     weightP,weightAlpha = weight(numOrb,nalpha,exc,eigenproblems, False)
  
     for a,na in enumerate(nalpha):
-        transitions = {}
+        val = {}
         for i,e in enumerate(exc):
             tr = findTransition(weightP[a][i],weightAlpha[a][i])
             ind=0
-            while tr+'-'+str(ind) in transitions:
+            while tr+'-'+str(ind) in val:
                 ind+=1
             tr=tr + '-' + str(ind)
-            transitions[tr] = {'weightP' : weightP[a][i], 'weightAlpha' : weightAlpha[a][i], 'level' : [e], 'eng' : 27.211*np.sqrt(eigenproblems[na][1][e-1]) }
-        excitations[na] = {'Cmat' : eigenproblems[na][0], 'E2': eigenproblems[na][1], 'C_E2' : eigenproblems[na][2],  'dipoles' : eigenproblems[na][3], 'transitions' : transitions}
-
+            val[tr] = {'weightP' : weightP[a][i], 'weightAlpha' : weightAlpha[a][i], 'level' : [e], 'energy' : 27.211*np.sqrt(eigenproblems[na]['eigenvalues'][e-1]) }
+        
+        excitations[na] = val
+        
     return excitations
 
 def removeDegenarices(excitations,degTol = 1.e-4): 
     # removes the degeneracies (looking for pairs of states with the same energy)
     for na,e in excitations.iteritems():
         engs = []
-        for k,v in e['transitions'].iteritems():
-            engs.append([k,v['eng']])
+        for k,v in e.iteritems():
+            engs.append([k,v['energy']])
     
         for i in range(len(engs)-1):
             for j in range(i+1,len(engs)):
-                if np.allclose(engs[i][1],engs[j][1],degTol) and engs[i][0] in e['transitions'].keys() and engs[j][0] in e['transitions'].keys():
+                if np.allclose(engs[i][1],engs[j][1],degTol) and engs[i][0] in e.keys() and engs[j][0] in e.keys():
                     trnew = engs[i][0]+'+'+engs[j][0]
-                    wP = 0.5 * (e['transitions'][engs[i][0]]['weightP'] + e['transitions'][engs[j][0]]['weightP'])
-                    wA = 0.5 * (e['transitions'][engs[i][0]]['weightAlpha'] + e['transitions'][engs[j][0]]['weightAlpha'])
+                    wP = 0.5 * (e[engs[i][0]]['weightP'] + e[engs[j][0]]['weightP'])
+                    wA = 0.5 * (e[engs[i][0]]['weightAlpha'] + e[engs[j][0]]['weightAlpha'])
                     eng = 0.5 * (engs[i][1]+engs[j][1])
-                    levi = e['transitions'][engs[i][0]]['level'][0]
-                    levj = e['transitions'][engs[j][0]]['level'][0]
-                    excitations[na]['transitions'][trnew] = {'weightP' : wP, 'weightAlpha' : wA, 'level' : [levi,levj], 'eng' : eng }
-                    del excitations[na]['transitions'][engs[i][0]]
-                    del excitations[na]['transitions'][engs[j][0]]
+                    levi = e[engs[i][0]]['level'][0]
+                    levj = e[engs[j][0]]['level'][0]
+                    excitations[na][trnew] = {'weightP' : wP, 'weightAlpha' : wA, 'level' : [levi,levj], 'energy' : eng }
+                    del excitations[na][engs[i][0]]
+                    del excitations[na][engs[j][0]]
     
     return excitations
 
@@ -321,7 +322,7 @@ def allTransitions(excitations):
     nalpha = []
     for na,e in excitations.iteritems():
         nalpha.append(na)
-        for ind in e['transitions']:
+        for ind in e:
             allTr.append(ind)
     allTr=list(set(allTr))
     print 'Number of distinct transisitons = ', len(allTr)
@@ -333,18 +334,17 @@ def allTransitions(excitations):
     for tr in allTr[::-1]:
         appear = True
         for na in nalpha:
-            if tr not in excitations[na]['transitions']: 
+            if tr not in excitations[na]: 
                 appear = False
         if appear == False:
             allTr.remove(tr)
             remTrans+=1
-            #print 'removed transition : ', tr
     print 'Number of transisitons removed = ', remTrans   
     
     # sort the transitions according to their energy
     eng = []
     for tr in allTr:
-        eng.append(excitations[nalpha[-1]]['transitions'][tr]['eng'])
+        eng.append(excitations[nalpha[-1]][tr]['energy'])
         
     eng =np.array(eng)
     sortind = np.argsort(eng)
@@ -360,7 +360,7 @@ def stableTransitions(excitations, stableTol = 1e-4):
     for tr in allTr:
         engTr = []
         for na in excitations:
-            engTr.append(excitations[na]['transitions'][tr]['eng'])
+            engTr.append(excitations[na][tr]['energy'])
         deltaE = max(engTr) - min(engTr)
         if deltaE < stableTol:
             stableTr.append([tr,0.5*(max(engTr) + min(engTr)),deltaE])
@@ -370,14 +370,14 @@ def stableTransitions(excitations, stableTol = 1e-4):
 def pltTrLevel(selTr,excitations,Data,numOrb,plotEng = True):
     for s in selTr:
         for na, e in excitations.iteritems():
-            for tr,val in e['transitions'].iteritems():
+            for tr,val in e.iteritems():
                 if s in val['level']:
                     if plotEng:
-                       plt.scatter(engMax(Data,numOrb,na),val['eng'])
-                       plt.annotate(tr,xy=(engMax(Data,numOrb,na),val['eng']))
+                       plt.scatter(engMax(Data,numOrb,na),val['energy'])
+                       plt.annotate(tr,xy=(engMax(Data,numOrb,na),val['energy']))
                     else: 
-                       plt.scatter(na,val['eng'])
-                       plt.annotate(tr,xy=(na,val['eng']))
+                       plt.scatter(na,val['energy'])
+                       plt.annotate(tr,xy=(na,val['energy']))
     plt.show()
 
 def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
@@ -389,12 +389,31 @@ def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
                alpha.append(engMax(Data,numOrb,na))
             else:
                alpha.append(na)
-            for tr,v in e['transitions'].iteritems():
+            for tr,v in e.iteritems():
                 if s == tr:
-                    val.append(v['eng']) 
+                    val.append(v['energy']) 
         plt.plot(alpha,val)
         plt.scatter(alpha,val,label=s)
         plt.legend(loc=(1.1,0))
+
+def evalSob(numBound,excitations):
+    nalpha = excitations.keys()
+    nalpha.sort()
+    print nalpha
+    
+    sob = {}
+    allTr, trEnergy = allTransitions(excitations)
+    for tr in allTr:
+        sobNa = []
+        for na in nalpha:
+            wA = excitations[na][tr]['weightAlpha']
+            sumVal = 0.0
+            for ind in range(numBound):
+                sumVal+=wA[ind]
+            sobNa.append(1.0-sumVal)
+        sob[tr] = sobNa
+    
+    return sob
 
 def weightCut(w, threshold = 0.1):
     wCut = np.zeros(len(w))
@@ -444,32 +463,7 @@ def weightAlphaPlot(selexc,excitations,Data,numOrb,plotEng = True):
     plt.title('Transition '+selexc, fontsize = 14)
     plt.legend(loc=(1.1,0.0))   
 
-def oscillatorStrenght(na,tr,excitations):
-    oscStrenght = 0.0
-    
-    level = excitations[na]['transitions'][tr]['level']
-    for l in level:
-        oscStrenght+= (np.dot(excitations[na]['C_E2'][l],excitations[na]['dipoles'][:,2]))**2
-    
-    return oscStrenght
-
-
 ######################### OLD ROUTINES ###################################
-
-def oscillatorStrenght_old(excitations):
-    allTr, eng = allTransitions(excitations)
-    osStr = []
-    
-    na = excitations.keys()[-1]
-    print 'Oscillator strenght computed for nalpha = ', na
-    for tr in allTr:
-        level = excitations[na]['transitions'][tr]['level']
-        os = 0.0
-        for l in level:
-            os+= (np.dot(excitations[na]['C_E2'][l],excitations[na]['dipoles'][:,2]))**2
-        osStr.append(os)
-    
-    return osStr
 
 def completeness_relation_new(data):
     """
@@ -510,18 +504,3 @@ def completeness_relation_new(data):
             cr[p].append(psiprime[p]/reference)
     return e_v,cr
 
-def crplot_new(e_v,cr,label1,rhoPlot=True, legendPlot=False):
- 
-    if rhoPlot:
-        sm=0.0
-        nval=0
-        for coeff in cr:
-            sm+=np.array(coeff)
-            nval+=1
-        plt.semilogy(27.211*np.array(e_v),sm/nval,'-',label='Rho')
-    else:
-        for p,coeff in enumerate(cr):
-            plt.semilogy(27.211*np.array(e_v),cr[p],'-',label='Orb_'+str(p))
-    if legendPlot:
-        plt.legend()
-    plt.title('Completeness relation '+label1, fontsize=14)
