@@ -351,21 +351,7 @@ def allTransitions(excitations):
     allTr = [allTr[s] for s in sortind]
     eng = [eng[s] for s in sortind]
     
-    return allTr, eng
-
-def stableTransitions(excitations, stableTol = 1e-4):
-    allTr, eng = allTransitions(excitations)
-    
-    stableTr = []
-    for tr in allTr:
-        engTr = []
-        for na in excitations:
-            engTr.append(excitations[na][tr]['energy'])
-        deltaE = max(engTr) - min(engTr)
-        if deltaE < stableTol:
-            stableTr.append([tr,0.5*(max(engTr) + min(engTr)),deltaE])
-    
-    return stableTr
+    return allTr
 
 def pltTrLevel(selTr,excitations,Data,numOrb,plotEng = True):
     for s in selTr:
@@ -396,24 +382,33 @@ def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
         plt.scatter(alpha,val,label=s)
         plt.legend(loc=(1.1,0))
 
-def evalSob(numBound,excitations):
+def evalSob(numVirtBound,excitations):
     nalpha = excitations.keys()
     nalpha.sort()
     print nalpha
     
     sob = {}
-    allTr, trEnergy = allTransitions(excitations)
+    allTr = allTransitions(excitations)
     for tr in allTr:
         sobNa = []
         for na in nalpha:
             wA = excitations[na][tr]['weightAlpha']
             sumVal = 0.0
-            for ind in range(numBound):
+            for ind in range(numVirtBound):
                 sumVal+=wA[ind]
             sobNa.append(1.0-sumVal)
         sob[tr] = sobNa
     
     return sob
+
+def evalSobStability(sob,nalpha):
+    sobStability = {}
+    for tr,s in sob.iteritems():
+        val = s[-1]
+        deriv = (s[-1]-s[-2])/(nalpha[-1]-nalpha[-2])
+        sobStability[tr] = {'value': val, 'derivative':deriv}
+    
+    return sobStability
 
 def weightCut(w, threshold = 0.1):
     wCut = np.zeros(len(w))
@@ -421,6 +416,38 @@ def weightCut(w, threshold = 0.1):
         if ww < threshold:
             wCut[i] = ww
     return wCut
+
+def weightAlphaPlot(selexc,excitations,Data,numOrb,plotEng = True):
+    offs = 0.0
+    for na, e in excitations.iteritems():
+        if selexc in e.keys():
+            if plotEng:
+                alpha = []
+                for a in range(1,na+1):
+                    alpha.append(27.211*Data.evals[0][0][numOrb + a -1])
+            else:
+                alpha = np.linspace(1,na,na)
+            wCut = weightCut(e[selexc]['weightAlpha'])
+            plt.plot(alpha,offs+wCut, label = 'Nalpha='+str(na))
+            offs+=1.2*max(wCut)
+    plt.title('Transition '+selexc, fontsize = 14)
+    plt.legend(loc=(1.1,0.0))   
+
+######################### OLD ROUTINES ###################################
+
+def energyStableTransitions(excitations, stableTol = 1e-4):
+    allTr = allTransitions(excitations)
+    
+    energyStableTr = {}
+    for tr in allTr:
+        engTr = []
+        for na in excitations:
+            engTr.append(excitations[na][tr]['energy'])
+        deltaE = max(engTr) - min(engTr)
+        if deltaE < stableTol:
+            energyStableTr[tr] = {'energy': 0.5*(max(engTr) + min(engTr)),'deltaEnergy' : deltaE}
+    
+    return energyStableTr
 
 def sotPlot(selLab,excitations):
     sot = {}
@@ -447,23 +474,6 @@ def sotPlotNorm(sot):
         plt.plot(val[0],val[1]/val[1][0],label=tr)
     plt.legend(loc=(1.1,0.0))   
 
-def weightAlphaPlot(selexc,excitations,Data,numOrb,plotEng = True):
-    offs = 0.0
-    for na, e in excitations.iteritems():
-        if selexc in e['transitions'].keys():
-            if plotEng:
-                alpha = []
-                for a in range(1,na+1):
-                    alpha.append(27.211*Data.evals[0][0][numOrb + a -1])
-            else:
-                alpha = np.linspace(1,na,na)
-            wCut = weightCut(e['transitions'][selexc]['weightAlpha'])
-            plt.plot(alpha,offs+wCut, label = 'Nalpha='+str(na))
-            offs+=1.2*max(wCut)
-    plt.title('Transition '+selexc, fontsize = 14)
-    plt.legend(loc=(1.1,0.0))   
-
-######################### OLD ROUTINES ###################################
 
 def completeness_relation_new(data):
     """
