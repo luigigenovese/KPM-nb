@@ -325,7 +325,7 @@ def allTransitions(excitations):
         for ind in e:
             allTr.append(ind)
     allTr=list(set(allTr))
-    print 'Number of distinct transisitons = ', len(allTr)
+    #print 'Number of distinct transisitons = ', len(allTr)
     # check that nalpha[-1] correspond to the highest value of nalpha
     if nalpha[-1] != max(nalpha): print 'PROBLEM WITH NALPHA LIST SORT'
     
@@ -339,7 +339,7 @@ def allTransitions(excitations):
         if appear == False:
             allTr.remove(tr)
             remTrans+=1
-    print 'Number of transisitons removed = ', remTrans   
+    #print 'Number of transisitons removed = ', remTrans   
     
     # sort the transitions according to their energy
     eng = []
@@ -385,7 +385,7 @@ def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
 def evalSob(numVirtBound,excitations):
     nalpha = excitations.keys()
     nalpha.sort()
-    print nalpha
+    #print nalpha
     
     sob = {}
     allTr = allTransitions(excitations)
