@@ -1,0 +1,1842 @@
+---
+ Code logo:
+   "__________________________________ A fast and precise DFT wavelet code
+   |     |     |     |     |     |
+   |     |     |     |     |     |      BBBB         i       gggggg
+   |_____|_____|_____|_____|_____|     B    B               g
+   |     |  :  |  :  |     |     |    B     B        i     g
+   |     |-0+--|-0+--|     |     |    B    B         i     g        g
+   |_____|__:__|__:__|_____|_____|___ BBBBB          i     g         g
+   |  :  |     |     |  :  |     |    B    B         i     g         g
+   |--+0-|     |     |-0+--|     |    B     B     iiii     g         g
+   |__:__|_____|_____|__:__|_____|    B     B        i      g        g
+   |     |  :  |  :  |     |     |    B BBBB        i        g      g
+   |     |-0+--|-0+--|     |     |    B        iiiii          gggggg
+   |_____|__:__|__:__|_____|_____|__BBBBB
+   |     |     |     |  :  |     |                           TTTTTTTTT
+   |     |     |     |--+0-|     |  DDDDDD          FFFFF        T
+   |_____|_____|_____|__:__|_____| D      D        F        TTTT T
+   |     |     |     |  :  |     |D        D      F        T     T
+   |     |     |     |--+0-|     |D         D     FFFF     T     T
+   |_____|_____|_____|__:__|_____|D___      D     F         T    T
+   |     |     |  :  |     |     |D         D     F          TTTTT
+   |     |     |--+0-|     |     | D        D     F         T    T
+   |_____|_____|__:__|_____|_____|          D     F        T     T
+   |     |     |     |     |     |         D               T    T
+   |     |     |     |     |     |   DDDDDD       F         TTTT
+   |_____|_____|_____|_____|_____|______                    www.bigdft.org   "
+
+ Reference Paper                       : The Journal of Chemical Physics 129, 014109 (2008)
+ Version Number                        : 1.8.1
+ Timestamp of this run                 : 2017-12-12 14:15:59.983
+ Root process Hostname                 : ibm-bl01-02
+ Number of MPI tasks                   :  24
+ OpenMP parallelization                :  Yes
+ Maximal OpenMP threads per MPI task   :  1
+ MPI tasks of root process node        :  8
+  #------------------------------------------------------------------ Code compiling options
+ Compilation options:
+   Configure arguments:
+     " '--prefix' '/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install' 'FC=mpif90' 
+     'FCFLAGS=-fopenmp -O2' 'CFLAGS=-O2' 
+     'LDFLAGS=-L/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/lib ' 
+     'C_INCLUDE_PATH=/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/include' 
+     'PKG_CONFIG_PATH=/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/lib/pkgconfig
+     :/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/share/pkgconfig:/usr/lib/x86_
+     64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig'"
+   Compilers (CC, FC, CXX)             :  [ gcc, mpif90, g++ ]
+   Compiler flags:
+     CFLAGS                            : -O2
+     FCFLAGS                           : -fopenmp -O2
+     CXXFLAGS                          : -g -O2
+  #------------------------------------------------------------------------ Input parameters
+ radical                               : Rmult_9.0
+ outdir                                : ./log/
+ logfile                               : Yes
+ run_from_files                        : Yes
+ skip                                  : Yes
+ dft:
+   gnrm_cv                             : 1.0e-08 # Convergence criterion gradient
+   hgrids                              : 0.37 #   Grid spacing in the three directions (bohr)
+   inputpsiid                          : 2 #      Input guess wavefunctions
+   itermax                             : 100 #    Max. iterations of wfn. opt. steps
+   itermax_virt                        : 1 #      Max. iterations of wfn. opt. steps for virtual orbitals
+   norbv                               : -184 #   Davidson subspace dimension (No. virtual orbitals)
+   rmult: [9.0, 9.0] #                            c(f)rmult*radii_cf(:,1(2))=coarse(fine) atom-based radius
+   disablesym                          : Yes #    Disable the symmetry detection
+   ngrids: [0, 0, 0] #                            Number of grid spacing division in each direction
+   ixc                                 : 1 #      Exchange-correlation parameter (LDA=1,PBE=11)
+   qcharge                             : 0 #      Charge of the system. Can be integer or real.
+   elecfield: [0., 0., 0.] #                      Electric field (Ex,Ey,Ez)
+   nspin                               : 1 #      Spin polarization treatment
+   mpol                                : 0 #      Total magnetic moment
+   itermin                             : 0 #      Minimal iterations of wfn. optimized steps
+   nrepmax                             : 1 #      Max. number of re-diag. runs
+   ncong                               : 6 #      No. of CG it. for preconditioning eq.
+   idsx                                : 6 #      Wfn. diis history
+   dispersion                          : 0 #      Dispersion correction potential (values 1,2,3,4,5), 0=none
+   output_denspot                      : 0 #      Output of the density or the potential
+   rbuf                                : 0. #     Length of the tail (AU)
+   ncongt                              : 30 #     No. of tail CG iterations
+   nvirt                               : 0 #      No. of converged virtual orbs (< norbv)
+   nplot                               : 0 #      No. of plotted orbs
+   gnrm_cv_virt                        : 1.e-4 #  Convergence criterion gradient for virtual orbitals
+   external_potential                  : 0.0 #    Multipole moments of an external potential
+   calculate_strten                    : Yes #    Boolean to activate the calculation of the stress tensor. Might be set to No for 
+    #                                              performance reasons
+   plot_mppot_axes: [-1, -1, -1] #                Plot the potential generated by the multipoles along axes through this 
+    #                                              point. Negative values mean no plot.
+   plot_pot_axes: [-1, -1, -1] #                  Plot the potential along axes through this point. Negative values mean 
+    #                                              no plot.
+   occupancy_control                   : None #   Dictionary of the atomic matrices to be applied for a given iteration number
+   itermax_occ_ctrl                    : 0 #      Number of iterations of occupancy control scheme. Should be between itermin and 
+    #                                              itermax
+   nrepmax_occ_ctrl                    : 1 #      Number of re-diagonalizations of occupancy control scheme.
+   alpha_hf                            : -1.0 #   Part of the exact exchange contribution for hybrid functionals
+ tddft:
+   tddft_approach                      : full #   Time-Dependent DFT method
+   decompose_perturbation              : none #   Indicate the directory of the perturbation to be decomposed in the basis of empty 
+    #                                              states
+ output:
+   orbitals                            : No #     Write KS orbitals in the full simulation domain (might take lot of disk space!)
+   verbosity                           : 3 #      Verbosity of the output
+   atomic_density_matrix               : None #   Dictionary of the atoms for which the atomic density matrix has to be plotted
+   sdos                                : No #     Spatially-resolved density of states
+   outputpsiid                         : wavefunction # basename of the output wavefunctions files written in the data directory
+ psolver:
+   kernel:
+     screening                         : 0 #      Mu screening parameter
+     isf_order                         : 16 #     Order of the Interpolating Scaling Function family
+     stress_tensor                     : Yes #    Triggers the calculation of the stress tensor
+   environment:
+     cavity                            : none #   Type of the cavity
+     fd_order                          : 16 #     Order of the Finite-difference derivatives for the GPS solver
+     itermax                           : 200 #    Maximum number of iterations of the GPS outer loop
+     minres                            : 1.e-8 #  Convergence threshold of the loop
+     pb_method                         : none #   Defines the method for the Poisson Boltzmann Equation
+   setup:
+     accel                             : none #   Material Acceleration
+     taskgroup_size                    : 0 #      Size of the taskgroups of the Poisson Solver
+     global_data                       : No #     Charge density and Electrostatic potential are given by global arrays
+     verbose                           : Yes #    Verbosity switch
+     output                            : none #   Quantities to be plotted after the main solver routine
+ chess:
+   foe:
+     ef_interpol_det                   : 1.e-12 # FOE max determinant of cubic interpolation matrix
+     ef_interpol_chargediff            : 1.0 #    FOE max charge difference for interpolation
+     evbounds_nsatur                   : 3 #      Number of FOE cycles before the eigenvalue bounds are shrinked (linear)
+     evboundsshrink_nsatur             : 4 #      Maximal number of unsuccessful eigenvalue bounds shrinkings
+     fscale                            : 5.e-2 #  Initial guess for the error function decay length
+     fscale_lowerbound                 : 5.e-3 #  Lower bound for the error function decay length
+     fscale_upperbound                 : 5.e-2 #  Upper bound for the error function decay length
+     eval_range_foe: [-0.5, 0.5] #                Lower and upper bound of the eigenvalue spectrum, will be adjusted 
+      #                                            automatically if chosen unproperly
+     accuracy_foe                      : 1.e-5 #  Required accuracy for the Chebyshev fit for FOE
+     accuracy_ice                      : 1.e-8 #  Required accuracy for the Chebyshev fit for ICE (calculation of matrix powers)
+     accuracy_penalty                  : 1.e-5 #  Required accuracy for the Chebyshev fit for the penalty function
+     accuracy_entropy                  : 1.e-4 #  Required accuracy for the Chebyshev fit for the function to calculate the entropy term
+     betax_foe                         : -1000.0 # the exponent in the exponential penalty function which is used to determine the 
+      #                                            eigenvalue bounds for FOE
+     betax_ice                         : -1000.0 # the exponent in the exponential penalty function which is used to determine the 
+      #                                            eigenvalue bounds for ICE
+     occupation_function               : 102 #    the function to assign the occupation numbers
+     adjust_fscale                     : yes #    dynamically adjust the value of fscale or not
+   lapack:
+     blocksize_pdsyev                  : -8 #     SCALAPACK linear scaling blocksize for diagonalization
+     blocksize_pdgemm                  : -8 #     SCALAPACK linear scaling blocksize for matrix matrix multiplication
+     maxproc_pdsyev                    : 4 #      SCALAPACK linear scaling max num procs
+     maxproc_pdgemm                    : 4 #      SCALAPACK linear scaling max num procs
+   pexsi:
+     pexsi_npoles                      : 40 #     Number of poles used by PEXSI
+     pexsi_nproc_per_pole              : 1 #      Number of processes used per pole by PEXSI
+     pexsi_mumin                       : -1.0 #   Initial guess for the lower bound of the chemical potential used by PEXSI
+     pexsi_mumax                       : 1.0 #    Initial guess for the upper bound of the chemical potential used by PEXSI
+     pexsi_mu                          : 0.5 #    Initial guess for the  chemical potential used by PEXSI
+     pexsi_temperature                 : 1.e-3 #  Temperature used by PEXSI
+     pexsi_tol_charge                  : 1.e-3 #  Charge tolerance used PEXSI
+     pexsi_np_sym_fact                 : 16 #     Number of tasks for the symbolic factorization used by PEXSI
+     pexsi_DeltaE                      : 10.0 #   Upper bound for the spectral radius of S^-1H (in hartree?) used by PEXSI
+     pexsi_do_inertia_count            : yes #    Decides whether PEXSI should use the inertia count at each iteration
+     pexsi_max_iter                    : 10 #     Maximal number of PEXSI iterations
+     pexsi_verbosity                   : 0 #      Verbosity level of the PEXSI solver
+ kpt:
+   method                              : manual # K-point sampling method
+   kpt: #                                         Kpt coordinates
+   -  [0., 0., 0.]
+   wkpt: [1.] #                                   Kpt weights
+   bands                               : No #     For doing band structure calculation
+ geopt:
+   method                              : none #   Geometry optimisation method
+   ncount_cluster_x                    : 1 #      Maximum number of force evaluations
+   frac_fluct                          : 1. #     Fraction of force fluctuations. Stop if fmax < forces_fluct*frac_fluct
+   forcemax                            : 0. #     Max forces criterion when stop
+   randdis                             : 0. #     Random displacement amplitude
+   betax                               : 4. #     Stepsize for the geometry optimization
+   beta_stretchx                       : 5e-1 #   Stepsize for steepest descent in stretching mode direction (only if in biomode)
+ md:
+   mdsteps                             : 0 #      Number of MD steps
+   print_frequency                     : 1 #      Printing frequency for energy.dat and Trajectory.xyz files
+   temperature                         : 300.d0 # Initial temperature in Kelvin
+   timestep                            : 20.d0 #  Time step for integration (in a.u.)
+   no_translation                      : No #     Logical input to set translational correction
+   thermostat                          : none #   Activates a thermostat for MD
+   wavefunction_extrapolation          : 0 #      Activates the wavefunction extrapolation for MD
+   always_from_scratch                 : No #     When true, always restart wavefunctions from scratch to eliminate dissipation effects
+   restart_nose                        : No #     Restart Nose Hoover Chain information from md.restart
+   restart_pos                         : No #     Restart nuclear position information from md.restart
+   restart_vel                         : No #     Restart nuclear velocities information from md.restart
+ mix:
+   iscf                                : 0 #      Mixing scheme (default=0 i.e. direct minimization)
+   itrpmax                             : 1 #      Maximum number of diagonalisation iterations
+   rpnrm_cv                            : 1.e-4 #  Stop criterion on the residue of potential or density
+   norbsempty                          : 0 #      No. of additional bands
+   tel                                 : 0. #     Electronic temperature
+   occopt                              : 1 #      Smearing method
+   alphamix                            : 0. #     Multiplying factors for the mixing
+   alphadiis                           : 2. #     Multiplying factors for the electronic DIIS
+ sic:
+   sic_approach                        : none #   SIC (self-interaction correction) method
+   sic_alpha                           : 0. #     SIC downscaling parameter
+ mode:
+   method                              : dft #    Run method of BigDFT call
+   add_coulomb_force                   : No #     Boolean to add coulomb force on top of any of above selected force
+ perf:
+   debug                               : No #     Debug option
+   fftcache                            : 8192 #   Cache size for the FFT
+   accel                               : NO #     Acceleration (hardware)
+   ocl_platform                        : ~ #      Chosen OCL platform
+   ocl_devices                         : ~ #      Chosen OCL devices
+   blas                                : No #     CUBLAS acceleration
+   projrad                             : 15. #    Radius of the projector as a function of the maxrad
+   exctxpar                            : OP2P #   Exact exchange parallelisation scheme
+   ig_diag                             : Yes #    Input guess (T=Direct, F=Iterative) diag. of Ham.
+   ig_norbp                            : 5 #      Input guess Orbitals per process for iterative diag.
+   ig_blocks: [300, 800] #                        Input guess Block sizes for orthonormalisation
+   ig_tol                              : 1.0e-4 # Input guess Tolerance criterion
+   methortho                           : 0 #      Orthogonalisation
+   rho_commun                          : DEF #    Density communication scheme (DBL, RSC, MIX)
+   unblock_comms                       : OFF #    Overlap Communications of fields (OFF,DEN,POT)
+   linear                              : OFF #    Linear Input Guess approach
+   tolsym                              : 1.0e-8 # Tolerance for symmetry detection
+   signaling                           : No #     Expose calculation results on Network
+   signaltimeout                       : 0 #      Time out on startup for signal connection (in seconds)
+   domain                              : ~ #      Domain to add to the hostname to find the IP
+   inguess_geopt                       : 0 #      Input guess to be used during the optimization
+   store_index                         : Yes #    Store indices or recalculate them for linear scaling
+   psp_onfly                           : Yes #    Calculate pseudopotential projectors on the fly
+   multipole_preserving                : No #     (EXPERIMENTAL) Preserve the multipole moment of the ionic density
+   mp_isf                              : 16 #     (EXPERIMENTAL) Interpolating scaling function or lifted dual order for the multipole 
+    #                                              preserving
+   mixing_after_inputguess             : 1 #      Mixing step after linear input guess
+   iterative_orthogonalization         : No #     Iterative_orthogonalization for input guess orbitals
+   check_sumrho                        : 1 #      Enables linear sumrho check
+   check_overlap                       : 1 #      Enables linear overlap check
+   experimental_mode                   : No #     Activate the experimental mode in linear scaling
+   explicit_locregcenters              : No #     Linear scaling explicitly specify localization centers
+   calculate_KS_residue                : Yes #    Linear scaling calculate Kohn-Sham residue
+   intermediate_forces                 : No #     Linear scaling calculate intermediate forces
+   kappa_conv                          : 0.1 #    Exit kappa for extended input guess (experimental mode)
+   calculate_gap                       : No #     Linear scaling calculate the HOMO LUMO gap
+   loewdin_charge_analysis             : No #     Linear scaling perform a Loewdin charge analysis at the end of the calculation
+   coeff_weight_analysis               : No #     Linear scaling perform a Loewdin charge analysis of the coefficients for fragment 
+    #                                              calculations
+   check_matrix_compression            : Yes #    Linear scaling perform a check of the matrix compression routines
+   correction_co_contra                : Yes #    Linear scaling correction covariant / contravariant gradient
+   FOE_restart                         : 0 #      Restart method to be used for the FOE method
+   imethod_overlap                     : 1 #      Method to calculate the overlap matrices (1=old, 2=new)
+   enable_matrix_taskgroups            : True #   Enable the matrix taskgroups
+   hamapp_radius_incr                  : 8 #      Radius enlargement for the Hamiltonian application (in grid points)
+   adjust_kernel_iterations            : True #   Enable the adaptive ajustment of the number of kernel iterations
+   adjust_kernel_threshold             : True #   Enable the adaptive ajustment of the kernel convergence threshold according to the 
+    #                                              support function convergence
+   wf_extent_analysis                  : False #  Perform an analysis of the extent of the support functions (and possibly KS orbitals)
+   foe_gap                             : False #  Use the FOE method to calculate the HOMO-LUMO gap at the end of a calculation
+ lin_general:
+   hybrid                              : No #     Activate the hybrid mode; if activated, only the low accuracy values will be relevant
+   nit: [100, 100] #                              Number of iteration with low/high accuracy
+   rpnrm_cv: [1.e-12, 1.e-12] #                   Convergence criterion for low/high accuracy
+   conf_damping                        : -0.5 #   How the confinement should be decreased, only relevant for hybrid mode; negative -> 
+    #                                              automatic
+   taylor_order                        : 0 #      Order of the Taylor approximation; 0 -> exact
+   max_inversion_error                 : 1.d0 #   Linear scaling maximal error of the Taylor approximations to calculate the inverse of 
+    #                                              the overlap matrix
+   output_wf                           : 0 #      Output basis functions; 0 no output, 1 formatted output, 2 Fortran bin, 3 ETSF
+   output_mat                          : 0 #      Output sparse matrices; 0 no output, 1 formatted sparse, 11 formatted dense, 21 
+    #                                              formatted both
+   output_coeff                        : 0 #      Output KS coefficients; 0 no output, 1 formatted output
+   output_fragments                    : 0 #      Output support functions, kernel and coeffs; 0 fragments and full system, 1 
+    #                                              fragments only, 2 full system only
+   kernel_restart_mode                 : 0 #      Method for restarting kernel; 0 kernel, 1 coefficients, 2 random, 3 diagonal, 4 
+    #                                              support function weights
+   kernel_restart_noise                : 0.0d0 #  Add random noise to kernel or coefficients when restarting
+   frag_num_neighbours                 : 0 #      Number of neighbours to output for each fragment
+   frag_neighbour_cutoff               : 12.0d0 # Number of neighbours to output for each fragment
+   cdft_lag_mult_init                  : 0.05d0 # CDFT initial value for Lagrange multiplier
+   cdft_conv_crit                      : 1.e-2 #  CDFT convergence threshold for the constrained charge
+   calc_dipole                         : No #     Calculate dipole
+   calc_quadrupole                     : No #     Calculate quadrupole
+   subspace_diag                       : No #     Diagonalization at the end
+   extra_states                        : 0 #      Number of extra states to include in support function and kernel optimization (dmin 
+    #                                              only), must be equal to norbsempty
+   calculate_onsite_overlap            : No #     Calculate the onsite overlap matrix (has only an effect if the matrices are all 
+    #                                              written to disk)
+   charge_multipoles                   : 0 #      Calculate the atom-centered multipole coefficients; 0 no, 1 old approach Loewdin, 2 
+    #                                              new approach Projector
+   support_function_multipoles         : False #  Calculate the multipole moments of the support functions
+   plot_locreg_grids                   : False #  Plot the scaling function and wavelets grid of each localization region
+   calculate_FOE_eigenvalues: [0, -1] #           First and last eigenvalue to be calculated using the FOE procedure
+   precision_FOE_eigenvalues           : 5.e-3 #  Decay length of the error function used to extract the eigenvalues (i.e. something like 
+    #                                              the resolution)
+   multipole_centers                   : 0.0 #    Determines whether the multipole centers shall be determined automatically (i.e. 
+    #                                              taking the atoms) or whether they are 
+    #                                              provided manually
+   consider_entropy                    : False #  Indicate whether the entropy contribution to the total energy shall be considered
+ lin_basis:
+   nit: [4, 5] #                                  Maximal number of iterations in the optimization of the 
+    #                                              support functions
+   nit_ig                              : 50 #     maximal number of iterations to optimize the support functions in the extended input 
+    #                                              guess (experimental mode only)
+   idsx: [6, 6] #                                 DIIS history for optimization of the support functions 
+    #                                              (low/high accuracy); 0 -> SD
+   gnrm_cv: [1.e-2, 1.e-4] #                      Convergence criterion for the optimization of the support functions 
+    #                                              (low/high accuracy)
+   gnrm_ig                             : 1.e-3 #  Convergence criterion for the optimization of the support functions in the extended 
+    #                                              input guess (experimental mode only)
+   deltae_cv                           : 1.e-4 #  Total relative energy difference to stop the optimization ('experimental_mode' only)
+   gnrm_dyn                            : 1.e-4 #  Dynamic convergence criterion ('experimental_mode' only)
+   min_gnrm_for_dynamic                : 1.e-3 #  Minimal gnrm to active the dynamic gnrm criterion
+   alpha_diis                          : 1.0 #    Multiplicator for DIIS
+   alpha_sd                            : 1.0 #    Initial step size for SD
+   nstep_prec                          : 5 #      Number of iterations in the preconditioner
+   fix_basis                           : 1.e-10 # Fix the support functions if the density change is below this threshold
+   correction_orthoconstraint          : 1 #      Correction for the slight non-orthonormality in the orthoconstraint
+   orthogonalize_ao                    : Yes #    Orthogonalize the atomic orbitals used as input guess
+   reset_DIIS_history                  : No #     Reset the DIIS history when starting the loop which optimizes the support functions
+ lin_kernel:
+   nstep: [1, 1] #                                Number of steps taken when updating the coefficients via 
+    #                                              direct minimization for each iteration of 
+    #                                              the density kernel loop
+   nit: [5, 5] #                                  Number of iterations in the (self-consistent) 
+    #                                              optimization of the density kernel
+   idsx_coeff: [0, 0] #                           DIIS history for direct mininimization
+   idsx: [0, 0] #                                 Mixing method; 0 -> linear mixing, >=1 -> Pulay mixing
+   alphamix: [0.5, 0.5] #                         Mixing parameter (low/high accuracy)
+   gnrm_cv_coeff: [1.e-5, 1.e-5] #                Convergence criterion on the gradient for direct minimization
+   rpnrm_cv: [1.e-10, 1.e-10] #                   Convergence criterion (change in density/potential) for the kernel 
+    #                                              optimization
+   linear_method                       : DIAG #   Method to optimize the density kernel
+   mixing_method                       : DEN #    Quantity to be mixed
+   alpha_sd_coeff                      : 0.2 #    Initial step size for SD for direct minimization
+   alpha_fit_coeff                     : No #     Update the SD step size by fitting a quadratic polynomial
+   coeff_scaling_factor                : 1.0 #    Factor to scale the gradient in direct minimization
+   delta_pnrm                          : -1.0 #   Stop the kernel optimization if the density/potential difference has decreased by this 
+    #                                              factor (deactivated if -1.0)
+ lin_basis_params:
+   nbasis                              : 4 #      Number of support functions per atom
+   ao_confinement                      : 8.3e-3 # Prefactor for the input guess confining potential
+   confinement: [8.3e-3, 0.0] #                   Prefactor for the confining potential (low/high accuracy)
+   rloc: [7.0, 7.0] #                             Localization radius for the support functions
+   rloc_kernel                         : 9.0 #    Localization radius for the density kernel
+   rloc_kernel_foe                     : 14.0 #   Cutoff radius for the FOE matrix vector multiplications
+ psppar.C:
+   Pseudopotential type                : HGH-K
+   Atomic number                       : 6
+   No. of Electrons                    : 4
+   Pseudopotential XC                  : 1
+   Local Pseudo Potential (HGH convention):
+     Rloc                              : 0.34883045
+     Coefficients (c1 .. c4): [-8.5137711, 1.22843203, 0.0, 0.0]
+   NonLocal PSP Parameters:
+   - Channel (l)                       : 0
+     Rloc                              : 0.30455321
+     h_ij terms: [9.522841789999999, 0.0, 0.0, 0.0, 0.0, 0.0]
+   - Channel (l)                       : 1
+     Rloc                              : 0.2326773
+     h_ij terms: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   Source                              : Hard-Coded
+   Radii of active regions (AU):
+     Coarse                            : 1.584366302812153
+     Fine                              : 0.2326773
+     Coarse PSP                        : 0.5075886833333334
+     Source                            : Hard-Coded
+ psppar.O:
+   Pseudopotential type                : HGH-K
+   Atomic number                       : 8
+   No. of Electrons                    : 6
+   Pseudopotential XC                  : 1
+   Local Pseudo Potential (HGH convention):
+     Rloc                              : 0.24762086
+     Coefficients (c1 .. c4): [-16.58031797, 2.39570092, 0.0, 0.0]
+   NonLocal PSP Parameters:
+   - Channel (l)                       : 0
+     Rloc                              : 0.22178614
+     h_ij terms: [18.26691718, 0.0, 0.0, 0.0, 0.0, 0.0]
+   - Channel (l)                       : 1
+     Rloc                              : 0.2568289
+     h_ij terms: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   Source                              : Hard-Coded
+   Radii of active regions (AU):
+     Coarse                            : 1.215575721499752
+     Fine                              : 0.22178614
+     Coarse PSP                        : 0.4280481666666667
+     Source                            : Hard-Coded
+ posinp:
+    #---------------------------------------------- Atomic positions (by default bohr units)
+   units                               : angstroem
+   positions:
+   - C: [0.0, 0.0, 0.0]
+   - O: [0.0, 0.0, 1.253000020980835]
+   properties:
+     format                            : xyz
+     source                            : CO_posinp.xyz
+  #--------------------------------------------------------------------------------------- |
+ Data Writing directory                : ./log/data-Rmult_9.0/
+  #----------------------------------------------- Input Atomic System (file: CO_posinp.xyz)
+ Atomic System Properties:
+   Number of atomic types              :  2
+   Number of atoms                     :  2
+   Types of atoms                      :  [ C, O ]
+   Boundary Conditions                 : Free #Code: F
+   Number of Symmetries                :  0
+   Space group                         : disabled
+  #-------------------------- Geometry optimization Input Parameters (file: Rmult_9.0.geopt)
+ Geometry Optimization Parameters:
+   Maximum steps                       :  1
+   Algorithm                           : none
+   Random atomic displacement          :  0.0E+00
+   Fluctuation in forces               :  1.0E+00
+   Maximum in forces                   :  0.0E+00
+   Steepest descent step               :  4.0E+00
+ Material acceleration                 :  No #iproc=0
+  #------------------------------------------------------------------------ Input parameters
+ DFT parameters:
+   eXchange Correlation:
+     XC ID                             :  &ixc  1
+     Exchange-Correlation reference    : "XC: Teter 93"
+     XC functional implementation      : ABINIT
+     Spin polarization                 :  No
+ Basis set definition:
+   Suggested Grid Spacings (a0)        :  [  0.37,  0.37,  0.37 ]
+   Coarse and Fine Radii Multipliers   :  [  9.0,  9.0 ]
+ Self-Consistent Cycle Parameters:
+   Wavefunction:
+     Gradient Norm Threshold           :  &gnrm_cv  1.0E-08
+     CG Steps for Preconditioner       :  6
+     DIIS History length               :  6
+     Max. Wfn Iterations               :  &itermax  100
+     Max. Subspace Diagonalizations    :  1
+     Input wavefunction policy         : INPUT_PSI_DISK_WVL # 2
+     Output wavefunction policy        : NONE # 0
+     Output grid policy                : NONE # 0
+     Virtual orbitals                  :  0
+     Number of plotted density orbitals:  0
+   Density/Potential:
+     Max. Iterations                   :  1
+ Post Optimization Parameters:
+   Finite-Size Effect estimation:
+     Scheduled                         :  No
+  #----------------------------------------------------------------------- System Properties
+ Properties of atoms in the system:
+ - Symbol                              : C #Type No.  01
+   No. of Electrons                    :  4
+   No. of Atoms                        :  1
+   Radii of active regions (AU):
+     Coarse                            :  1.58437
+     Fine                              :  0.23268
+     Coarse PSP                        :  0.50759
+     Source                            : Hard-Coded
+   Grid Spacing threshold (AU)         :  0.58
+   Pseudopotential type                : HGH-K
+   Local Pseudo Potential (HGH convention):
+     Rloc                              :  0.34883
+     Coefficients (c1 .. c4)           :  [ -8.51377,  1.22843,  0.00000,  0.00000 ]
+   NonLocal PSP Parameters:
+   - Channel (l)                       :  0
+     Rloc                              :  0.30455
+     h_ij matrix:
+     -  [  9.52284,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+   - Channel (l)                       :  1
+     Rloc                              :  0.23268
+     h_ij matrix:
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+   No. of projectors                   :  1
+   PSP XC                              : "XC: Teter 93"
+ - Symbol                              : O #Type No.  02
+   No. of Electrons                    :  6
+   No. of Atoms                        :  1
+   Radii of active regions (AU):
+     Coarse                            :  1.21558
+     Fine                              :  0.22179
+     Coarse PSP                        :  0.42805
+     Source                            : Hard-Coded
+   Grid Spacing threshold (AU)         :  0.55
+   Pseudopotential type                : HGH-K
+   Local Pseudo Potential (HGH convention):
+     Rloc                              :  0.24762
+     Coefficients (c1 .. c4)           :  [ -16.58032,  2.39570,  0.00000,  0.00000 ]
+   NonLocal PSP Parameters:
+   - Channel (l)                       :  0
+     Rloc                              :  0.22179
+     h_ij matrix:
+     -  [  18.26692,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+   - Channel (l)                       :  1
+     Rloc                              :  0.25683
+     h_ij matrix:
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+   No. of projectors                   :  1
+   PSP XC                              : "XC: Teter 93"
+  #----------------------------------------------- Atom Positions (specified and grid units)
+ Atomic structure:
+   Units                               : angstroem
+   Positions:
+   - C: [ 7.538129370,  7.538129370,  7.538129370] # [  38.50,  38.50,  38.50 ] 0001
+   - O: [ 7.538129370,  7.538129370,  8.791129391] # [  38.50,  38.50,  44.90 ] 0002
+   Rigid Shift Applied (AU)            :  [  14.245,  14.245,  14.245 ]
+  #------------------------------------------------------------------------- Grid properties
+ Box Grid spacings                     :  [  0.3700,  0.3700,  0.3700 ]
+ Sizes of the simulation domain:
+   AU                                  :  [  28.490,  28.490,  28.490 ]
+   Angstroem                           :  [  15.076,  15.076,  15.076 ]
+   Grid Spacing Units                  :  [  77,  77,  77 ]
+   High resolution region boundaries (GU):
+     From                              :  [  33,  33,  33 ]
+     To                                :  [  44,  44,  50 ]
+ High Res. box is treated separately   :  Yes
+ Wavefunctions Descriptors, full simulation domain:
+   Coarse resolution grid:
+     No. of segments                   :  4668
+     No. of points                     :  240224
+   Fine resolution grid:
+     No. of segments                   :  158
+     No. of points                     :  1220
+  #------------------------------------------------------------------- Kernel Initialization
+ Poisson Kernel Initialization:
+    #---------------------------------------------------------------------- Input parameters
+   kernel:
+     screening                         : 0 #      Mu screening parameter
+     isf_order                         : 16 #     Order of the Interpolating Scaling Function family
+     stress_tensor                     : Yes #    Triggers the calculation of the stress tensor
+   environment:
+     cavity                            : none #   Type of the cavity
+     fd_order                          : 16 #     Order of the Finite-difference derivatives for the GPS solver
+     itermax                           : 200 #    Maximum number of iterations of the GPS outer loop
+     minres                            : 1.e-8 #  Convergence threshold of the loop
+     pb_method                         : none #   Defines the method for the Poisson Boltzmann Equation
+   setup:
+     accel                             : none #   Material Acceleration
+     taskgroup_size                    : 0 #      Size of the taskgroups of the Poisson Solver
+     global_data                       : No #     Charge density and Electrostatic potential are given by global arrays
+     verbose                           : Yes #    Verbosity switch
+     output                            : none #   Quantities to be plotted after the main solver routine
+   MPI tasks                           :  24
+   OpenMP threads per MPI task         :  1
+ Poisson Kernel Creation:
+   Boundary Conditions                 : Free
+   Memory Requirements per MPI task:
+     Density (MB)                      :  2.21
+     Kernel (MB)                       :  2.19
+     Full Grid Arrays (MB)             :  48.31
+     Load Balancing of calculations:
+       Density:
+         MPI tasks 0- 22               : 100%
+         MPI task  23                  :  63%
+       Kernel:
+         MPI tasks 0- 20               : 100%
+         MPI task 21                   :  44%
+         MPI tasks 21-23               : 0%
+       Complete LB per task            : 1/3 LB_density + 2/3 LB_kernel
+  #------------------------------------------------------- Electronic Orbital Initialization
+ Total Number of Electrons             :  10
+ Spin treatment                        : Averaged
+ Orbitals Repartition:
+   MPI tasks  0- 4                     :  1
+   MPI tasks  5- 23                    :  0
+ Total Number of Orbitals              :  5
+ Input Occupation Numbers:
+ - Occupation Numbers: {Orbitals No. 1-5:  2.0000}
+ Wavefunctions memory occupation for root MPI process:  1 MB 919 KB 480 B
+ NonLocal PSP Projectors Descriptors:
+   Creation strategy                   : On-the-fly
+   Total number of projectors          :  2
+   Total number of components          :  12824
+   Percent of zero components          :  0
+   Size of workspaces                  :  51312
+   Maximum size of masking arrays for a projector:  1692
+   Cumulative size of masking arrays   :  2982
+ Communication checks:
+   Transpositions                      :  Yes
+   Reverse transpositions              :  Yes
+  #-------------------------------------------------------- Estimation of Memory Consumption
+ Memory requirements for principal quantities (MiB.KiB):
+   Subspace Matrix                     : 0.1 #    (Number of Orbitals: 5)
+   Single orbital                      : 1.920 #  (Number of Components: 248764)
+   All (distributed) orbitals          : 5.711 #  (Number of Orbitals per MPI task: 1)
+   Wavefunction storage size           : 28.483 # (DIIS/SD workspaces included)
+   Nonlocal Pseudopotential Arrays     : 0.101
+   Full Uncompressed (ISF) grid        : 48.314
+   Workspaces storage size             : 4.581
+ Accumulated memory requirements during principal run stages (MiB.KiB):
+   Kernel calculation                  : 47.100
+   Density Construction                : 167.19
+   Poisson Solver                      : 57.641
+   Hamiltonian application             : 170.857
+   Orbitals Orthonormalization         : 170.857
+ Estimated Memory Peak (MB)            :  170
+ Ion-Ion interaction energy            :  1.01358761767126E+01
+  #---------------------------------------------------------------- Ionic Potential Creation
+ Total ionic charge                    : -10.000000000000
+ Poisson Solver:
+   BC                                  : Free
+   Box                                 :  [  185,  185,  185 ]
+   MPI tasks                           :  24
+ Interaction energy ions multipoles    :  0.0
+ Interaction energy multipoles multipoles:  0.0
+  #--------------------------------------------------------- Reading Wavefunctions from disk
+ Input Hamiltonian:
+   Need to reformat wavefunctions      :  No
+   Reading Waves Time:
+   -  {Process:  0, Timing:  [  8.0E-02,  2.250E-01 ]}
+  #------------------------------------------------------------------- Self-Consistent Cycle
+ Ground State Optimization:
+ - Hamiltonian Optimization: &itrp001
+   - Subspace Optimization: &itrep001-01
+       Wavefunctions Iterations:
+       -  { #---------------------------------------------------------------------- iter: 1
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999534047, 
+ Poisson Solver: {BC: Free, Box:  [  185,  185,  185 ], MPI tasks:  24}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  8.424518578790E-12,  # 00001
+  2.060760506352E-11,  # 00002
+  1.543899984456E-10,  # 00003
+  1.719523578859E-10,  # 00004
+  7.629247213266E-11],  # 00005
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  1.57070722564E+01, Epot: -2.29456059032E+01, Enl:  1.83661911287E+00, 
+              EH:  2.78762579208E+01,  EXC: -4.85839494573E+00, EvXC: -6.36571956664E+00}, 
+ iter:  1, EKS: -2.16349716571557806E+01, gnrm:  1.09E-10, 
+ DIIS weights: [ 1.00E+00,  1.00E+00], Orthogonalization Method:  0}
+       -  &FINAL001  { #----------------------------------------------------------- iter: 2
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999534047, 
+ Poisson Solver: {BC: Free, Box:  [  185,  185,  185 ], MPI tasks:  24}, 
+ Hamiltonian Applied:  Yes, 
+ iter:  2, EKS: -2.16349716571556066E+01, gnrm:  1.09E-10, D:  1.74E-13,  #FINAL
+ Energies: {Ekin:  1.57070722564E+01, Epot: -2.29456059032E+01, Enl:  1.83661911287E+00, 
+              EH:  2.78762579208E+01,  EXC: -4.85839494573E+00, EvXC: -6.36571956664E+00, 
+            Eion:  1.01358761767E+01}, 
+ }
+       Non-Hermiticity of Hamiltonian in the Subspace:  5.38E-31
+        #Eigenvalues and New Occupation Numbers
+       Orbitals: [
+ {e: -1.016305026352E+00, f:  2.0000},  # 00001
+ {e: -5.233454262249E-01, f:  2.0000},  # 00002
+ {e: -4.085467180276E-01, f:  2.0000},  # 00003
+ {e: -4.085467078827E-01, f:  2.0000},  # 00004
+ {e: -3.442133885197E-01, f:  2.0000}] # 00005
+ Last Iteration                        : *FINAL001
+  #---------------------------------------------------------------------- Forces Calculation
+ GPU acceleration                      :  No
+ Rho Commun                            : RED_SCT
+ Total electronic charge               :  9.999999534047
+ Poisson Solver:
+   BC                                  : Free
+   Box                                 :  [  185,  185,  185 ]
+   MPI tasks                           :  24
+ Multipole analysis origin             :  [  1.4245E+01,  1.424500E+01,  1.566570E+01 ]
+ Electric Dipole Moment (AU):
+   P vector                            :  [ -3.0003E-06, -3.0003E-06, -7.1952E-02 ]
+   norm(P)                             :  7.195245E-02
+ Electric Dipole Moment (Debye):
+   P vector                            :  [ -7.6259E-06, -7.6259E-06, -1.8288E-01 ]
+   norm(P)                             :  1.828849E-01
+ Quadrupole Moment (AU):
+   Q matrix:
+   -  [ 1.2279E+00, -9.9706E-08, -2.6933E-05]
+   -  [-9.9706E-08,  1.2279E+00, -2.6933E-05]
+   -  [-2.6933E-05, -2.6933E-05, -2.4559E+00]
+   trace                               : -2.37E-12
+ Calculate local forces                :  Yes
+ Calculate Non Local forces            :  Yes
+  #------------ Iterative subspace diagonalization of virtual orbitals (Direct Minimization)
+ Orbital restart:
+ #(14:16:08.867) 12% / [==>                      ] ( 1/8,  2.46E+05 it/s), ETA  0.0s
+ #(14:16:10.749) 25% - [=====>                   ] ( 2/8,  1.1 it/s), ETA  5.6s
+ #(14:16:11.584) 37% \ [========>                ] ( 3/8,  1.1 it/s), ETA  4.5s
+ #(14:16:12.543) 50% | [===========>             ] ( 4/8,  1.1 it/s), ETA  3.7s
+ #(14:16:13.632) 62% / [==============>          ] ( 5/8,  1.0 it/s), ETA  2.9s
+ #(14:16:14.662) 75% - [=================>       ] ( 6/8,  1.0 it/s), ETA  1.9s
+ #(14:16:16.678) 87% \ [====================>    ] ( 7/8,  0.90 it/s), ETA  1.1s
+ #(14:16:17.631)100% | [========================>] ( 8/8,  0.91 it/s), Tot  8.8s
+ Generation of input wavefunction data for atom: C
+ Electronic configuration: {
+ s: [ 2.00], 
+ p: [ 2/3,  2/3,  2/3]}
+ Generation of input wavefunction data for atom: O
+ Electronic configuration: {
+ s: [ 2.00], 
+ p: [ 4/3,  4/3,  4/3]}
+ Wavelet conversion succeeded          :  Yes
+ Deviation from normalization          :  0.00E+00
+ Optimization of virtual orbitals:
+    #------------------------------------------------------------------------------- iter= 1
+ -  {Minimization iterations required:  1, 
+ Energies: {Ekin:  7.17847430550E+01, Epot: -1.30859951847E+01, Enl:  3.56045628638E-01}, 
+ iter:  1, EKS:  0.00000000000000000E+00, gnrm:  1.00E+10, 
+ }
+    #---------------------------------------------- End of Virtual Wavefunction Optimisation
+  #WARNING: No convergence within the allowed number of minimization steps
+ Non-Hermiticity of Hamiltonian in the Subspace:  7.09E-32
+ Complete list of energy eigenvalues:
+    #Kpt #0001  BZ coord. =  [  0.000000,  0.000000,  0.000000 ]
+ - e_occ                               : -1.01630502635182E+00 # 0001
+ - e_occ                               : -5.23345426224905E-01 # 0002
+ - e_occ                               : -4.08546718027604E-01 # 0003
+ - e_occ                               : -4.08546707882654E-01 # 0004
+ - e_occ                               : -3.44213388519731E-01 # 0005
+ - HOMO LUMO gap (AU, eV)              :  [  2.21757747366502E-01,  6.03433545141050E+00 ]
+ - e_vrt                               : -1.22455641153229E-01 # 0001
+ - e_vrt                               : -1.22455629669961E-01 # 0002
+ - e_vrt                               :  4.69836655376837E-03 # 0003
+ - e_vrt                               :  2.72511338987700E-02 # 0004
+ - e_vrt                               :  3.22786091945244E-02 # 0005
+ - e_vrt                               :  3.22792774322523E-02 # 0006
+ - e_vrt                               :  6.60588940985236E-02 # 0007
+ - e_vrt                               :  6.67955490583939E-02 # 0008
+ - e_vrt                               :  6.68272724128565E-02 # 0009
+ - e_vrt                               :  6.91176690499146E-02 # 0010
+ - e_vrt                               :  6.91193997391451E-02 # 0011
+ - e_vrt                               :  9.17151773598071E-02 # 0012
+ - e_vrt                               :  1.10402900701449E-01 # 0013
+ - e_vrt                               :  1.10688926781381E-01 # 0014
+ - e_vrt                               :  1.10691503966741E-01 # 0015
+ - e_vrt                               :  1.10866715663378E-01 # 0016
+ - e_vrt                               :  1.10999480584314E-01 # 0017
+ - e_vrt                               :  1.11603496769210E-01 # 0018
+ - e_vrt                               :  1.11603911698207E-01 # 0019
+ - e_vrt                               :  1.12063825632183E-01 # 0020
+ - e_vrt                               :  1.22623117722920E-01 # 0021
+ - e_vrt                               :  1.22649012650591E-01 # 0022
+ - e_vrt                               :  1.56752349010450E-01 # 0023
+ - e_vrt                               :  1.56775426829775E-01 # 0024
+ - e_vrt                               :  1.57236785569639E-01 # 0025
+ - e_vrt                               :  1.57404185797182E-01 # 0026
+ - e_vrt                               :  1.57405519115216E-01 # 0027
+ - e_vrt                               :  1.57841773054925E-01 # 0028
+ - e_vrt                               :  1.57841984114747E-01 # 0029
+ - e_vrt                               :  1.57933995171114E-01 # 0030
+ - e_vrt                               :  1.57939959179118E-01 # 0031
+ - e_vrt                               :  1.58372816071995E-01 # 0032
+ - e_vrt                               :  1.58576162982270E-01 # 0033
+ - e_vrt                               :  1.69073457066156E-01 # 0034
+ - e_vrt                               :  1.73062555726006E-01 # 0035
+ - e_vrt                               :  1.73084131444331E-01 # 0036
+ - e_vrt                               :  2.08816520242278E-01 # 0037
+ - e_vrt                               :  2.08821566918633E-01 # 0038
+ - e_vrt                               :  2.08833060284280E-01 # 0039
+ - e_vrt                               :  2.08839376671912E-01 # 0040
+ - e_vrt                               :  2.09037089710127E-01 # 0041
+ - e_vrt                               :  2.09041693863658E-01 # 0042
+ - e_vrt                               :  2.09070625657804E-01 # 0043
+ - e_vrt                               :  2.09107328266536E-01 # 0044
+ - e_vrt                               :  2.09108208985605E-01 # 0045
+ - e_vrt                               :  2.09121589275260E-01 # 0046
+ - e_vrt                               :  2.09220616404046E-01 # 0047
+ - e_vrt                               :  2.30347734855943E-01 # 0048
+ - e_vrt                               :  2.32254704814664E-01 # 0049
+ - e_vrt                               :  2.36998122681733E-01 # 0050
+ - e_vrt                               :  2.37279361842596E-01 # 0051
+ - e_vrt                               :  2.37963073750859E-01 # 0052
+ - e_vrt                               :  2.38018197130606E-01 # 0053
+ - e_vrt                               :  2.41176557543403E-01 # 0054
+ - e_vrt                               :  2.41177202843165E-01 # 0055
+ - e_vrt                               :  2.53695128381181E-01 # 0056
+ - e_vrt                               :  2.65472517257008E-01 # 0057
+ - e_vrt                               :  2.65472949939787E-01 # 0058
+ - e_vrt                               :  2.65511529164427E-01 # 0059
+ - e_vrt                               :  2.65579226923554E-01 # 0060
+ - e_vrt                               :  2.65598399677928E-01 # 0061
+ - e_vrt                               :  2.65726813322522E-01 # 0062
+ - e_vrt                               :  2.65733650585624E-01 # 0063
+ - e_vrt                               :  2.65754749895178E-01 # 0064
+ - e_vrt                               :  2.65756559986838E-01 # 0065
+ - e_vrt                               :  2.65779650989843E-01 # 0066
+ - e_vrt                               :  2.65843619053279E-01 # 0067
+ - e_vrt                               :  2.65846822387844E-01 # 0068
+ - e_vrt                               :  2.65863582636211E-01 # 0069
+ - e_vrt                               :  2.76065517315860E-01 # 0070
+ - e_vrt                               :  2.76191336100684E-01 # 0071
+ - e_vrt                               :  2.97514532982936E-01 # 0072
+ - e_vrt                               :  2.97660489692418E-01 # 0073
+ - e_vrt                               :  3.10461271492886E-01 # 0074
+ - e_vrt                               :  3.13640067740199E-01 # 0075
+ - e_vrt                               :  3.13647094450525E-01 # 0076
+ - e_vrt                               :  3.14986425012858E-01 # 0077
+ - e_vrt                               :  3.15309924640753E-01 # 0078
+ - e_vrt                               :  3.16777279316033E-01 # 0079
+ - e_vrt                               :  3.16777328412609E-01 # 0080
+ - e_vrt                               :  3.17977200243867E-01 # 0081
+ - e_vrt                               :  3.18002023577521E-01 # 0082
+ - e_vrt                               :  3.27602781377624E-01 # 0083
+ - e_vrt                               :  3.27603177829585E-01 # 0084
+ - e_vrt                               :  3.27631148782836E-01 # 0085
+ - e_vrt                               :  3.27666084731090E-01 # 0086
+ - e_vrt                               :  3.27666259090351E-01 # 0087
+ - e_vrt                               :  3.27685763128408E-01 # 0088
+ - e_vrt                               :  3.27861879678330E-01 # 0089
+ - e_vrt                               :  3.27888141727580E-01 # 0090
+ - e_vrt                               :  3.27888831897794E-01 # 0091
+ - e_vrt                               :  3.27987831845679E-01 # 0092
+ - e_vrt                               :  3.28081640281918E-01 # 0093
+ - e_vrt                               :  3.28083598344931E-01 # 0094
+ - e_vrt                               :  3.28086870143211E-01 # 0095
+ - e_vrt                               :  3.28094827913517E-01 # 0096
+ - e_vrt                               :  3.28101665086123E-01 # 0097
+ - e_vrt                               :  3.30637177697912E-01 # 0098
+ - e_vrt                               :  3.30824220668637E-01 # 0099
+ - e_vrt                               :  3.39316804653489E-01 # 0100
+ - e_vrt                               :  3.59521768426501E-01 # 0101
+ - e_vrt                               :  3.94773569945179E-01 # 0102
+ - e_vrt                               :  3.94775252227670E-01 # 0103
+ - e_vrt                               :  3.95010775669751E-01 # 0104
+ - e_vrt                               :  3.95171357598474E-01 # 0105
+ - e_vrt                               :  3.95213361897685E-01 # 0106
+ - e_vrt                               :  3.95283418089638E-01 # 0107
+ - e_vrt                               :  3.95319153440112E-01 # 0108
+ - e_vrt                               :  3.95321585978489E-01 # 0109
+ - e_vrt                               :  3.95391283664178E-01 # 0110
+ - e_vrt                               :  3.95454059200482E-01 # 0111
+ - e_vrt                               :  3.95623854662239E-01 # 0112
+ - e_vrt                               :  3.95624070929115E-01 # 0113
+ - e_vrt                               :  3.95651512288118E-01 # 0114
+ - e_vrt                               :  3.95678618605261E-01 # 0115
+ - e_vrt                               :  3.95679550938624E-01 # 0116
+ - e_vrt                               :  3.95738078701406E-01 # 0117
+ - e_vrt                               :  3.95739949350936E-01 # 0118
+ - e_vrt                               :  3.95755425870256E-01 # 0119
+ - e_vrt                               :  3.95756195261239E-01 # 0120
+ - e_vrt                               :  3.95810573428551E-01 # 0121
+ - e_vrt                               :  3.95881793222632E-01 # 0122
+ - e_vrt                               :  3.95945792343745E-01 # 0123
+ - e_vrt                               :  3.96287607097346E-01 # 0124
+ - e_vrt                               :  3.96288513408765E-01 # 0125
+ - e_vrt                               :  3.97064814096984E-01 # 0126
+ - e_vrt                               :  3.97257779184726E-01 # 0127
+ - e_vrt                               :  3.97585981216108E-01 # 0128
+ - e_vrt                               :  3.97586940857267E-01 # 0129
+ - e_vrt                               :  4.06885609107355E-01 # 0130
+ - e_vrt                               :  4.07404351229747E-01 # 0131
+ - e_vrt                               :  4.10937759727444E-01 # 0132
+ - e_vrt                               :  4.14153497495753E-01 # 0133
+ - e_vrt                               :  4.14224424554782E-01 # 0134
+ - e_vrt                               :  4.15891091843749E-01 # 0135
+ - e_vrt                               :  4.15891519451684E-01 # 0136
+ - e_vrt                               :  4.54360241152318E-01 # 0137
+ - e_vrt                               :  4.68427347818202E-01 # 0138
+ - e_vrt                               :  4.68427377720696E-01 # 0139
+ - e_vrt                               :  4.68535402183841E-01 # 0140
+ - e_vrt                               :  4.68607929554365E-01 # 0141
+ - e_vrt                               :  4.68607954481879E-01 # 0142
+ - e_vrt                               :  4.68643702725423E-01 # 0143
+ - e_vrt                               :  4.68808932280525E-01 # 0144
+ - e_vrt                               :  4.68887565162648E-01 # 0145
+ - e_vrt                               :  4.68894221709182E-01 # 0146
+ - e_vrt                               :  4.68902850186129E-01 # 0147
+ - e_vrt                               :  4.68903923270377E-01 # 0148
+ - e_vrt                               :  4.68931075155982E-01 # 0149
+ - e_vrt                               :  4.69019830852350E-01 # 0150
+ - e_vrt                               :  4.69019910811890E-01 # 0151
+ - e_vrt                               :  4.69062028238670E-01 # 0152
+ - e_vrt                               :  4.69165032168175E-01 # 0153
+ - e_vrt                               :  4.69244675241650E-01 # 0154
+ - e_vrt                               :  4.69244824711889E-01 # 0155
+ - e_vrt                               :  4.69301864245263E-01 # 0156
+ - e_vrt                               :  4.80005674044384E-01 # 0157
+ - e_vrt                               :  4.80012646997611E-01 # 0158
+ - e_vrt                               :  4.80203770365722E-01 # 0159
+ - e_vrt                               :  4.80432507213609E-01 # 0160
+ - e_vrt                               :  4.80554585891457E-01 # 0161
+ - e_vrt                               :  4.80991694698149E-01 # 0162
+ - e_vrt                               :  4.81002761788500E-01 # 0163
+ - e_vrt                               :  4.81159961656730E-01 # 0164
+ - e_vrt                               :  4.81564114346668E-01 # 0165
+ - e_vrt                               :  4.81723323868078E-01 # 0166
+ - e_vrt                               :  4.81852069791254E-01 # 0167
+ - e_vrt                               :  4.81852622401635E-01 # 0168
+ - e_vrt                               :  4.82086898423741E-01 # 0169
+ - e_vrt                               :  4.83138655984411E-01 # 0170
+ - e_vrt                               :  4.83472394837296E-01 # 0171
+ - e_vrt                               :  4.89445717404131E-01 # 0172
+ - e_vrt                               :  4.89742599400685E-01 # 0173
+ - e_vrt                               :  4.95789338869407E-01 # 0174
+ - e_vrt                               :  5.07795044975479E-01 # 0175
+ - e_vrt                               :  5.07824788009063E-01 # 0176
+ - e_vrt                               :  5.14448364468212E-01 # 0177
+ - e_vrt                               :  5.15010483548950E-01 # 0178
+ - e_vrt                               :  5.19392170854561E-01 # 0179
+ - e_vrt                               :  5.19392640059159E-01 # 0180
+ - e_vrt                               :  5.22196330079604E-01 # 0181
+ - e_vrt                               :  5.22266918775644E-01 # 0182
+ - e_vrt                               :  5.32853975849338E-01 # 0183
+ - e_vrt                               :  5.37692764479122E-01 # 0184
+ GPU acceleration                      :  No
+ Rho Commun                            : RED_SCT
+ Total electronic charge               :  9.999999534047
+  #------------------------------------------------------ Linear-Response TDDFT calculations
+ #(14:16:34.839)  0% / [                         ] ( 1/920,  1.5 it/s), ETA  10m26s
+ #(14:16:35.156)  0% - [                         ] ( 2/920,  2.0 it/s), ETA  07m38s
+ #(14:16:35.498)  0% \ [                         ] ( 3/920,  2.2 it/s), ETA  06m49s
+ #(14:16:35.835)  0% | [                         ] ( 4/920,  2.4 it/s), ETA  06m24s
+ #(14:16:36.203)  0% / [                         ] ( 5/920,  2.4 it/s), ETA  06m14s
+ #(14:16:36.624)  0% - [                         ] ( 6/920,  2.4 it/s), ETA  06m15s
+ #(14:16:37.037)  0% \ [                         ] ( 7/920,  2.4 it/s), ETA  06m15s
+ #(14:16:37.448)  0% | [                         ] ( 8/920,  2.4 it/s), ETA  06m15s
+ #(14:16:37.882)  0% / [                         ] ( 9/920,  2.4 it/s), ETA  06m16s
+ #(14:16:38.359)  1% - [                         ] ( 10/920,  2.4 it/s), ETA  06m22s
+ #(14:16:38.830)  1% \ [                         ] ( 11/920,  2.4 it/s), ETA  06m26s
+ #(14:16:39.308)  1% | [                         ] ( 12/920,  2.3 it/s), ETA  06m29s
+ #(14:16:39.814)  1% / [                         ] ( 13/920,  2.3 it/s), ETA  06m34s
+ #(14:16:40.344)  1% - [                         ] ( 14/920,  2.3 it/s), ETA  06m40s
+ #(14:16:40.893)  1% \ [                         ] ( 15/920,  2.2 it/s), ETA  06m46s
+ #(14:16:41.433)  1% | [                         ] ( 16/920,  2.2 it/s), ETA  06m51s
+ #(14:16:42.004)  1% / [                         ] ( 17/920,  2.2 it/s), ETA  06m56s
+ #(14:16:42.591)  1% - [                         ] ( 18/920,  2.1 it/s), ETA  07m02s
+ #(14:16:43.190)  2% \ [                         ] ( 19/920,  2.1 it/s), ETA  07m08s
+ #(14:16:43.822)  2% | [                         ] ( 20/920,  2.1 it/s), ETA  07m14s
+ #(14:16:44.473)  2% / [                         ] ( 21/920,  2.0 it/s), ETA  07m21s
+ #(14:16:45.115)  2% - [                         ] ( 22/920,  2.0 it/s), ETA  07m27s
+ #(14:16:45.787)  2% \ [                         ] ( 23/920,  2.0 it/s), ETA  07m33s
+ #(14:16:46.464)  2% | [                         ] ( 24/920,  2.0 it/s), ETA  07m39s
+ #(14:16:47.185)  2% / [                         ] ( 25/920,  1.9 it/s), ETA  07m46s
+ #(14:16:47.912)  2% - [                         ] ( 26/920,  1.9 it/s), ETA  07m52s
+ #(14:16:48.639)  2% \ [                         ] ( 27/920,  1.9 it/s), ETA  07m58s
+ #(14:16:49.431)  3% | [                         ] ( 28/920,  1.8 it/s), ETA  08m06s
+ #(14:16:50.194)  3% / [                         ] ( 29/920,  1.8 it/s), ETA  08m12s
+ #(14:16:50.981)  3% - [                         ] ( 30/920,  1.8 it/s), ETA  08m19s
+ #(14:16:51.779)  3% \ [                         ] ( 31/920,  1.8 it/s), ETA  08m25s
+ #(14:16:52.612)  3% | [                         ] ( 32/920,  1.7 it/s), ETA  08m32s
+ #(14:16:53.461)  3% / [                         ] ( 33/920,  1.7 it/s), ETA  08m38s
+ #(14:16:54.327)  3% - [                         ] ( 34/920,  1.7 it/s), ETA  08m45s
+ #(14:16:55.213)  3% \ [                         ] ( 35/920,  1.7 it/s), ETA  08m52s
+ #(14:16:56.117)  3% | [                         ] ( 36/920,  1.6 it/s), ETA  08m59s
+ #(14:16:57.021)  4% / [>                        ] ( 37/920,  1.6 it/s), ETA  09m05s
+ #(14:16:57.947)  4% - [>                        ] ( 38/920,  1.6 it/s), ETA  09m12s
+ #(14:16:58.885)  4% \ [>                        ] ( 39/920,  1.6 it/s), ETA  09m18s
+ #(14:16:59.845)  4% | [>                        ] ( 40/920,  1.6 it/s), ETA  09m25s
+ #(14:17:00.818)  4% / [>                        ] ( 41/920,  1.5 it/s), ETA  09m31s
+ #(14:17:01.815)  4% - [>                        ] ( 42/920,  1.5 it/s), ETA  09m38s
+ #(14:17:02.838)  4% \ [>                        ] ( 43/920,  1.5 it/s), ETA  09m44s
+ #(14:17:03.874)  4% | [>                        ] ( 44/920,  1.5 it/s), ETA  09m51s
+ #(14:17:04.913)  4% / [>                        ] ( 45/920,  1.5 it/s), ETA  09m58s
+ #(14:17:05.968)  5% - [>                        ] ( 46/920,  1.4 it/s), ETA  10m04s
+ #(14:17:07.063)  5% \ [>                        ] ( 47/920,  1.4 it/s), ETA  10m11s
+ #(14:17:08.185)  5% | [>                        ] ( 48/920,  1.4 it/s), ETA  10m18s
+ #(14:17:09.290)  5% / [>                        ] ( 49/920,  1.4 it/s), ETA  10m24s
+ #(14:17:10.412)  5% - [>                        ] ( 50/920,  1.4 it/s), ETA  10m30s
+ #(14:17:11.560)  5% \ [>                        ] ( 51/920,  1.4 it/s), ETA  10m37s
+ #(14:17:12.722)  5% | [>                        ] ( 52/920,  1.3 it/s), ETA  10m43s
+ #(14:17:13.903)  5% / [>                        ] ( 53/920,  1.3 it/s), ETA  10m50s
+ #(14:17:15.109)  5% - [>                        ] ( 54/920,  1.3 it/s), ETA  10m56s
+ #(14:17:16.325)  5% \ [>                        ] ( 55/920,  1.3 it/s), ETA  11m03s
+ #(14:17:17.568)  6% | [>                        ] ( 56/920,  1.3 it/s), ETA  11m09s
+ #(14:17:18.838)  6% / [>                        ] ( 57/920,  1.3 it/s), ETA  11m16s
+ #(14:17:20.111)  6% - [>                        ] ( 58/920,  1.3 it/s), ETA  11m22s
+ #(14:17:21.384)  6% \ [>                        ] ( 59/920,  1.2 it/s), ETA  11m29s
+ #(14:17:22.682)  6% | [>                        ] ( 60/920,  1.2 it/s), ETA  11m35s
+ #(14:17:23.997)  6% / [>                        ] ( 61/920,  1.2 it/s), ETA  11m41s
+ #(14:17:25.338)  6% - [>                        ] ( 62/920,  1.2 it/s), ETA  11m48s
+ #(14:17:26.714)  6% \ [>                        ] ( 63/920,  1.2 it/s), ETA  11m54s
+ #(14:17:28.091)  6% | [>                        ] ( 64/920,  1.2 it/s), ETA  12m01s
+ #(14:17:29.501)  7% / [>                        ] ( 65/920,  1.2 it/s), ETA  12m07s
+ #(14:17:30.910)  7% - [>                        ] ( 66/920,  1.2 it/s), ETA  12m14s
+ #(14:17:32.330)  7% \ [>                        ] ( 67/920,  1.2 it/s), ETA  12m20s
+ #(14:17:33.777)  7% | [>                        ] ( 68/920,  1.1 it/s), ETA  12m26s
+ #(14:17:35.249)  7% / [>                        ] ( 69/920,  1.1 it/s), ETA  12m33s
+ #(14:17:36.729)  7% - [>                        ] ( 70/920,  1.1 it/s), ETA  12m39s
+ #(14:17:38.214)  7% \ [>                        ] ( 71/920,  1.1 it/s), ETA  12m45s
+ #(14:17:39.724)  7% | [>                        ] ( 72/920,  1.1 it/s), ETA  12m52s
+ #(14:17:41.254)  7% / [>                        ] ( 73/920,  1.1 it/s), ETA  12m58s
+ #(14:17:42.851)  8% - [=>                       ] ( 74/920,  1.1 it/s), ETA  13m05s
+ #(14:17:44.409)  8% \ [=>                       ] ( 75/920,  1.1 it/s), ETA  13m11s
+ #(14:17:45.979)  8% | [=>                       ] ( 76/920,  1.1 it/s), ETA  13m17s
+ #(14:17:47.566)  8% / [=>                       ] ( 77/920,  1.0 it/s), ETA  13m23s
+ #(14:17:49.204)  8% - [=>                       ] ( 78/920,  1.0 it/s), ETA  13m30s
+ #(14:17:50.831)  8% \ [=>                       ] ( 79/920,  1.0 it/s), ETA  13m36s
+ #(14:17:52.492)  8% | [=>                       ] ( 80/920,  1.0 it/s), ETA  13m42s
+ #(14:17:54.154)  8% / [=>                       ] ( 81/920,  1.0 it/s), ETA  13m48s
+ #(14:17:55.847)  8% - [=>                       ] ( 82/920,  1.0 it/s), ETA  13m54s
+ #(14:17:57.564)  9% \ [=>                       ] ( 83/920,  1.0 it/s), ETA  14m01s
+ #(14:17:59.277)  9% | [=>                       ] ( 84/920,  0.99 it/s), ETA  14m07s
+ #(14:18:00.995)  9% / [=>                       ] ( 85/920,  0.98 it/s), ETA  14m13s
+ #(14:18:02.740)  9% - [=>                       ] ( 86/920,  0.97 it/s), ETA  14m19s
+ #(14:18:04.492)  9% \ [=>                       ] ( 87/920,  0.96 it/s), ETA  14m24s
+ #(14:18:06.270)  9% | [=>                       ] ( 88/920,  0.96 it/s), ETA  14m30s
+ #(14:18:08.077)  9% / [=>                       ] ( 89/920,  0.95 it/s), ETA  14m36s
+ #(14:18:09.900)  9% - [=>                       ] ( 90/920,  0.94 it/s), ETA  14m42s
+ #(14:18:11.742)  9% \ [=>                       ] ( 91/920,  0.93 it/s), ETA  14m48s
+ #(14:18:13.599) 10% | [=>                       ] ( 92/920,  0.93 it/s), ETA  14m54s
+ #(14:18:15.463) 10% / [=>                       ] ( 93/920,  0.92 it/s), ETA  15m00s
+ #(14:18:17.346) 10% - [=>                       ] ( 94/920,  0.91 it/s), ETA  15m06s
+ #(14:18:19.241) 10% \ [=>                       ] ( 95/920,  0.90 it/s), ETA  15m12s
+ #(14:18:21.171) 10% | [=>                       ] ( 96/920,  0.90 it/s), ETA  15m18s
+ #(14:18:23.097) 10% / [=>                       ] ( 97/920,  0.89 it/s), ETA  15m24s
+ #(14:18:25.046) 10% - [=>                       ] ( 98/920,  0.88 it/s), ETA  15m30s
+ #(14:18:27.014) 10% \ [=>                       ] ( 99/920,  0.88 it/s), ETA  15m35s
+ #(14:18:29.003) 10% | [=>                       ] ( 100/920,  0.87 it/s), ETA  15m41s
+ #(14:18:30.998) 10% / [=>                       ] ( 101/920,  0.86 it/s), ETA  15m47s
+ #(14:18:33.002) 11% - [=>                       ] ( 102/920,  0.86 it/s), ETA  15m53s
+ #(14:18:35.052) 11% \ [=>                       ] ( 103/920,  0.85 it/s), ETA  15m58s
+ #(14:18:37.116) 11% | [=>                       ] ( 104/920,  0.85 it/s), ETA  16m04s
+ #(14:18:39.185) 11% / [=>                       ] ( 105/920,  0.84 it/s), ETA  16m10s
+ #(14:18:41.263) 11% - [=>                       ] ( 106/920,  0.83 it/s), ETA  16m16s
+ #(14:18:43.355) 11% \ [=>                       ] ( 107/920,  0.83 it/s), ETA  16m21s
+ #(14:18:45.480) 11% | [=>                       ] ( 108/920,  0.82 it/s), ETA  16m27s
+ #(14:18:47.629) 11% / [=>                       ] ( 109/920,  0.82 it/s), ETA  16m33s
+ #(14:18:49.777) 11% - [=>                       ] ( 110/920,  0.81 it/s), ETA  16m38s
+ #(14:18:51.948) 12% \ [==>                      ] ( 111/920,  0.81 it/s), ETA  16m44s
+ #(14:18:54.149) 12% | [==>                      ] ( 112/920,  0.80 it/s), ETA  16m49s
+ #(14:18:56.344) 12% / [==>                      ] ( 113/920,  0.79 it/s), ETA  16m55s
+ #(14:18:58.567) 12% - [==>                      ] ( 114/920,  0.79 it/s), ETA  17m01s
+ #(14:19:00.790) 12% \ [==>                      ] ( 115/920,  0.78 it/s), ETA  17m06s
+ #(14:19:03.020) 12% | [==>                      ] ( 116/920,  0.78 it/s), ETA  17m11s
+ #(14:19:05.359) 12% / [==>                      ] ( 117/920,  0.77 it/s), ETA  17m17s
+ #(14:19:07.646) 12% - [==>                      ] ( 118/920,  0.77 it/s), ETA  17m23s
+ #(14:19:09.937) 12% \ [==>                      ] ( 119/920,  0.76 it/s), ETA  17m28s
+ #(14:19:12.266) 13% | [==>                      ] ( 120/920,  0.76 it/s), ETA  17m34s
+ #(14:19:14.602) 13% / [==>                      ] ( 121/920,  0.75 it/s), ETA  17m39s
+ #(14:19:16.954) 13% - [==>                      ] ( 122/920,  0.75 it/s), ETA  17m44s
+ #(14:19:19.323) 13% \ [==>                      ] ( 123/920,  0.74 it/s), ETA  17m50s
+ #(14:19:21.730) 13% | [==>                      ] ( 124/920,  0.74 it/s), ETA  17m55s
+ #(14:19:24.144) 13% / [==>                      ] ( 125/920,  0.74 it/s), ETA  18m01s
+ #(14:19:26.568) 13% - [==>                      ] ( 126/920,  0.73 it/s), ETA  18m06s
+ #(14:19:29.002) 13% \ [==>                      ] ( 127/920,  0.73 it/s), ETA  18m11s
+ #(14:19:31.450) 13% | [==>                      ] ( 128/920,  0.72 it/s), ETA  18m16s
+ #(14:19:33.934) 14% / [==>                      ] ( 129/920,  0.72 it/s), ETA  18m22s
+ #(14:19:36.429) 14% - [==>                      ] ( 130/920,  0.71 it/s), ETA  18m27s
+ #(14:19:38.941) 14% \ [==>                      ] ( 131/920,  0.71 it/s), ETA  18m32s
+ #(14:19:41.462) 14% | [==>                      ] ( 132/920,  0.70 it/s), ETA  18m38s
+ #(14:19:43.992) 14% / [==>                      ] ( 133/920,  0.70 it/s), ETA  18m43s
+ #(14:19:46.537) 14% - [==>                      ] ( 134/920,  0.70 it/s), ETA  18m48s
+ #(14:19:49.119) 14% \ [==>                      ] ( 135/920,  0.69 it/s), ETA  18m53s
+ #(14:19:51.708) 14% | [==>                      ] ( 136/920,  0.69 it/s), ETA  18m58s
+ #(14:19:54.323) 14% / [==>                      ] ( 137/920,  0.68 it/s), ETA  19m04s
+ #(14:19:56.960) 15% - [==>                      ] ( 138/920,  0.68 it/s), ETA  19m09s
+ #(14:19:59.599) 15% \ [==>                      ] ( 139/920,  0.68 it/s), ETA  19m14s
+ #(14:20:02.272) 15% | [==>                      ] ( 140/920,  0.67 it/s), ETA  19m19s
+ #(14:20:04.965) 15% / [==>                      ] ( 141/920,  0.67 it/s), ETA  19m24s
+ #(14:20:07.666) 15% - [==>                      ] ( 142/920,  0.67 it/s), ETA  19m29s
+ #(14:20:10.398) 15% \ [==>                      ] ( 143/920,  0.66 it/s), ETA  19m34s
+ #(14:20:13.147) 15% | [==>                      ] ( 144/920,  0.66 it/s), ETA  19m40s
+ #(14:20:15.895) 15% / [==>                      ] ( 145/920,  0.65 it/s), ETA  19m45s
+ #(14:20:18.663) 15% - [==>                      ] ( 146/920,  0.65 it/s), ETA  19m50s
+ #(14:20:21.446) 15% \ [==>                      ] ( 147/920,  0.65 it/s), ETA  19m55s
+ #(14:20:24.246) 16% | [===>                     ] ( 148/920,  0.64 it/s), ETA  20m00s
+ #(14:20:27.069) 16% / [===>                     ] ( 149/920,  0.64 it/s), ETA  20m05s
+ #(14:20:29.885) 16% - [===>                     ] ( 150/920,  0.64 it/s), ETA  20m10s
+ #(14:20:32.732) 16% \ [===>                     ] ( 151/920,  0.63 it/s), ETA  20m14s
+ #(14:20:35.605) 16% | [===>                     ] ( 152/920,  0.63 it/s), ETA  20m19s
+ #(14:20:38.504) 16% / [===>                     ] ( 153/920,  0.63 it/s), ETA  20m24s
+ #(14:20:41.422) 16% - [===>                     ] ( 154/920,  0.62 it/s), ETA  20m29s
+ #(14:20:44.356) 16% \ [===>                     ] ( 155/920,  0.62 it/s), ETA  20m34s
+ #(14:20:47.279) 16% | [===>                     ] ( 156/920,  0.62 it/s), ETA  20m39s
+ #(14:20:50.282) 17% / [===>                     ] ( 157/920,  0.61 it/s), ETA  20m44s
+ #(14:20:53.254) 17% - [===>                     ] ( 158/920,  0.61 it/s), ETA  20m49s
+ #(14:20:56.243) 17% \ [===>                     ] ( 159/920,  0.61 it/s), ETA  20m54s
+ #(14:20:59.267) 17% | [===>                     ] ( 160/920,  0.60 it/s), ETA  20m59s
+ #(14:21:02.298) 17% / [===>                     ] ( 161/920,  0.60 it/s), ETA  21m04s
+ #(14:21:05.322) 17% - [===>                     ] ( 162/920,  0.60 it/s), ETA  21m08s
+ #(14:21:08.385) 17% \ [===>                     ] ( 163/920,  0.59 it/s), ETA  21m13s
+ #(14:21:11.437) 17% | [===>                     ] ( 164/920,  0.59 it/s), ETA  21m18s
+ #(14:21:14.522) 17% / [===>                     ] ( 165/920,  0.59 it/s), ETA  21m22s
+ #(14:21:17.628) 18% - [===>                     ] ( 166/920,  0.59 it/s), ETA  21m27s
+ #(14:21:20.766) 18% \ [===>                     ] ( 167/920,  0.58 it/s), ETA  21m32s
+ #(14:21:23.890) 18% | [===>                     ] ( 168/920,  0.58 it/s), ETA  21m36s
+ #(14:21:27.052) 18% / [===>                     ] ( 169/920,  0.58 it/s), ETA  21m41s
+ #(14:21:30.238) 18% - [===>                     ] ( 170/920,  0.57 it/s), ETA  21m46s
+ #(14:21:33.469) 18% \ [===>                     ] ( 171/920,  0.57 it/s), ETA  21m51s
+ #(14:21:36.695) 18% | [===>                     ] ( 172/920,  0.57 it/s), ETA  21m55s
+ #(14:21:39.939) 18% / [===>                     ] ( 173/920,  0.57 it/s), ETA  22m00s
+ #(14:21:43.173) 18% - [===>                     ] ( 174/920,  0.56 it/s), ETA  22m04s
+ #(14:21:46.429) 19% \ [===>                     ] ( 175/920,  0.56 it/s), ETA  22m09s
+ #(14:21:49.702) 19% | [===>                     ] ( 176/920,  0.56 it/s), ETA  22m13s
+ #(14:21:52.982) 19% / [===>                     ] ( 177/920,  0.56 it/s), ETA  22m18s
+ #(14:21:56.292) 19% - [===>                     ] ( 178/920,  0.55 it/s), ETA  22m22s
+ #(14:21:59.609) 19% \ [===>                     ] ( 179/920,  0.55 it/s), ETA  22m27s
+ #(14:22:02.969) 19% | [===>                     ] ( 180/920,  0.55 it/s), ETA  22m31s
+ #(14:22:06.305) 19% / [===>                     ] ( 181/920,  0.54 it/s), ETA  22m36s
+ #(14:22:09.684) 19% - [===>                     ] ( 182/920,  0.54 it/s), ETA  22m40s
+ #(14:22:13.079) 19% \ [===>                     ] ( 183/920,  0.54 it/s), ETA  22m44s
+ #(14:22:16.501) 20% | [====>                    ] ( 184/920,  0.54 it/s), ETA  22m49s
+ #(14:22:19.935) 20% / [====>                    ] ( 185/920,  0.54 it/s), ETA  22m53s
+ #(14:22:23.376) 20% - [====>                    ] ( 186/920,  0.53 it/s), ETA  22m58s
+ #(14:22:26.915) 20% \ [====>                    ] ( 187/920,  0.53 it/s), ETA  23m02s
+ #(14:22:30.393) 20% | [====>                    ] ( 188/920,  0.53 it/s), ETA  23m07s
+ #(14:22:33.879) 20% / [====>                    ] ( 189/920,  0.53 it/s), ETA  23m11s
+ #(14:22:37.386) 20% - [====>                    ] ( 190/920,  0.52 it/s), ETA  23m15s
+ #(14:22:40.917) 20% \ [====>                    ] ( 191/920,  0.52 it/s), ETA  23m19s
+ #(14:22:44.463) 20% | [====>                    ] ( 192/920,  0.52 it/s), ETA  23m24s
+ #(14:22:48.042) 20% / [====>                    ] ( 193/920,  0.52 it/s), ETA  23m28s
+ #(14:22:51.622) 21% - [====>                    ] ( 194/920,  0.51 it/s), ETA  23m32s
+ #(14:22:55.198) 21% \ [====>                    ] ( 195/920,  0.51 it/s), ETA  23m36s
+ #(14:22:58.819) 21% | [====>                    ] ( 196/920,  0.51 it/s), ETA  23m40s
+ #(14:23:02.484) 21% / [====>                    ] ( 197/920,  0.51 it/s), ETA  23m45s
+ #(14:23:06.240) 21% - [====>                    ] ( 198/920,  0.50 it/s), ETA  23m49s
+ #(14:23:09.899) 21% \ [====>                    ] ( 199/920,  0.50 it/s), ETA  23m53s
+ #(14:23:13.608) 21% | [====>                    ] ( 200/920,  0.50 it/s), ETA  23m58s
+ #(14:23:17.310) 21% / [====>                    ] ( 201/920,  0.50 it/s), ETA  24m02s
+ #(14:23:21.016) 21% - [====>                    ] ( 202/920,  0.50 it/s), ETA  24m06s
+ #(14:23:24.793) 22% \ [====>                    ] ( 203/920,  0.49 it/s), ETA  24m10s
+ #(14:23:28.549) 22% | [====>                    ] ( 204/920,  0.49 it/s), ETA  24m14s
+ #(14:23:32.325) 22% / [====>                    ] ( 205/920,  0.49 it/s), ETA  24m18s
+ #(14:23:36.115) 22% - [====>                    ] ( 206/920,  0.49 it/s), ETA  24m22s
+ #(14:23:39.898) 22% \ [====>                    ] ( 207/920,  0.49 it/s), ETA  24m26s
+ #(14:23:43.752) 22% | [====>                    ] ( 208/920,  0.48 it/s), ETA  24m30s
+ #(14:23:47.579) 22% / [====>                    ] ( 209/920,  0.48 it/s), ETA  24m34s
+ #(14:23:51.424) 22% - [====>                    ] ( 210/920,  0.48 it/s), ETA  24m38s
+ #(14:23:55.284) 22% \ [====>                    ] ( 211/920,  0.48 it/s), ETA  24m42s
+ #(14:23:59.171) 23% | [====>                    ] ( 212/920,  0.48 it/s), ETA  24m46s
+ #(14:24:03.082) 23% / [====>                    ] ( 213/920,  0.47 it/s), ETA  24m50s
+ #(14:24:06.855) 23% - [====>                    ] ( 214/920,  0.47 it/s), ETA  24m53s
+ #(14:24:10.965) 23% \ [====>                    ] ( 215/920,  0.47 it/s), ETA  24m57s
+ #(14:24:14.920) 23% | [====>                    ] ( 216/920,  0.47 it/s), ETA  25m01s
+ #(14:24:18.913) 23% / [====>                    ] ( 217/920,  0.47 it/s), ETA  25m05s
+ #(14:24:22.903) 23% - [====>                    ] ( 218/920,  0.47 it/s), ETA  25m09s
+ #(14:24:26.918) 23% \ [====>                    ] ( 219/920,  0.46 it/s), ETA  25m13s
+ #(14:24:30.951) 23% | [====>                    ] ( 220/920,  0.46 it/s), ETA  25m17s
+ #(14:24:35.013) 24% / [=====>                   ] ( 221/920,  0.46 it/s), ETA  25m20s
+ #(14:24:39.079) 24% - [=====>                   ] ( 222/920,  0.46 it/s), ETA  25m24s
+ #(14:24:43.141) 24% \ [=====>                   ] ( 223/920,  0.46 it/s), ETA  25m28s
+ #(14:24:47.232) 24% | [=====>                   ] ( 224/920,  0.45 it/s), ETA  25m32s
+ #(14:24:51.333) 24% / [=====>                   ] ( 225/920,  0.45 it/s), ETA  25m35s
+ #(14:24:55.454) 24% - [=====>                   ] ( 226/920,  0.45 it/s), ETA  25m39s
+ #(14:24:59.591) 24% \ [=====>                   ] ( 227/920,  0.45 it/s), ETA  25m43s
+ #(14:25:03.772) 24% | [=====>                   ] ( 228/920,  0.45 it/s), ETA  25m46s
+ #(14:25:07.957) 24% / [=====>                   ] ( 229/920,  0.45 it/s), ETA  25m50s
+ #(14:25:12.206) 25% - [=====>                   ] ( 230/920,  0.44 it/s), ETA  25m54s
+ #(14:25:16.422) 25% \ [=====>                   ] ( 231/920,  0.44 it/s), ETA  25m57s
+ #(14:25:20.626) 25% | [=====>                   ] ( 232/920,  0.44 it/s), ETA  26m01s
+ #(14:25:24.891) 25% / [=====>                   ] ( 233/920,  0.44 it/s), ETA  26m04s
+ #(14:25:29.136) 25% - [=====>                   ] ( 234/920,  0.44 it/s), ETA  26m08s
+ #(14:25:33.421) 25% \ [=====>                   ] ( 235/920,  0.44 it/s), ETA  26m11s
+ #(14:25:37.731) 25% | [=====>                   ] ( 236/920,  0.43 it/s), ETA  26m15s
+ #(14:25:42.070) 25% / [=====>                   ] ( 237/920,  0.43 it/s), ETA  26m19s
+ #(14:25:46.434) 25% - [=====>                   ] ( 238/920,  0.43 it/s), ETA  26m22s
+ #(14:25:50.784) 25% \ [=====>                   ] ( 239/920,  0.43 it/s), ETA  26m26s
+ #(14:25:55.123) 26% | [=====>                   ] ( 240/920,  0.43 it/s), ETA  26m29s
+ #(14:25:59.530) 26% / [=====>                   ] ( 241/920,  0.43 it/s), ETA  26m32s
+ #(14:26:03.915) 26% - [=====>                   ] ( 242/920,  0.42 it/s), ETA  26m36s
+ #(14:26:08.385) 26% \ [=====>                   ] ( 243/920,  0.42 it/s), ETA  26m39s
+ #(14:26:12.887) 26% | [=====>                   ] ( 244/920,  0.42 it/s), ETA  26m43s
+ #(14:26:17.310) 26% / [=====>                   ] ( 245/920,  0.42 it/s), ETA  26m46s
+ #(14:26:21.776) 26% - [=====>                   ] ( 246/920,  0.42 it/s), ETA  26m49s
+ #(14:26:26.275) 26% \ [=====>                   ] ( 247/920,  0.42 it/s), ETA  26m53s
+ #(14:26:30.764) 26% | [=====>                   ] ( 248/920,  0.42 it/s), ETA  26m56s
+ #(14:26:35.294) 27% / [=====>                   ] ( 249/920,  0.41 it/s), ETA  26m59s
+ #(14:26:39.811) 27% - [=====>                   ] ( 250/920,  0.41 it/s), ETA  27m03s
+ #(14:26:44.387) 27% \ [=====>                   ] ( 251/920,  0.41 it/s), ETA  27m06s
+ #(14:26:48.966) 27% | [=====>                   ] ( 252/920,  0.41 it/s), ETA  27m09s
+ #(14:26:53.557) 27% / [=====>                   ] ( 253/920,  0.41 it/s), ETA  27m12s
+ #(14:26:58.172) 27% - [=====>                   ] ( 254/920,  0.41 it/s), ETA  27m16s
+ #(14:27:02.767) 27% \ [=====>                   ] ( 255/920,  0.41 it/s), ETA  27m19s
+ #(14:27:07.418) 27% | [=====>                   ] ( 256/920,  0.40 it/s), ETA  27m22s
+ #(14:27:12.071) 27% / [=====>                   ] ( 257/920,  0.40 it/s), ETA  27m25s
+ #(14:27:16.742) 28% - [======>                  ] ( 258/920,  0.40 it/s), ETA  27m28s
+ #(14:27:21.436) 28% \ [======>                  ] ( 259/920,  0.40 it/s), ETA  27m31s
+ #(14:27:26.134) 28% | [======>                  ] ( 260/920,  0.40 it/s), ETA  27m35s
+ #(14:27:30.880) 28% / [======>                  ] ( 261/920,  0.40 it/s), ETA  27m38s
+ #(14:27:35.628) 28% - [======>                  ] ( 262/920,  0.40 it/s), ETA  27m41s
+ #(14:27:40.378) 28% \ [======>                  ] ( 263/920,  0.39 it/s), ETA  27m44s
+ #(14:27:45.139) 28% | [======>                  ] ( 264/920,  0.39 it/s), ETA  27m47s
+ #(14:27:49.942) 28% / [======>                  ] ( 265/920,  0.39 it/s), ETA  27m50s
+ #(14:27:54.755) 28% - [======>                  ] ( 266/920,  0.39 it/s), ETA  27m53s
+ #(14:27:59.577) 29% \ [======>                  ] ( 267/920,  0.39 it/s), ETA  27m56s
+ #(14:28:04.424) 29% | [======>                  ] ( 268/920,  0.39 it/s), ETA  27m59s
+ #(14:28:09.275) 29% / [======>                  ] ( 269/920,  0.39 it/s), ETA  28m02s
+ #(14:28:14.172) 29% - [======>                  ] ( 270/920,  0.39 it/s), ETA  28m05s
+ #(14:28:19.058) 29% \ [======>                  ] ( 271/920,  0.38 it/s), ETA  28m08s
+ #(14:28:23.973) 29% | [======>                  ] ( 272/920,  0.38 it/s), ETA  28m11s
+ #(14:28:28.880) 29% / [======>                  ] ( 273/920,  0.38 it/s), ETA  28m13s
+ #(14:28:33.840) 29% - [======>                  ] ( 274/920,  0.38 it/s), ETA  28m16s
+ #(14:28:38.787) 29% \ [======>                  ] ( 275/920,  0.38 it/s), ETA  28m19s
+ #(14:28:43.768) 30% | [======>                  ] ( 276/920,  0.38 it/s), ETA  28m22s
+ #(14:28:48.745) 30% / [======>                  ] ( 277/920,  0.38 it/s), ETA  28m25s
+ #(14:28:53.780) 30% - [======>                  ] ( 278/920,  0.38 it/s), ETA  28m28s
+ #(14:28:58.820) 30% \ [======>                  ] ( 279/920,  0.37 it/s), ETA  28m30s
+ #(14:29:03.854) 30% | [======>                  ] ( 280/920,  0.37 it/s), ETA  28m33s
+ #(14:29:08.932) 30% / [======>                  ] ( 281/920,  0.37 it/s), ETA  28m36s
+ #(14:29:14.039) 30% - [======>                  ] ( 282/920,  0.37 it/s), ETA  28m39s
+ #(14:29:19.114) 30% \ [======>                  ] ( 283/920,  0.37 it/s), ETA  28m41s
+ #(14:29:24.266) 30% | [======>                  ] ( 284/920,  0.37 it/s), ETA  28m44s
+ #(14:29:29.377) 30% / [======>                  ] ( 285/920,  0.37 it/s), ETA  28m47s
+ #(14:29:34.565) 31% - [======>                  ] ( 286/920,  0.37 it/s), ETA  28m49s
+ #(14:29:39.719) 31% \ [======>                  ] ( 287/920,  0.37 it/s), ETA  28m52s
+ #(14:29:44.906) 31% | [======>                  ] ( 288/920,  0.36 it/s), ETA  28m55s
+ #(14:29:50.105) 31% / [======>                  ] ( 289/920,  0.36 it/s), ETA  28m57s
+ #(14:29:55.312) 31% - [======>                  ] ( 290/920,  0.36 it/s), ETA  29m00s
+ #(14:30:00.547) 31% \ [======>                  ] ( 291/920,  0.36 it/s), ETA  29m03s
+ #(14:30:05.806) 31% | [======>                  ] ( 292/920,  0.36 it/s), ETA  29m05s
+ #(14:30:11.070) 31% / [======>                  ] ( 293/920,  0.36 it/s), ETA  29m08s
+ #(14:30:16.364) 31% - [======>                  ] ( 294/920,  0.36 it/s), ETA  29m10s
+ #(14:30:21.682) 32% \ [=======>                 ] ( 295/920,  0.36 it/s), ETA  29m13s
+ #(14:30:27.034) 32% | [=======>                 ] ( 296/920,  0.36 it/s), ETA  29m15s
+ #(14:30:32.354) 32% / [=======>                 ] ( 297/920,  0.35 it/s), ETA  29m18s
+ #(14:30:37.708) 32% - [=======>                 ] ( 298/920,  0.35 it/s), ETA  29m20s
+ #(14:30:43.111) 32% \ [=======>                 ] ( 299/920,  0.35 it/s), ETA  29m23s
+ #(14:30:48.473) 32% | [=======>                 ] ( 300/920,  0.35 it/s), ETA  29m25s
+ #(14:30:53.864) 32% / [=======>                 ] ( 301/920,  0.35 it/s), ETA  29m27s
+ #(14:30:59.293) 32% - [=======>                 ] ( 302/920,  0.35 it/s), ETA  29m30s
+ #(14:31:04.725) 32% \ [=======>                 ] ( 303/920,  0.35 it/s), ETA  29m32s
+ #(14:31:10.193) 33% | [=======>                 ] ( 304/920,  0.35 it/s), ETA  29m35s
+ #(14:31:15.661) 33% / [=======>                 ] ( 305/920,  0.35 it/s), ETA  29m37s
+ #(14:31:21.172) 33% - [=======>                 ] ( 306/920,  0.34 it/s), ETA  29m39s
+ #(14:31:26.678) 33% \ [=======>                 ] ( 307/920,  0.34 it/s), ETA  29m42s
+ #(14:31:32.225) 33% | [=======>                 ] ( 308/920,  0.34 it/s), ETA  29m44s
+ #(14:31:37.741) 33% / [=======>                 ] ( 309/920,  0.34 it/s), ETA  29m46s
+ #(14:31:43.299) 33% - [=======>                 ] ( 310/920,  0.34 it/s), ETA  29m48s
+ #(14:31:48.897) 33% \ [=======>                 ] ( 311/920,  0.34 it/s), ETA  29m51s
+ #(14:31:54.464) 33% | [=======>                 ] ( 312/920,  0.34 it/s), ETA  29m53s
+ #(14:32:00.069) 34% / [=======>                 ] ( 313/920,  0.34 it/s), ETA  29m55s
+ #(14:32:05.683) 34% - [=======>                 ] ( 314/920,  0.34 it/s), ETA  29m57s
+ #(14:32:11.346) 34% \ [=======>                 ] ( 315/920,  0.34 it/s), ETA  29m59s
+ #(14:32:17.004) 34% | [=======>                 ] ( 316/920,  0.34 it/s), ETA  30m02s
+ #(14:32:22.687) 34% / [=======>                 ] ( 317/920,  0.33 it/s), ETA  30m04s
+ #(14:32:28.377) 34% - [=======>                 ] ( 318/920,  0.33 it/s), ETA  30m06s
+ #(14:32:34.119) 34% \ [=======>                 ] ( 319/920,  0.33 it/s), ETA  30m08s
+ #(14:32:39.859) 34% | [=======>                 ] ( 320/920,  0.33 it/s), ETA  30m10s
+ #(14:32:45.622) 34% / [=======>                 ] ( 321/920,  0.33 it/s), ETA  30m12s
+ #(14:32:51.393) 35% - [=======>                 ] ( 322/920,  0.33 it/s), ETA  30m14s
+ #(14:32:57.171) 35% \ [=======>                 ] ( 323/920,  0.33 it/s), ETA  30m16s
+ #(14:33:02.959) 35% | [=======>                 ] ( 324/920,  0.33 it/s), ETA  30m18s
+ #(14:33:08.780) 35% / [=======>                 ] ( 325/920,  0.33 it/s), ETA  30m20s
+ #(14:33:14.582) 35% - [=======>                 ] ( 326/920,  0.33 it/s), ETA  30m22s
+ #(14:33:20.437) 35% \ [=======>                 ] ( 327/920,  0.32 it/s), ETA  30m24s
+ #(14:33:26.296) 35% | [=======>                 ] ( 328/920,  0.32 it/s), ETA  30m26s
+ #(14:33:32.168) 35% / [=======>                 ] ( 329/920,  0.32 it/s), ETA  30m28s
+ #(14:33:38.051) 35% - [=======>                 ] ( 330/920,  0.32 it/s), ETA  30m30s
+ #(14:33:43.997) 35% \ [=======>                 ] ( 331/920,  0.32 it/s), ETA  30m32s
+ #(14:33:49.928) 36% | [========>                ] ( 332/920,  0.32 it/s), ETA  30m34s
+ #(14:33:55.888) 36% / [========>                ] ( 333/920,  0.32 it/s), ETA  30m36s
+ #(14:34:01.875) 36% - [========>                ] ( 334/920,  0.32 it/s), ETA  30m38s
+ #(14:34:07.851) 36% \ [========>                ] ( 335/920,  0.32 it/s), ETA  30m40s
+ #(14:34:13.774) 36% | [========>                ] ( 336/920,  0.32 it/s), ETA  30m41s
+ #(14:34:19.931) 36% / [========>                ] ( 337/920,  0.32 it/s), ETA  30m43s
+ #(14:34:25.950) 36% - [========>                ] ( 338/920,  0.32 it/s), ETA  30m45s
+ #(14:34:32.023) 36% \ [========>                ] ( 339/920,  0.31 it/s), ETA  30m47s
+ #(14:34:38.089) 36% | [========>                ] ( 340/920,  0.31 it/s), ETA  30m49s
+ #(14:34:44.202) 37% / [========>                ] ( 341/920,  0.31 it/s), ETA  30m50s
+ #(14:34:50.297) 37% - [========>                ] ( 342/920,  0.31 it/s), ETA  30m52s
+ #(14:34:56.407) 37% \ [========>                ] ( 343/920,  0.31 it/s), ETA  30m54s
+ #(14:35:02.557) 37% | [========>                ] ( 344/920,  0.31 it/s), ETA  30m55s
+ #(14:35:08.709) 37% / [========>                ] ( 345/920,  0.31 it/s), ETA  30m57s
+ #(14:35:14.868) 37% - [========>                ] ( 346/920,  0.31 it/s), ETA  30m59s
+ #(14:35:21.046) 37% \ [========>                ] ( 347/920,  0.31 it/s), ETA  31m00s
+ #(14:35:27.242) 37% | [========>                ] ( 348/920,  0.31 it/s), ETA  31m02s
+ #(14:35:33.490) 37% / [========>                ] ( 349/920,  0.31 it/s), ETA  31m04s
+ #(14:35:39.724) 38% - [========>                ] ( 350/920,  0.31 it/s), ETA  31m05s
+ #(14:35:45.959) 38% \ [========>                ] ( 351/920,  0.30 it/s), ETA  31m07s
+ #(14:35:52.233) 38% | [========>                ] ( 352/920,  0.30 it/s), ETA  31m08s
+ #(14:35:58.529) 38% / [========>                ] ( 353/920,  0.30 it/s), ETA  31m10s
+ #(14:36:04.812) 38% - [========>                ] ( 354/920,  0.30 it/s), ETA  31m11s
+ #(14:36:11.150) 38% \ [========>                ] ( 355/920,  0.30 it/s), ETA  31m13s
+ #(14:36:17.475) 38% | [========>                ] ( 356/920,  0.30 it/s), ETA  31m14s
+ #(14:36:23.827) 38% / [========>                ] ( 357/920,  0.30 it/s), ETA  31m16s
+ #(14:36:30.243) 38% - [========>                ] ( 358/920,  0.30 it/s), ETA  31m17s
+ #(14:36:36.601) 39% \ [========>                ] ( 359/920,  0.30 it/s), ETA  31m19s
+ #(14:36:43.022) 39% | [========>                ] ( 360/920,  0.30 it/s), ETA  31m20s
+ #(14:36:49.475) 39% / [========>                ] ( 361/920,  0.30 it/s), ETA  31m21s
+ #(14:36:55.898) 39% - [========>                ] ( 362/920,  0.30 it/s), ETA  31m23s
+ #(14:37:02.373) 39% \ [========>                ] ( 363/920,  0.30 it/s), ETA  31m24s
+ #(14:37:08.840) 39% | [========>                ] ( 364/920,  0.29 it/s), ETA  31m25s
+ #(14:37:15.339) 39% / [========>                ] ( 365/920,  0.29 it/s), ETA  31m27s
+ #(14:37:21.841) 39% - [========>                ] ( 366/920,  0.29 it/s), ETA  31m28s
+ #(14:37:28.386) 39% \ [========>                ] ( 367/920,  0.29 it/s), ETA  31m29s
+ #(14:37:34.934) 40% | [=========>               ] ( 368/920,  0.29 it/s), ETA  31m31s
+ #(14:37:41.473) 40% / [=========>               ] ( 369/920,  0.29 it/s), ETA  31m32s
+ #(14:37:48.098) 40% - [=========>               ] ( 370/920,  0.29 it/s), ETA  31m33s
+ #(14:37:54.673) 40% \ [=========>               ] ( 371/920,  0.29 it/s), ETA  31m34s
+ #(14:38:01.294) 40% | [=========>               ] ( 372/920,  0.29 it/s), ETA  31m36s
+ #(14:38:07.908) 40% / [=========>               ] ( 373/920,  0.29 it/s), ETA  31m37s
+ #(14:38:14.562) 40% - [=========>               ] ( 374/920,  0.29 it/s), ETA  31m38s
+ #(14:38:21.222) 40% \ [=========>               ] ( 375/920,  0.29 it/s), ETA  31m39s
+ #(14:38:27.909) 40% | [=========>               ] ( 376/920,  0.29 it/s), ETA  31m40s
+ #(14:38:34.636) 40% / [=========>               ] ( 377/920,  0.29 it/s), ETA  31m41s
+ #(14:38:41.357) 41% - [=========>               ] ( 378/920,  0.28 it/s), ETA  31m43s
+ #(14:38:48.077) 41% \ [=========>               ] ( 379/920,  0.28 it/s), ETA  31m44s
+ #(14:38:54.825) 41% | [=========>               ] ( 380/920,  0.28 it/s), ETA  31m45s
+ #(14:39:01.606) 41% / [=========>               ] ( 381/920,  0.28 it/s), ETA  31m46s
+ #(14:39:08.399) 41% - [=========>               ] ( 382/920,  0.28 it/s), ETA  31m47s
+ #(14:39:15.262) 41% \ [=========>               ] ( 383/920,  0.28 it/s), ETA  31m48s
+ #(14:39:22.151) 41% | [=========>               ] ( 384/920,  0.28 it/s), ETA  31m49s
+ #(14:39:28.972) 41% / [=========>               ] ( 385/920,  0.28 it/s), ETA  31m50s
+ #(14:39:35.863) 41% - [=========>               ] ( 386/920,  0.28 it/s), ETA  31m51s
+ #(14:39:42.817) 42% \ [=========>               ] ( 387/920,  0.28 it/s), ETA  31m52s
+ #(14:39:49.612) 42% | [=========>               ] ( 388/920,  0.28 it/s), ETA  31m53s
+ #(14:39:57.794) 42% / [=========>               ] ( 389/920,  0.28 it/s), ETA  31m56s
+ #(14:40:04.865) 42% - [=========>               ] ( 390/920,  0.28 it/s), ETA  31m57s
+ #(14:40:12.135) 42% \ [=========>               ] ( 391/920,  0.28 it/s), ETA  31m58s
+ #(14:40:19.239) 42% | [=========>               ] ( 392/920,  0.28 it/s), ETA  31m59s
+ #(14:40:26.228) 42% / [=========>               ] ( 393/920,  0.27 it/s), ETA  32m00s
+ #(14:40:33.660) 42% - [=========>               ] ( 394/920,  0.27 it/s), ETA  32m01s
+ #(14:40:40.883) 42% \ [=========>               ] ( 395/920,  0.27 it/s), ETA  32m02s
+ #(14:40:47.745) 43% | [=========>               ] ( 396/920,  0.27 it/s), ETA  32m03s
+ #(14:40:55.348) 43% / [=========>               ] ( 397/920,  0.27 it/s), ETA  32m04s
+ #(14:41:02.711) 43% - [=========>               ] ( 398/920,  0.27 it/s), ETA  32m06s
+ #(14:41:10.965) 43% \ [=========>               ] ( 399/920,  0.27 it/s), ETA  32m08s
+ #(14:41:18.106) 43% | [=========>               ] ( 400/920,  0.27 it/s), ETA  32m09s
+ #(14:41:25.218) 43% / [=========>               ] ( 401/920,  0.27 it/s), ETA  32m09s
+ #(14:41:32.363) 43% - [=========>               ] ( 402/920,  0.27 it/s), ETA  32m10s
+ #(14:41:39.496) 43% \ [=========>               ] ( 403/920,  0.27 it/s), ETA  32m11s
+ #(14:41:46.759) 43% | [=========>               ] ( 404/920,  0.27 it/s), ETA  32m11s
+ #(14:41:53.941) 44% / [==========>              ] ( 405/920,  0.27 it/s), ETA  32m12s
+ #(14:42:01.144) 44% - [==========>              ] ( 406/920,  0.27 it/s), ETA  32m13s
+ #(14:42:08.347) 44% \ [==========>              ] ( 407/920,  0.27 it/s), ETA  32m13s
+ #(14:42:15.559) 44% | [==========>              ] ( 408/920,  0.26 it/s), ETA  32m14s
+ #(14:42:22.783) 44% / [==========>              ] ( 409/920,  0.26 it/s), ETA  32m14s
+ #(14:42:30.042) 44% - [==========>              ] ( 410/920,  0.26 it/s), ETA  32m15s
+ #(14:42:37.313) 44% \ [==========>              ] ( 411/920,  0.26 it/s), ETA  32m15s
+ #(14:42:44.626) 44% | [==========>              ] ( 412/920,  0.26 it/s), ETA  32m16s
+ #(14:42:51.938) 44% / [==========>              ] ( 413/920,  0.26 it/s), ETA  32m16s
+ #(14:42:59.229) 45% - [==========>              ] ( 414/920,  0.26 it/s), ETA  32m17s
+ #(14:43:06.627) 45% \ [==========>              ] ( 415/920,  0.26 it/s), ETA  32m17s
+ #(14:43:14.003) 45% | [==========>              ] ( 416/920,  0.26 it/s), ETA  32m18s
+ #(14:43:21.417) 45% / [==========>              ] ( 417/920,  0.26 it/s), ETA  32m18s
+ #(14:43:28.784) 45% - [==========>              ] ( 418/920,  0.26 it/s), ETA  32m19s
+ #(14:43:36.211) 45% \ [==========>              ] ( 419/920,  0.26 it/s), ETA  32m19s
+ #(14:43:43.634) 45% | [==========>              ] ( 420/920,  0.26 it/s), ETA  32m19s
+ #(14:43:51.080) 45% / [==========>              ] ( 421/920,  0.26 it/s), ETA  32m20s
+ #(14:43:58.537) 45% - [==========>              ] ( 422/920,  0.26 it/s), ETA  32m20s
+ #(14:44:06.038) 45% \ [==========>              ] ( 423/920,  0.26 it/s), ETA  32m20s
+ #(14:44:13.537) 46% | [==========>              ] ( 424/920,  0.26 it/s), ETA  32m21s
+ #(14:44:20.952) 46% / [==========>              ] ( 425/920,  0.25 it/s), ETA  32m21s
+ #(14:44:28.600) 46% - [==========>              ] ( 426/920,  0.25 it/s), ETA  32m21s
+ #(14:44:36.166) 46% \ [==========>              ] ( 427/920,  0.25 it/s), ETA  32m21s
+ #(14:44:43.730) 46% | [==========>              ] ( 428/920,  0.25 it/s), ETA  32m22s
+ #(14:44:51.316) 46% / [==========>              ] ( 429/920,  0.25 it/s), ETA  32m22s
+ #(14:44:58.909) 46% - [==========>              ] ( 430/920,  0.25 it/s), ETA  32m22s
+ #(14:45:06.551) 46% \ [==========>              ] ( 431/920,  0.25 it/s), ETA  32m22s
+ #(14:45:14.154) 46% | [==========>              ] ( 432/920,  0.25 it/s), ETA  32m22s
+ #(14:45:21.809) 47% / [==========>              ] ( 433/920,  0.25 it/s), ETA  32m23s
+ #(14:45:29.496) 47% - [==========>              ] ( 434/920,  0.25 it/s), ETA  32m23s
+ #(14:45:37.156) 47% \ [==========>              ] ( 435/920,  0.25 it/s), ETA  32m23s
+ #(14:45:44.862) 47% | [==========>              ] ( 436/920,  0.25 it/s), ETA  32m23s
+ #(14:45:52.615) 47% / [==========>              ] ( 437/920,  0.25 it/s), ETA  32m23s
+ #(14:46:00.324) 47% - [==========>              ] ( 438/920,  0.25 it/s), ETA  32m23s
+ #(14:46:08.098) 47% \ [==========>              ] ( 439/920,  0.25 it/s), ETA  32m23s
+ #(14:46:15.862) 47% | [==========>              ] ( 440/920,  0.25 it/s), ETA  32m23s
+ #(14:46:23.620) 47% / [==========>              ] ( 441/920,  0.25 it/s), ETA  32m23s
+ #(14:46:31.423) 48% - [===========>             ] ( 442/920,  0.25 it/s), ETA  32m23s
+ #(14:46:39.273) 48% \ [===========>             ] ( 443/920,  0.25 it/s), ETA  32m23s
+ #(14:46:47.121) 48% | [===========>             ] ( 444/920,  0.24 it/s), ETA  32m23s
+ #(14:46:54.989) 48% / [===========>             ] ( 445/920,  0.24 it/s), ETA  32m23s
+ #(14:47:02.838) 48% - [===========>             ] ( 446/920,  0.24 it/s), ETA  32m23s
+ #(14:47:10.710) 48% \ [===========>             ] ( 447/920,  0.24 it/s), ETA  32m23s
+ #(14:47:18.664) 48% | [===========>             ] ( 448/920,  0.24 it/s), ETA  32m23s
+ #(14:47:26.549) 48% / [===========>             ] ( 449/920,  0.24 it/s), ETA  32m23s
+ #(14:47:34.507) 48% - [===========>             ] ( 450/920,  0.24 it/s), ETA  32m23s
+ #(14:47:42.452) 49% \ [===========>             ] ( 451/920,  0.24 it/s), ETA  32m22s
+ #(14:47:50.432) 49% | [===========>             ] ( 452/920,  0.24 it/s), ETA  32m22s
+ #(14:47:58.418) 49% / [===========>             ] ( 453/920,  0.24 it/s), ETA  32m22s
+ #(14:48:06.440) 49% - [===========>             ] ( 454/920,  0.24 it/s), ETA  32m22s
+ #(14:48:14.465) 49% \ [===========>             ] ( 455/920,  0.24 it/s), ETA  32m22s
+ #(14:48:22.493) 49% | [===========>             ] ( 456/920,  0.24 it/s), ETA  32m21s
+ #(14:48:30.571) 49% / [===========>             ] ( 457/920,  0.24 it/s), ETA  32m21s
+ #(14:48:38.697) 49% - [===========>             ] ( 458/920,  0.24 it/s), ETA  32m21s
+ #(14:48:46.776) 49% \ [===========>             ] ( 459/920,  0.24 it/s), ETA  32m21s
+ #(14:48:54.871) 50% | [===========>             ] ( 460/920,  0.24 it/s), ETA  32m20s
+ #(14:49:03.013) 50% / [===========>             ] ( 461/920,  0.24 it/s), ETA  32m20s
+ #(14:49:11.173) 50% - [===========>             ] ( 462/920,  0.24 it/s), ETA  32m20s
+ #(14:49:19.349) 50% \ [===========>             ] ( 463/920,  0.24 it/s), ETA  32m19s
+ #(14:49:27.499) 50% | [===========>             ] ( 464/920,  0.24 it/s), ETA  32m19s
+ #(14:49:35.760) 50% / [===========>             ] ( 465/920,  0.23 it/s), ETA  32m18s
+ #(14:49:43.947) 50% - [===========>             ] ( 466/920,  0.23 it/s), ETA  32m18s
+ #(14:49:52.172) 50% \ [===========>             ] ( 467/920,  0.23 it/s), ETA  32m18s
+ #(14:50:00.438) 50% | [===========>             ] ( 468/920,  0.23 it/s), ETA  32m17s
+ #(14:50:08.710) 50% / [===========>             ] ( 469/920,  0.23 it/s), ETA  32m17s
+ #(14:50:16.982) 51% - [===========>             ] ( 470/920,  0.23 it/s), ETA  32m16s
+ #(14:50:25.287) 51% \ [===========>             ] ( 471/920,  0.23 it/s), ETA  32m16s
+ #(14:50:33.641) 51% | [===========>             ] ( 472/920,  0.23 it/s), ETA  32m15s
+ #(14:50:41.945) 51% / [===========>             ] ( 473/920,  0.23 it/s), ETA  32m15s
+ #(14:50:50.308) 51% - [===========>             ] ( 474/920,  0.23 it/s), ETA  32m14s
+ #(14:50:58.727) 51% \ [===========>             ] ( 475/920,  0.23 it/s), ETA  32m14s
+ #(14:51:07.100) 51% | [===========>             ] ( 476/920,  0.23 it/s), ETA  32m13s
+ #(14:51:15.484) 51% / [===========>             ] ( 477/920,  0.23 it/s), ETA  32m12s
+ #(14:51:23.938) 51% - [===========>             ] ( 478/920,  0.23 it/s), ETA  32m12s
+ #(14:51:32.391) 52% \ [============>            ] ( 479/920,  0.23 it/s), ETA  32m11s
+ #(14:51:40.831) 52% | [============>            ] ( 480/920,  0.23 it/s), ETA  32m11s
+ #(14:51:49.285) 52% / [============>            ] ( 481/920,  0.23 it/s), ETA  32m10s
+ #(14:51:57.792) 52% - [============>            ] ( 482/920,  0.23 it/s), ETA  32m09s
+ #(14:52:06.293) 52% \ [============>            ] ( 483/920,  0.23 it/s), ETA  32m09s
+ #(14:52:14.850) 52% | [============>            ] ( 484/920,  0.23 it/s), ETA  32m08s
+ #(14:52:23.380) 52% / [============>            ] ( 485/920,  0.23 it/s), ETA  32m07s
+ #(14:52:31.937) 52% - [============>            ] ( 486/920,  0.23 it/s), ETA  32m06s
+ #(14:52:40.479) 52% \ [============>            ] ( 487/920,  0.22 it/s), ETA  32m06s
+ #(14:52:49.065) 53% | [============>            ] ( 488/920,  0.22 it/s), ETA  32m05s
+ #(14:52:57.701) 53% / [============>            ] ( 489/920,  0.22 it/s), ETA  32m04s
+ #(14:53:06.337) 53% - [============>            ] ( 490/920,  0.22 it/s), ETA  32m03s
+ #(14:53:14.993) 53% \ [============>            ] ( 491/920,  0.22 it/s), ETA  32m02s
+ #(14:53:23.611) 53% | [============>            ] ( 492/920,  0.22 it/s), ETA  32m02s
+ #(14:53:32.333) 53% / [============>            ] ( 493/920,  0.22 it/s), ETA  32m01s
+ #(14:53:41.011) 53% - [============>            ] ( 494/920,  0.22 it/s), ETA  32m00s
+ #(14:53:49.749) 53% \ [============>            ] ( 495/920,  0.22 it/s), ETA  31m59s
+ #(14:53:58.460) 53% | [============>            ] ( 496/920,  0.22 it/s), ETA  31m58s
+ #(14:54:07.241) 54% / [============>            ] ( 497/920,  0.22 it/s), ETA  31m57s
+ #(14:54:16.017) 54% - [============>            ] ( 498/920,  0.22 it/s), ETA  31m56s
+ #(14:54:24.854) 54% \ [============>            ] ( 499/920,  0.22 it/s), ETA  31m55s
+ #(14:54:33.592) 54% | [============>            ] ( 500/920,  0.22 it/s), ETA  31m54s
+ #(14:54:42.435) 54% / [============>            ] ( 501/920,  0.22 it/s), ETA  31m53s
+ #(14:54:51.247) 54% - [============>            ] ( 502/920,  0.22 it/s), ETA  31m52s
+ #(14:55:00.112) 54% \ [============>            ] ( 503/920,  0.22 it/s), ETA  31m51s
+ #(14:55:09.028) 54% | [============>            ] ( 504/920,  0.22 it/s), ETA  31m50s
+ #(14:55:17.895) 54% / [============>            ] ( 505/920,  0.22 it/s), ETA  31m49s
+ #(14:55:26.781) 55% - [============>            ] ( 506/920,  0.22 it/s), ETA  31m48s
+ #(14:55:35.721) 55% \ [============>            ] ( 507/920,  0.22 it/s), ETA  31m47s
+ #(14:55:44.679) 55% | [============>            ] ( 508/920,  0.22 it/s), ETA  31m46s
+ #(14:55:53.580) 55% / [============>            ] ( 509/920,  0.22 it/s), ETA  31m45s
+ #(14:56:02.555) 55% - [============>            ] ( 510/920,  0.22 it/s), ETA  31m44s
+ #(14:56:11.574) 55% \ [============>            ] ( 511/920,  0.21 it/s), ETA  31m42s
+ #(14:56:20.584) 55% | [============>            ] ( 512/920,  0.21 it/s), ETA  31m41s
+ #(14:56:29.605) 55% / [============>            ] ( 513/920,  0.21 it/s), ETA  31m40s
+ #(14:56:38.659) 55% - [============>            ] ( 514/920,  0.21 it/s), ETA  31m39s
+ #(14:56:47.747) 55% \ [============>            ] ( 515/920,  0.21 it/s), ETA  31m38s
+ #(14:56:56.801) 56% | [=============>           ] ( 516/920,  0.21 it/s), ETA  31m36s
+ #(14:57:05.875) 56% / [=============>           ] ( 517/920,  0.21 it/s), ETA  31m35s
+ #(14:57:14.942) 56% - [=============>           ] ( 518/920,  0.21 it/s), ETA  31m34s
+ #(14:57:24.082) 56% \ [=============>           ] ( 519/920,  0.21 it/s), ETA  31m32s
+ #(14:57:33.211) 56% | [=============>           ] ( 520/920,  0.21 it/s), ETA  31m31s
+ #(14:57:42.384) 56% / [=============>           ] ( 521/920,  0.21 it/s), ETA  31m30s
+ #(14:57:51.533) 56% - [=============>           ] ( 522/920,  0.21 it/s), ETA  31m28s
+ #(14:58:00.765) 56% \ [=============>           ] ( 523/920,  0.21 it/s), ETA  31m27s
+ #(14:58:09.964) 56% | [=============>           ] ( 524/920,  0.21 it/s), ETA  31m26s
+ #(14:58:19.169) 57% / [=============>           ] ( 525/920,  0.21 it/s), ETA  31m24s
+ #(14:58:28.389) 57% - [=============>           ] ( 526/920,  0.21 it/s), ETA  31m23s
+ #(14:58:37.651) 57% \ [=============>           ] ( 527/920,  0.21 it/s), ETA  31m21s
+ #(14:58:46.957) 57% | [=============>           ] ( 528/920,  0.21 it/s), ETA  31m20s
+ #(14:58:56.255) 57% / [=============>           ] ( 529/920,  0.21 it/s), ETA  31m18s
+ #(14:59:05.556) 57% - [=============>           ] ( 530/920,  0.21 it/s), ETA  31m17s
+ #(14:59:14.868) 57% \ [=============>           ] ( 531/920,  0.21 it/s), ETA  31m15s
+ #(14:59:24.212) 57% | [=============>           ] ( 532/920,  0.21 it/s), ETA  31m14s
+ #(14:59:33.499) 57% / [=============>           ] ( 533/920,  0.21 it/s), ETA  31m12s
+ #(14:59:42.925) 58% - [=============>           ] ( 534/920,  0.21 it/s), ETA  31m11s
+ #(14:59:52.393) 58% \ [=============>           ] ( 535/920,  0.21 it/s), ETA  31m09s
+ #(15:00:01.806) 58% | [=============>           ] ( 536/920,  0.21 it/s), ETA  31m08s
+ #(15:00:11.240) 58% / [=============>           ] ( 537/920,  0.21 it/s), ETA  31m06s
+ #(15:00:20.648) 58% - [=============>           ] ( 538/920,  0.20 it/s), ETA  31m04s
+ #(15:00:30.101) 58% \ [=============>           ] ( 539/920,  0.20 it/s), ETA  31m03s
+ #(15:00:39.587) 58% | [=============>           ] ( 540/920,  0.20 it/s), ETA  31m01s
+ #(15:00:49.061) 58% / [=============>           ] ( 541/920,  0.20 it/s), ETA  30m59s
+ #(15:00:58.606) 58% - [=============>           ] ( 542/920,  0.20 it/s), ETA  30m58s
+ #(15:01:08.092) 59% \ [=============>           ] ( 543/920,  0.20 it/s), ETA  30m56s
+ #(15:01:17.671) 59% | [=============>           ] ( 544/920,  0.20 it/s), ETA  30m54s
+ #(15:01:27.273) 59% / [=============>           ] ( 545/920,  0.20 it/s), ETA  30m53s
+ #(15:01:36.849) 59% - [=============>           ] ( 546/920,  0.20 it/s), ETA  30m51s
+ #(15:01:46.441) 59% \ [=============>           ] ( 547/920,  0.20 it/s), ETA  30m49s
+ #(15:01:56.054) 59% | [=============>           ] ( 548/920,  0.20 it/s), ETA  30m47s
+ #(15:02:05.659) 59% / [=============>           ] ( 549/920,  0.20 it/s), ETA  30m45s
+ #(15:02:15.314) 59% - [=============>           ] ( 550/920,  0.20 it/s), ETA  30m44s
+ #(15:02:24.968) 59% \ [=============>           ] ( 551/920,  0.20 it/s), ETA  30m42s
+ #(15:02:34.657) 60% | [==============>          ] ( 552/920,  0.20 it/s), ETA  30m40s
+ #(15:02:44.332) 60% / [==============>          ] ( 553/920,  0.20 it/s), ETA  30m38s
+ #(15:02:54.048) 60% - [==============>          ] ( 554/920,  0.20 it/s), ETA  30m36s
+ #(15:03:03.808) 60% \ [==============>          ] ( 555/920,  0.20 it/s), ETA  30m34s
+ #(15:03:13.612) 60% | [==============>          ] ( 556/920,  0.20 it/s), ETA  30m32s
+ #(15:03:23.358) 60% / [==============>          ] ( 557/920,  0.20 it/s), ETA  30m30s
+ #(15:03:33.191) 60% - [==============>          ] ( 558/920,  0.20 it/s), ETA  30m28s
+ #(15:03:42.941) 60% \ [==============>          ] ( 559/920,  0.20 it/s), ETA  30m26s
+ #(15:03:52.806) 60% | [==============>          ] ( 560/920,  0.20 it/s), ETA  30m24s
+ #(15:04:02.617) 60% / [==============>          ] ( 561/920,  0.20 it/s), ETA  30m22s
+ #(15:04:12.438) 61% - [==============>          ] ( 562/920,  0.20 it/s), ETA  30m20s
+ #(15:04:22.297) 61% \ [==============>          ] ( 563/920,  0.20 it/s), ETA  30m18s
+ #(15:04:32.105) 61% | [==============>          ] ( 564/920,  0.20 it/s), ETA  30m16s
+ #(15:04:42.195) 61% / [==============>          ] ( 565/920,  0.20 it/s), ETA  30m14s
+ #(15:04:52.072) 61% - [==============>          ] ( 566/920,  0.20 it/s), ETA  30m12s
+ #(15:05:02.004) 61% \ [==============>          ] ( 567/920,  0.19 it/s), ETA  30m10s
+ #(15:05:11.988) 61% | [==============>          ] ( 568/920,  0.19 it/s), ETA  30m08s
+ #(15:05:21.951) 61% / [==============>          ] ( 569/920,  0.19 it/s), ETA  30m06s
+ #(15:05:31.898) 61% - [==============>          ] ( 570/920,  0.19 it/s), ETA  30m03s
+ #(15:05:41.889) 62% \ [==============>          ] ( 571/920,  0.19 it/s), ETA  30m01s
+ #(15:05:51.901) 62% | [==============>          ] ( 572/920,  0.19 it/s), ETA  29m59s
+ #(15:06:01.937) 62% / [==============>          ] ( 573/920,  0.19 it/s), ETA  29m57s
+ #(15:06:12.004) 62% - [==============>          ] ( 574/920,  0.19 it/s), ETA  29m55s
+ #(15:06:22.092) 62% \ [==============>          ] ( 575/920,  0.19 it/s), ETA  29m52s
+ #(15:06:32.132) 62% | [==============>          ] ( 576/920,  0.19 it/s), ETA  29m50s
+ #(15:06:42.268) 62% / [==============>          ] ( 577/920,  0.19 it/s), ETA  29m48s
+ #(15:06:52.408) 62% - [==============>          ] ( 578/920,  0.19 it/s), ETA  29m45s
+ #(15:07:02.505) 62% \ [==============>          ] ( 579/920,  0.19 it/s), ETA  29m43s
+ #(15:07:12.714) 63% | [==============>          ] ( 580/920,  0.19 it/s), ETA  29m41s
+ #(15:07:22.900) 63% / [==============>          ] ( 581/920,  0.19 it/s), ETA  29m38s
+ #(15:07:33.064) 63% - [==============>          ] ( 582/920,  0.19 it/s), ETA  29m36s
+ #(15:07:43.234) 63% \ [==============>          ] ( 583/920,  0.19 it/s), ETA  29m34s
+ #(15:07:53.457) 63% | [==============>          ] ( 584/920,  0.19 it/s), ETA  29m31s
+ #(15:08:03.704) 63% / [==============>          ] ( 585/920,  0.19 it/s), ETA  29m29s
+ #(15:08:13.975) 63% - [==============>          ] ( 586/920,  0.19 it/s), ETA  29m26s
+ #(15:08:24.254) 63% \ [==============>          ] ( 587/920,  0.19 it/s), ETA  29m24s
+ #(15:08:34.543) 63% | [==============>          ] ( 588/920,  0.19 it/s), ETA  29m21s
+ #(15:08:44.820) 64% / [===============>         ] ( 589/920,  0.19 it/s), ETA  29m19s
+ #(15:08:55.195) 64% - [===============>         ] ( 590/920,  0.19 it/s), ETA  29m16s
+ #(15:09:05.548) 64% \ [===============>         ] ( 591/920,  0.19 it/s), ETA  29m14s
+ #(15:09:15.949) 64% | [===============>         ] ( 592/920,  0.19 it/s), ETA  29m11s
+ #(15:09:26.301) 64% / [===============>         ] ( 593/920,  0.19 it/s), ETA  29m09s
+ #(15:09:36.734) 64% - [===============>         ] ( 594/920,  0.19 it/s), ETA  29m06s
+ #(15:09:47.444) 64% \ [===============>         ] ( 595/920,  0.19 it/s), ETA  29m04s
+ #(15:09:58.268) 64% | [===============>         ] ( 596/920,  0.19 it/s), ETA  29m01s
+ #(15:10:09.140) 64% / [===============>         ] ( 597/920,  0.19 it/s), ETA  28m59s
+ #(15:10:19.316) 65% - [===============>         ] ( 598/920,  0.19 it/s), ETA  28m56s
+ #(15:10:30.581) 65% \ [===============>         ] ( 599/920,  0.19 it/s), ETA  28m54s
+ #(15:10:41.464) 65% | [===============>         ] ( 600/920,  0.18 it/s), ETA  28m51s
+ #(15:10:52.412) 65% / [===============>         ] ( 601/920,  0.18 it/s), ETA  28m49s
+ #(15:11:02.778) 65% - [===============>         ] ( 602/920,  0.18 it/s), ETA  28m46s
+ #(15:11:14.877) 65% \ [===============>         ] ( 603/920,  0.18 it/s), ETA  28m44s
+ #(15:11:25.578) 65% | [===============>         ] ( 604/920,  0.18 it/s), ETA  28m42s
+ #(15:11:36.164) 65% / [===============>         ] ( 605/920,  0.18 it/s), ETA  28m39s
+ #(15:11:46.792) 65% - [===============>         ] ( 606/920,  0.18 it/s), ETA  28m36s
+ #(15:11:57.398) 65% \ [===============>         ] ( 607/920,  0.18 it/s), ETA  28m33s
+ #(15:12:08.050) 66% | [===============>         ] ( 608/920,  0.18 it/s), ETA  28m30s
+ #(15:12:18.668) 66% / [===============>         ] ( 609/920,  0.18 it/s), ETA  28m27s
+ #(15:12:29.355) 66% - [===============>         ] ( 610/920,  0.18 it/s), ETA  28m25s
+ #(15:12:40.066) 66% \ [===============>         ] ( 611/920,  0.18 it/s), ETA  28m22s
+ #(15:12:50.744) 66% | [===============>         ] ( 612/920,  0.18 it/s), ETA  28m19s
+ #(15:13:01.492) 66% / [===============>         ] ( 613/920,  0.18 it/s), ETA  28m16s
+ #(15:13:12.182) 66% - [===============>         ] ( 614/920,  0.18 it/s), ETA  28m13s
+ #(15:13:23.004) 66% \ [===============>         ] ( 615/920,  0.18 it/s), ETA  28m10s
+ #(15:13:33.802) 66% | [===============>         ] ( 616/920,  0.18 it/s), ETA  28m07s
+ #(15:13:44.590) 67% / [===============>         ] ( 617/920,  0.18 it/s), ETA  28m04s
+ #(15:13:55.399) 67% - [===============>         ] ( 618/920,  0.18 it/s), ETA  28m01s
+ #(15:14:06.254) 67% \ [===============>         ] ( 619/920,  0.18 it/s), ETA  27m58s
+ #(15:14:17.122) 67% | [===============>         ] ( 620/920,  0.18 it/s), ETA  27m55s
+ #(15:14:27.938) 67% / [===============>         ] ( 621/920,  0.18 it/s), ETA  27m52s
+ #(15:14:38.810) 67% - [===============>         ] ( 622/920,  0.18 it/s), ETA  27m49s
+ #(15:14:49.666) 67% \ [===============>         ] ( 623/920,  0.18 it/s), ETA  27m46s
+ #(15:15:00.614) 67% | [===============>         ] ( 624/920,  0.18 it/s), ETA  27m43s
+ #(15:15:11.534) 67% / [===============>         ] ( 625/920,  0.18 it/s), ETA  27m40s
+ #(15:15:22.472) 68% - [================>        ] ( 626/920,  0.18 it/s), ETA  27m37s
+ #(15:15:33.436) 68% \ [================>        ] ( 627/920,  0.18 it/s), ETA  27m33s
+ #(15:15:44.435) 68% | [================>        ] ( 628/920,  0.18 it/s), ETA  27m30s
+ #(15:15:55.369) 68% / [================>        ] ( 629/920,  0.18 it/s), ETA  27m27s
+ #(15:16:06.418) 68% - [================>        ] ( 630/920,  0.18 it/s), ETA  27m24s
+ #(15:16:17.389) 68% \ [================>        ] ( 631/920,  0.18 it/s), ETA  27m21s
+ #(15:16:28.445) 68% | [================>        ] ( 632/920,  0.18 it/s), ETA  27m17s
+ #(15:16:39.493) 68% / [================>        ] ( 633/920,  0.18 it/s), ETA  27m14s
+ #(15:16:50.559) 68% - [================>        ] ( 634/920,  0.18 it/s), ETA  27m11s
+ #(15:17:01.637) 69% \ [================>        ] ( 635/920,  0.18 it/s), ETA  27m08s
+ #(15:17:12.826) 69% | [================>        ] ( 636/920,  0.17 it/s), ETA  27m04s
+ #(15:17:24.060) 69% / [================>        ] ( 637/920,  0.17 it/s), ETA  27m01s
+ #(15:17:35.201) 69% - [================>        ] ( 638/920,  0.17 it/s), ETA  26m58s
+ #(15:17:46.358) 69% \ [================>        ] ( 639/920,  0.17 it/s), ETA  26m54s
+ #(15:17:57.508) 69% | [================>        ] ( 640/920,  0.17 it/s), ETA  26m51s
+ #(15:18:08.718) 69% / [================>        ] ( 641/920,  0.17 it/s), ETA  26m48s
+ #(15:18:19.973) 69% - [================>        ] ( 642/920,  0.17 it/s), ETA  26m44s
+ #(15:18:31.206) 69% \ [================>        ] ( 643/920,  0.17 it/s), ETA  26m41s
+ #(15:18:42.470) 70% | [================>        ] ( 644/920,  0.17 it/s), ETA  26m37s
+ #(15:18:53.728) 70% / [================>        ] ( 645/920,  0.17 it/s), ETA  26m34s
+ #(15:19:05.020) 70% - [================>        ] ( 646/920,  0.17 it/s), ETA  26m30s
+ #(15:19:16.287) 70% \ [================>        ] ( 647/920,  0.17 it/s), ETA  26m27s
+ #(15:19:27.579) 70% | [================>        ] ( 648/920,  0.17 it/s), ETA  26m23s
+ #(15:19:38.940) 70% / [================>        ] ( 649/920,  0.17 it/s), ETA  26m20s
+ #(15:19:50.263) 70% - [================>        ] ( 650/920,  0.17 it/s), ETA  26m16s
+ #(15:20:01.692) 70% \ [================>        ] ( 651/920,  0.17 it/s), ETA  26m13s
+ #(15:20:13.066) 70% | [================>        ] ( 652/920,  0.17 it/s), ETA  26m09s
+ #(15:20:24.450) 70% / [================>        ] ( 653/920,  0.17 it/s), ETA  26m06s
+ #(15:20:35.882) 71% - [================>        ] ( 654/920,  0.17 it/s), ETA  26m02s
+ #(15:20:47.299) 71% \ [================>        ] ( 655/920,  0.17 it/s), ETA  25m58s
+ #(15:20:58.728) 71% | [================>        ] ( 656/920,  0.17 it/s), ETA  25m55s
+ #(15:21:10.227) 71% / [================>        ] ( 657/920,  0.17 it/s), ETA  25m51s
+ #(15:21:21.675) 71% - [================>        ] ( 658/920,  0.17 it/s), ETA  25m47s
+ #(15:21:33.170) 71% \ [================>        ] ( 659/920,  0.17 it/s), ETA  25m44s
+ #(15:21:44.718) 71% | [================>        ] ( 660/920,  0.17 it/s), ETA  25m40s
+ #(15:21:56.288) 71% / [================>        ] ( 661/920,  0.17 it/s), ETA  25m36s
+ #(15:22:07.824) 71% - [================>        ] ( 662/920,  0.17 it/s), ETA  25m33s
+ #(15:22:19.348) 72% \ [=================>       ] ( 663/920,  0.17 it/s), ETA  25m29s
+ #(15:22:30.960) 72% | [=================>       ] ( 664/920,  0.17 it/s), ETA  25m25s
+ #(15:22:42.574) 72% / [=================>       ] ( 665/920,  0.17 it/s), ETA  25m21s
+ #(15:22:54.191) 72% - [=================>       ] ( 666/920,  0.17 it/s), ETA  25m17s
+ #(15:23:05.826) 72% \ [=================>       ] ( 667/920,  0.17 it/s), ETA  25m14s
+ #(15:23:17.460) 72% | [=================>       ] ( 668/920,  0.17 it/s), ETA  25m10s
+ #(15:23:29.160) 72% / [=================>       ] ( 669/920,  0.17 it/s), ETA  25m06s
+ #(15:23:40.860) 72% - [=================>       ] ( 670/920,  0.17 it/s), ETA  25m02s
+ #(15:23:52.559) 72% \ [=================>       ] ( 671/920,  0.17 it/s), ETA  24m58s
+ #(15:24:04.292) 73% | [=================>       ] ( 672/920,  0.17 it/s), ETA  24m54s
+ #(15:24:16.025) 73% / [=================>       ] ( 673/920,  0.17 it/s), ETA  24m50s
+ #(15:24:27.737) 73% - [=================>       ] ( 674/920,  0.17 it/s), ETA  24m46s
+ #(15:24:39.512) 73% \ [=================>       ] ( 675/920,  0.17 it/s), ETA  24m42s
+ #(15:24:51.294) 73% | [=================>       ] ( 676/920,  0.16 it/s), ETA  24m38s
+ #(15:25:03.074) 73% / [=================>       ] ( 677/920,  0.16 it/s), ETA  24m34s
+ #(15:25:14.991) 73% - [=================>       ] ( 678/920,  0.16 it/s), ETA  24m30s
+ #(15:25:26.836) 73% \ [=================>       ] ( 679/920,  0.16 it/s), ETA  24m26s
+ #(15:25:38.672) 73% | [=================>       ] ( 680/920,  0.16 it/s), ETA  24m22s
+ #(15:25:50.578) 74% / [=================>       ] ( 681/920,  0.16 it/s), ETA  24m18s
+ #(15:26:02.482) 74% - [=================>       ] ( 682/920,  0.16 it/s), ETA  24m14s
+ #(15:26:14.391) 74% \ [=================>       ] ( 683/920,  0.16 it/s), ETA  24m10s
+ #(15:26:26.306) 74% | [=================>       ] ( 684/920,  0.16 it/s), ETA  24m06s
+ #(15:26:38.249) 74% / [=================>       ] ( 685/920,  0.16 it/s), ETA  24m02s
+ #(15:26:50.187) 74% - [=================>       ] ( 686/920,  0.16 it/s), ETA  23m58s
+ #(15:27:02.188) 74% \ [=================>       ] ( 687/920,  0.16 it/s), ETA  23m53s
+ #(15:27:14.223) 74% | [=================>       ] ( 688/920,  0.16 it/s), ETA  23m49s
+ #(15:27:26.217) 74% / [=================>       ] ( 689/920,  0.16 it/s), ETA  23m45s
+ #(15:27:38.222) 75% - [=================>       ] ( 690/920,  0.16 it/s), ETA  23m41s
+ #(15:27:50.291) 75% \ [=================>       ] ( 691/920,  0.16 it/s), ETA  23m37s
+ #(15:28:02.355) 75% | [=================>       ] ( 692/920,  0.16 it/s), ETA  23m32s
+ #(15:28:14.446) 75% / [=================>       ] ( 693/920,  0.16 it/s), ETA  23m28s
+ #(15:28:26.518) 75% - [=================>       ] ( 694/920,  0.16 it/s), ETA  23m24s
+ #(15:28:38.662) 75% \ [=================>       ] ( 695/920,  0.16 it/s), ETA  23m20s
+ #(15:28:50.795) 75% | [=================>       ] ( 696/920,  0.16 it/s), ETA  23m15s
+ #(15:29:02.924) 75% / [=================>       ] ( 697/920,  0.16 it/s), ETA  23m11s
+ #(15:29:15.140) 75% - [=================>       ] ( 698/920,  0.16 it/s), ETA  23m07s
+ #(15:29:27.335) 75% \ [=================>       ] ( 699/920,  0.16 it/s), ETA  23m02s
+ #(15:29:39.506) 76% | [==================>      ] ( 700/920,  0.16 it/s), ETA  22m58s
+ #(15:29:51.715) 76% / [==================>      ] ( 701/920,  0.16 it/s), ETA  22m53s
+ #(15:30:04.206) 76% - [==================>      ] ( 702/920,  0.16 it/s), ETA  22m49s
+ #(15:30:16.527) 76% \ [==================>      ] ( 703/920,  0.16 it/s), ETA  22m45s
+ #(15:30:28.849) 76% | [==================>      ] ( 704/920,  0.16 it/s), ETA  22m40s
+ #(15:30:41.135) 76% / [==================>      ] ( 705/920,  0.16 it/s), ETA  22m36s
+ #(15:30:53.386) 76% - [==================>      ] ( 706/920,  0.16 it/s), ETA  22m31s
+ #(15:31:05.734) 76% \ [==================>      ] ( 707/920,  0.16 it/s), ETA  22m27s
+ #(15:31:18.038) 76% | [==================>      ] ( 708/920,  0.16 it/s), ETA  22m22s
+ #(15:31:30.427) 77% / [==================>      ] ( 709/920,  0.16 it/s), ETA  22m18s
+ #(15:31:42.772) 77% - [==================>      ] ( 710/920,  0.16 it/s), ETA  22m13s
+ #(15:31:55.175) 77% \ [==================>      ] ( 711/920,  0.16 it/s), ETA  22m08s
+ #(15:32:07.557) 77% | [==================>      ] ( 712/920,  0.16 it/s), ETA  22m04s
+ #(15:32:19.969) 77% / [==================>      ] ( 713/920,  0.16 it/s), ETA  21m59s
+ #(15:32:32.473) 77% - [==================>      ] ( 714/920,  0.16 it/s), ETA  21m55s
+ #(15:32:44.914) 77% \ [==================>      ] ( 715/920,  0.16 it/s), ETA  21m50s
+ #(15:32:57.394) 77% | [==================>      ] ( 716/920,  0.16 it/s), ETA  21m45s
+ #(15:33:09.879) 77% / [==================>      ] ( 717/920,  0.16 it/s), ETA  21m41s
+ #(15:33:22.362) 78% - [==================>      ] ( 718/920,  0.16 it/s), ETA  21m36s
+ #(15:33:34.890) 78% \ [==================>      ] ( 719/920,  0.16 it/s), ETA  21m31s
+ #(15:33:47.380) 78% | [==================>      ] ( 720/920,  0.16 it/s), ETA  21m27s
+ #(15:33:59.965) 78% / [==================>      ] ( 721/920,  0.16 it/s), ETA  21m22s
+ #(15:34:12.551) 78% - [==================>      ] ( 722/920,  0.15 it/s), ETA  21m17s
+ #(15:34:25.141) 78% \ [==================>      ] ( 723/920,  0.15 it/s), ETA  21m12s
+ #(15:34:37.834) 78% | [==================>      ] ( 724/920,  0.15 it/s), ETA  21m07s
+ #(15:34:50.425) 78% / [==================>      ] ( 725/920,  0.15 it/s), ETA  21m03s
+ #(15:35:03.059) 78% - [==================>      ] ( 726/920,  0.15 it/s), ETA  20m58s
+ #(15:35:15.769) 79% \ [==================>      ] ( 727/920,  0.15 it/s), ETA  20m53s
+ #(15:35:28.504) 79% | [==================>      ] ( 728/920,  0.15 it/s), ETA  20m48s
+ #(15:35:41.186) 79% / [==================>      ] ( 729/920,  0.15 it/s), ETA  20m43s
+ #(15:35:53.914) 79% - [==================>      ] ( 730/920,  0.15 it/s), ETA  20m38s
+ #(15:36:06.635) 79% \ [==================>      ] ( 731/920,  0.15 it/s), ETA  20m33s
+ #(15:36:19.425) 79% | [==================>      ] ( 732/920,  0.15 it/s), ETA  20m29s
+ #(15:36:32.175) 79% / [==================>      ] ( 733/920,  0.15 it/s), ETA  20m24s
+ #(15:36:44.911) 79% - [==================>      ] ( 734/920,  0.15 it/s), ETA  20m19s
+ #(15:36:57.742) 79% \ [==================>      ] ( 735/920,  0.15 it/s), ETA  20m14s
+ #(15:37:10.542) 80% | [===================>     ] ( 736/920,  0.15 it/s), ETA  20m09s
+ #(15:37:23.386) 80% / [===================>     ] ( 737/920,  0.15 it/s), ETA  20m04s
+ #(15:37:36.232) 80% - [===================>     ] ( 738/920,  0.15 it/s), ETA  19m59s
+ #(15:37:49.096) 80% \ [===================>     ] ( 739/920,  0.15 it/s), ETA  19m53s
+ #(15:38:01.962) 80% | [===================>     ] ( 740/920,  0.15 it/s), ETA  19m48s
+ #(15:38:14.809) 80% / [===================>     ] ( 741/920,  0.15 it/s), ETA  19m43s
+ #(15:38:27.762) 80% - [===================>     ] ( 742/920,  0.15 it/s), ETA  19m38s
+ #(15:38:40.662) 80% \ [===================>     ] ( 743/920,  0.15 it/s), ETA  19m33s
+ #(15:38:53.663) 80% | [===================>     ] ( 744/920,  0.15 it/s), ETA  19m28s
+ #(15:39:06.593) 80% / [===================>     ] ( 745/920,  0.15 it/s), ETA  19m23s
+ #(15:39:19.602) 81% - [===================>     ] ( 746/920,  0.15 it/s), ETA  19m18s
+ #(15:39:32.634) 81% \ [===================>     ] ( 747/920,  0.15 it/s), ETA  19m12s
+ #(15:39:45.900) 81% | [===================>     ] ( 748/920,  0.15 it/s), ETA  19m07s
+ #(15:39:59.154) 81% / [===================>     ] ( 749/920,  0.15 it/s), ETA  19m02s
+ #(15:40:12.477) 81% - [===================>     ] ( 750/920,  0.15 it/s), ETA  18m57s
+ #(15:40:25.854) 81% \ [===================>     ] ( 751/920,  0.15 it/s), ETA  18m52s
+ #(15:40:39.267) 81% | [===================>     ] ( 752/920,  0.15 it/s), ETA  18m47s
+ #(15:40:52.994) 81% / [===================>     ] ( 753/920,  0.15 it/s), ETA  18m41s
+ #(15:41:06.925) 81% - [===================>     ] ( 754/920,  0.15 it/s), ETA  18m36s
+ #(15:41:19.702) 82% \ [===================>     ] ( 755/920,  0.15 it/s), ETA  18m31s
+ #(15:41:33.789) 82% | [===================>     ] ( 756/920,  0.15 it/s), ETA  18m26s
+ #(15:41:47.047) 82% / [===================>     ] ( 757/920,  0.15 it/s), ETA  18m20s
+ #(15:42:01.646) 82% - [===================>     ] ( 758/920,  0.15 it/s), ETA  18m15s
+ #(15:42:14.815) 82% \ [===================>     ] ( 759/920,  0.15 it/s), ETA  18m10s
+ #(15:42:28.069) 82% | [===================>     ] ( 760/920,  0.15 it/s), ETA  18m05s
+ #(15:42:41.273) 82% / [===================>     ] ( 761/920,  0.15 it/s), ETA  17m59s
+ #(15:42:54.567) 82% - [===================>     ] ( 762/920,  0.15 it/s), ETA  17m54s
+ #(15:43:07.785) 82% \ [===================>     ] ( 763/920,  0.15 it/s), ETA  17m48s
+ #(15:43:21.087) 83% | [===================>     ] ( 764/920,  0.15 it/s), ETA  17m43s
+ #(15:43:34.422) 83% / [===================>     ] ( 765/920,  0.15 it/s), ETA  17m37s
+ #(15:43:47.763) 83% - [===================>     ] ( 766/920,  0.15 it/s), ETA  17m32s
+ #(15:44:01.074) 83% \ [===================>     ] ( 767/920,  0.15 it/s), ETA  17m26s
+ #(15:44:14.464) 83% | [===================>     ] ( 768/920,  0.15 it/s), ETA  17m21s
+ #(15:44:27.851) 83% / [===================>     ] ( 769/920,  0.15 it/s), ETA  17m15s
+ #(15:44:41.244) 83% - [===================>     ] ( 770/920,  0.15 it/s), ETA  17m09s
+ #(15:44:54.592) 83% \ [===================>     ] ( 771/920,  0.15 it/s), ETA  17m04s
+ #(15:45:08.060) 83% | [===================>     ] ( 772/920,  0.15 it/s), ETA  16m58s
+ #(15:45:21.513) 84% / [====================>    ] ( 773/920,  0.15 it/s), ETA  16m53s
+ #(15:45:34.955) 84% - [====================>    ] ( 774/920,  0.14 it/s), ETA  16m47s
+ #(15:45:48.467) 84% \ [====================>    ] ( 775/920,  0.14 it/s), ETA  16m41s
+ #(15:46:01.977) 84% | [====================>    ] ( 776/920,  0.14 it/s), ETA  16m36s
+ #(15:46:15.427) 84% / [====================>    ] ( 777/920,  0.14 it/s), ETA  16m30s
+ #(15:46:28.989) 84% - [====================>    ] ( 778/920,  0.14 it/s), ETA  16m24s
+ #(15:46:42.544) 84% \ [====================>    ] ( 779/920,  0.14 it/s), ETA  16m18s
+ #(15:46:56.095) 84% | [====================>    ] ( 780/920,  0.14 it/s), ETA  16m13s
+ #(15:47:09.648) 84% / [====================>    ] ( 781/920,  0.14 it/s), ETA  16m07s
+ #(15:47:23.248) 85% - [====================>    ] ( 782/920,  0.14 it/s), ETA  16m01s
+ #(15:47:36.836) 85% \ [====================>    ] ( 783/920,  0.14 it/s), ETA  15m55s
+ #(15:47:50.467) 85% | [====================>    ] ( 784/920,  0.14 it/s), ETA  15m49s
+ #(15:48:04.098) 85% / [====================>    ] ( 785/920,  0.14 it/s), ETA  15m44s
+ #(15:48:17.834) 85% - [====================>    ] ( 786/920,  0.14 it/s), ETA  15m38s
+ #(15:48:31.508) 85% \ [====================>    ] ( 787/920,  0.14 it/s), ETA  15m32s
+ #(15:48:45.150) 85% | [====================>    ] ( 788/920,  0.14 it/s), ETA  15m26s
+ #(15:48:58.890) 85% / [====================>    ] ( 789/920,  0.14 it/s), ETA  15m20s
+ #(15:49:12.631) 85% - [====================>    ] ( 790/920,  0.14 it/s), ETA  15m14s
+ #(15:49:26.336) 85% \ [====================>    ] ( 791/920,  0.14 it/s), ETA  15m08s
+ #(15:49:40.098) 86% | [====================>    ] ( 792/920,  0.14 it/s), ETA  15m02s
+ #(15:49:53.930) 86% / [====================>    ] ( 793/920,  0.14 it/s), ETA  14m56s
+ #(15:50:07.747) 86% - [====================>    ] ( 794/920,  0.14 it/s), ETA  14m50s
+ #(15:50:21.576) 86% \ [====================>    ] ( 795/920,  0.14 it/s), ETA  14m44s
+ #(15:50:35.422) 86% | [====================>    ] ( 796/920,  0.14 it/s), ETA  14m38s
+ #(15:50:49.240) 86% / [====================>    ] ( 797/920,  0.14 it/s), ETA  14m32s
+ #(15:51:03.086) 86% - [====================>    ] ( 798/920,  0.14 it/s), ETA  14m26s
+ #(15:51:16.960) 86% \ [====================>    ] ( 799/920,  0.14 it/s), ETA  14m20s
+ #(15:51:30.904) 86% | [====================>    ] ( 800/920,  0.14 it/s), ETA  14m14s
+ #(15:51:44.811) 87% / [====================>    ] ( 801/920,  0.14 it/s), ETA  14m08s
+ #(15:51:58.711) 87% - [====================>    ] ( 802/920,  0.14 it/s), ETA  14m02s
+ #(15:52:12.638) 87% \ [====================>    ] ( 803/920,  0.14 it/s), ETA  13m56s
+ #(15:52:26.663) 87% | [====================>    ] ( 804/920,  0.14 it/s), ETA  13m49s
+ #(15:52:40.644) 87% / [====================>    ] ( 805/920,  0.14 it/s), ETA  13m43s
+ #(15:52:54.670) 87% - [====================>    ] ( 806/920,  0.14 it/s), ETA  13m37s
+ #(15:53:08.684) 87% \ [====================>    ] ( 807/920,  0.14 it/s), ETA  13m31s
+ #(15:53:22.709) 87% | [====================>    ] ( 808/920,  0.14 it/s), ETA  13m25s
+ #(15:53:36.801) 87% / [====================>    ] ( 809/920,  0.14 it/s), ETA  13m18s
+ #(15:53:50.874) 88% - [=====================>   ] ( 810/920,  0.14 it/s), ETA  13m12s
+ #(15:54:04.923) 88% \ [=====================>   ] ( 811/920,  0.14 it/s), ETA  13m06s
+ #(15:54:19.064) 88% | [=====================>   ] ( 812/920,  0.14 it/s), ETA  13m00s
+ #(15:54:33.154) 88% / [=====================>   ] ( 813/920,  0.14 it/s), ETA  12m53s
+ #(15:54:47.348) 88% - [=====================>   ] ( 814/920,  0.14 it/s), ETA  12m47s
+ #(15:55:01.554) 88% \ [=====================>   ] ( 815/920,  0.14 it/s), ETA  12m41s
+ #(15:55:15.643) 88% | [=====================>   ] ( 816/920,  0.14 it/s), ETA  12m34s
+ #(15:55:29.906) 88% / [=====================>   ] ( 817/920,  0.14 it/s), ETA  12m28s
+ #(15:55:44.183) 88% - [=====================>   ] ( 818/920,  0.14 it/s), ETA  12m21s
+ #(15:55:58.428) 89% \ [=====================>   ] ( 819/920,  0.14 it/s), ETA  12m15s
+ #(15:56:12.710) 89% | [=====================>   ] ( 820/920,  0.14 it/s), ETA  12m09s
+ #(15:56:26.973) 89% / [=====================>   ] ( 821/920,  0.14 it/s), ETA  12m02s
+ #(15:56:41.246) 89% - [=====================>   ] ( 822/920,  0.14 it/s), ETA  11m56s
+ #(15:56:55.525) 89% \ [=====================>   ] ( 823/920,  0.14 it/s), ETA  11m49s
+ #(15:57:09.849) 89% | [=====================>   ] ( 824/920,  0.14 it/s), ETA  11m43s
+ #(15:57:24.139) 89% / [=====================>   ] ( 825/920,  0.14 it/s), ETA  11m36s
+ #(15:57:38.499) 89% - [=====================>   ] ( 826/920,  0.14 it/s), ETA  11m30s
+ #(15:57:52.860) 89% \ [=====================>   ] ( 827/920,  0.14 it/s), ETA  11m23s
+ #(15:58:07.217) 90% | [=====================>   ] ( 828/920,  0.14 it/s), ETA  11m17s
+ #(15:58:21.601) 90% / [=====================>   ] ( 829/920,  0.14 it/s), ETA  11m10s
+ #(15:58:36.051) 90% - [=====================>   ] ( 830/920,  0.14 it/s), ETA  11m03s
+ #(15:58:50.444) 90% \ [=====================>   ] ( 831/920,  0.14 it/s), ETA  10m57s
+ #(15:59:04.874) 90% | [=====================>   ] ( 832/920,  0.14 it/s), ETA  10m50s
+ #(15:59:19.341) 90% / [=====================>   ] ( 833/920,  0.14 it/s), ETA  10m43s
+ #(15:59:33.880) 90% - [=====================>   ] ( 834/920,  0.13 it/s), ETA  10m37s
+ #(15:59:48.323) 90% \ [=====================>   ] ( 835/920,  0.13 it/s), ETA  10m30s
+ #(16:00:02.926) 90% | [=====================>   ] ( 836/920,  0.13 it/s), ETA  10m23s
+ #(16:00:17.479) 90% / [=====================>   ] ( 837/920,  0.13 it/s), ETA  10m17s
+ #(16:00:32.086) 91% - [=====================>   ] ( 838/920,  0.13 it/s), ETA  10m10s
+ #(16:00:46.596) 91% \ [=====================>   ] ( 839/920,  0.13 it/s), ETA  10m03s
+ #(16:01:01.245) 91% | [=====================>   ] ( 840/920,  0.13 it/s), ETA  09m56s
+ #(16:01:15.850) 91% / [=====================>   ] ( 841/920,  0.13 it/s), ETA  09m50s
+ #(16:01:30.410) 91% - [=====================>   ] ( 842/920,  0.13 it/s), ETA  09m43s
+ #(16:01:45.061) 91% \ [=====================>   ] ( 843/920,  0.13 it/s), ETA  09m36s
+ #(16:01:59.770) 91% | [=====================>   ] ( 844/920,  0.13 it/s), ETA  09m29s
+ #(16:02:14.408) 91% / [=====================>   ] ( 845/920,  0.13 it/s), ETA  09m22s
+ #(16:02:29.060) 91% - [=====================>   ] ( 846/920,  0.13 it/s), ETA  09m15s
+ #(16:02:43.749) 92% \ [======================>  ] ( 847/920,  0.13 it/s), ETA  09m08s
+ #(16:02:58.475) 92% | [======================>  ] ( 848/920,  0.13 it/s), ETA  09m02s
+ #(16:03:13.216) 92% / [======================>  ] ( 849/920,  0.13 it/s), ETA  08m55s
+ #(16:03:27.968) 92% - [======================>  ] ( 850/920,  0.13 it/s), ETA  08m48s
+ #(16:03:42.689) 92% \ [======================>  ] ( 851/920,  0.13 it/s), ETA  08m41s
+ #(16:03:57.490) 92% | [======================>  ] ( 852/920,  0.13 it/s), ETA  08m34s
+ #(16:04:12.292) 92% / [======================>  ] ( 853/920,  0.13 it/s), ETA  08m27s
+ #(16:04:27.070) 92% - [======================>  ] ( 854/920,  0.13 it/s), ETA  08m20s
+ #(16:04:41.921) 92% \ [======================>  ] ( 855/920,  0.13 it/s), ETA  08m13s
+ #(16:04:56.827) 93% | [======================>  ] ( 856/920,  0.13 it/s), ETA  08m06s
+ #(16:05:11.723) 93% / [======================>  ] ( 857/920,  0.13 it/s), ETA  07m59s
+ #(16:05:26.488) 93% - [======================>  ] ( 858/920,  0.13 it/s), ETA  07m52s
+ #(16:05:41.529) 93% \ [======================>  ] ( 859/920,  0.13 it/s), ETA  07m44s
+ #(16:05:56.397) 93% | [======================>  ] ( 860/920,  0.13 it/s), ETA  07m37s
+ #(16:06:11.374) 93% / [======================>  ] ( 861/920,  0.13 it/s), ETA  07m30s
+ #(16:06:26.300) 93% - [======================>  ] ( 862/920,  0.13 it/s), ETA  07m23s
+ #(16:06:41.276) 93% \ [======================>  ] ( 863/920,  0.13 it/s), ETA  07m16s
+ #(16:06:56.285) 93% | [======================>  ] ( 864/920,  0.13 it/s), ETA  07m09s
+ #(16:07:11.320) 94% / [======================>  ] ( 865/920,  0.13 it/s), ETA  07m02s
+ #(16:07:26.339) 94% - [======================>  ] ( 866/920,  0.13 it/s), ETA  06m54s
+ #(16:07:41.409) 94% \ [======================>  ] ( 867/920,  0.13 it/s), ETA  06m47s
+ #(16:07:56.428) 94% | [======================>  ] ( 868/920,  0.13 it/s), ETA  06m40s
+ #(16:08:11.509) 94% / [======================>  ] ( 869/920,  0.13 it/s), ETA  06m33s
+ #(16:08:26.608) 94% - [======================>  ] ( 870/920,  0.13 it/s), ETA  06m25s
+ #(16:08:41.787) 94% \ [======================>  ] ( 871/920,  0.13 it/s), ETA  06m18s
+ #(16:08:56.935) 94% | [======================>  ] ( 872/920,  0.13 it/s), ETA  06m11s
+ #(16:09:12.076) 94% / [======================>  ] ( 873/920,  0.13 it/s), ETA  06m03s
+ #(16:09:27.191) 95% - [======================>  ] ( 874/920,  0.13 it/s), ETA  05m56s
+ #(16:09:42.476) 95% \ [======================>  ] ( 875/920,  0.13 it/s), ETA  05m49s
+ #(16:09:57.687) 95% | [======================>  ] ( 876/920,  0.13 it/s), ETA  05m41s
+ #(16:10:13.785) 95% / [======================>  ] ( 877/920,  0.13 it/s), ETA  05m34s
+ #(16:10:28.662) 95% - [======================>  ] ( 878/920,  0.13 it/s), ETA  05m26s
+ #(16:10:44.942) 95% \ [======================>  ] ( 879/920,  0.13 it/s), ETA  05m19s
+ #(16:11:00.337) 95% | [======================>  ] ( 880/920,  0.13 it/s), ETA  05m12s
+ #(16:11:15.498) 95% / [======================>  ] ( 881/920,  0.13 it/s), ETA  05m04s
+ #(16:11:31.734) 95% - [======================>  ] ( 882/920,  0.13 it/s), ETA  04m57s
+ #(16:11:46.949) 95% \ [======================>  ] ( 883/920,  0.13 it/s), ETA  04m49s
+ #(16:12:02.852) 96% | [=======================> ] ( 884/920,  0.13 it/s), ETA  04m42s
+ #(16:12:18.187) 96% / [=======================> ] ( 885/920,  0.13 it/s), ETA  04m34s
+ #(16:12:33.813) 96% - [=======================> ] ( 886/920,  0.13 it/s), ETA  04m27s
+ #(16:12:49.330) 96% \ [=======================> ] ( 887/920,  0.13 it/s), ETA  04m19s
+ #(16:13:04.752) 96% | [=======================> ] ( 888/920,  0.13 it/s), ETA  04m11s
+ #(16:13:20.196) 96% / [=======================> ] ( 889/920,  0.13 it/s), ETA  04m04s
+ #(16:13:35.597) 96% - [=======================> ] ( 890/920,  0.13 it/s), ETA  03m56s
+ #(16:13:51.052) 96% \ [=======================> ] ( 891/920,  0.13 it/s), ETA  03m49s
+ #(16:14:06.507) 96% | [=======================> ] ( 892/920,  0.13 it/s), ETA  03m41s
+ #(16:14:21.969) 97% / [=======================> ] ( 893/920,  0.13 it/s), ETA  03m33s
+ #(16:14:37.462) 97% - [=======================> ] ( 894/920,  0.13 it/s), ETA  03m26s
+ #(16:14:52.999) 97% \ [=======================> ] ( 895/920,  0.13 it/s), ETA  03m18s
+ #(16:15:08.560) 97% | [=======================> ] ( 896/920,  0.13 it/s), ETA  03m10s
+ #(16:15:24.184) 97% / [=======================> ] ( 897/920,  0.13 it/s), ETA  03m02s
+ #(16:15:39.635) 97% - [=======================> ] ( 898/920,  0.13 it/s), ETA  02m55s
+ #(16:15:55.351) 97% \ [=======================> ] ( 899/920,  0.13 it/s), ETA  02m47s
+ #(16:16:11.021) 97% | [=======================> ] ( 900/920,  0.13 it/s), ETA  02m39s
+ #(16:16:26.587) 97% / [=======================> ] ( 901/920,  0.13 it/s), ETA  02m31s
+ #(16:16:42.271) 98% - [=======================> ] ( 902/920,  0.13 it/s), ETA  02m23s
+ #(16:16:57.902) 98% \ [=======================> ] ( 903/920,  0.13 it/s), ETA  02m15s
+ #(16:17:13.598) 98% | [=======================> ] ( 904/920,  0.12 it/s), ETA  02m08s
+ #(16:17:29.243) 98% / [=======================> ] ( 905/920,  0.12 it/s), ETA  02m00s
+ #(16:17:44.974) 98% - [=======================> ] ( 906/920,  0.12 it/s), ETA  01m52s
+ #(16:18:00.725) 98% \ [=======================> ] ( 907/920,  0.12 it/s), ETA  01m44s
+ #(16:18:16.482) 98% | [=======================> ] ( 908/920,  0.12 it/s), ETA  01m36s
+ #(16:18:32.162) 98% / [=======================> ] ( 909/920,  0.12 it/s), ETA  01m28s
+ #(16:18:47.933) 98% - [=======================> ] ( 910/920,  0.12 it/s), ETA  01m20s
+ #(16:19:03.762) 99% \ [=======================> ] ( 911/920,  0.12 it/s), ETA  01m12s
+ #(16:19:19.559) 99% | [=======================> ] ( 912/920,  0.12 it/s), ETA  01m04s
+ #(16:19:35.426) 99% / [=======================> ] ( 913/920,  0.12 it/s), ETA  56.6s
+ #(16:19:51.261) 99% - [=======================> ] ( 914/920,  0.12 it/s), ETA  48.6s
+ #(16:20:07.093) 99% \ [=======================> ] ( 915/920,  0.12 it/s), ETA  40.5s
+ #(16:20:22.994) 99% | [=======================> ] ( 916/920,  0.12 it/s), ETA  32.4s
+ #(16:20:38.854) 99% / [=======================> ] ( 917/920,  0.12 it/s), ETA  24.4s
+ #(16:20:54.855) 99% - [=======================> ] ( 918/920,  0.12 it/s), ETA  16.3s
+ #(16:21:10.728) 99% \ [=======================> ] ( 919/920,  0.12 it/s), ETA  8.1s
+ #(16:21:26.675)100% | [========================>] ( 920/920,  0.12 it/s), Tot  02h04m
+  #-------------------------------- Warnings obtained during the run, check their relevance!
+ WARNINGS:
+ - No convergence within the allowed number of minimization steps
+  #-------------------------------------------------------------------- Timing for root process
+ Timings for root process:
+   CPU time (s)                        :  7492.74
+   Elapsed time (s)                    :  7533.15
+ BigDFT infocode                       :  0
+ Average noise forces: {x: -6.47039828E-06, y: -6.47039828E-06, z:  5.25980228E-04, 
+                    total:  5.26059818E-04}
+ Clean forces norm (Ha/Bohr): {maxval:  1.883689877951E-01, fnrm2:  7.096575112589E-02}
+ Raw forces norm (Ha/Bohr): {maxval:  1.887409119882E-01, fnrm2:  7.096602799714E-02}
+  #------------------------------------------------------------------------------ Atomic Forces
+ Atomic Forces (Ha/Bohr):
+ -  {C: [-8.470329472543E-22,  0.000000000000E+00,  1.883689877951E-01]} # 0001
+ -  {O: [ 8.470329472543E-22,  8.470329472543E-22, -1.883689877951E-01]} # 0002
+ Energy (Hartree)                      : -2.16349716571556066E+01
+ Force Norm (Hartree/Bohr)             :  2.66393977270300508E-01
+ Memory Consumption Report:
+   Tot. No. of Allocations             :  11086
+   Tot. No. of Deallocations           :  11086
+   Remaining Memory (B)                :  0
+   Memory occupation:
+     Peak Value (MB)                   :  891.801
+     for the array                     : psiwocc
+     in the routine                    : cluster
+     Memory Peak of process            : 993.904 MB
+ Walltime since initialization         :  02:05:35.608940803
+ Max No. of dictionaries used          :  5973 #( 1167 still in use)
+ Number of dictionary folders allocated:  1

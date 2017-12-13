@@ -169,7 +169,7 @@ def evalSpectrum(eigenproblems,nalphaPlot, domega = 0.005, eta = 1.0e-2):
             spectrum[na] = {}
             omegaMax = np.sqrt(eigenproblems[na]['eigenvalues'][-1])
             npoint = int(omegaMax/domega)
-            print 'for na = ', na, ' numpoint = ', npoint, ' omegaMax = ', omegaMax
+            print 'for na = ', na, ' numpoint = ', npoint, ' omegaMax (eV) = ', 27.211*omegaMax
             omega = np.linspace(0.0,omegaMax,npoint)
             spectrum[na]['omega'] = 27.211*omega
         
