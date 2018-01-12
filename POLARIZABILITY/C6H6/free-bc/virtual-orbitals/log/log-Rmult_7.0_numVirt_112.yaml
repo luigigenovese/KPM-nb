@@ -1,0 +1,4379 @@
+---
+ Code logo:
+   "__________________________________ A fast and precise DFT wavelet code
+   |     |     |     |     |     |
+   |     |     |     |     |     |      BBBB         i       gggggg
+   |_____|_____|_____|_____|_____|     B    B               g
+   |     |  :  |  :  |     |     |    B     B        i     g
+   |     |-0+--|-0+--|     |     |    B    B         i     g        g
+   |_____|__:__|__:__|_____|_____|___ BBBBB          i     g         g
+   |  :  |     |     |  :  |     |    B    B         i     g         g
+   |--+0-|     |     |-0+--|     |    B     B     iiii     g         g
+   |__:__|_____|_____|__:__|_____|    B     B        i      g        g
+   |     |  :  |  :  |     |     |    B BBBB        i        g      g
+   |     |-0+--|-0+--|     |     |    B        iiiii          gggggg
+   |_____|__:__|__:__|_____|_____|__BBBBB
+   |     |     |     |  :  |     |                           TTTTTTTTT
+   |     |     |     |--+0-|     |  DDDDDD          FFFFF        T
+   |_____|_____|_____|__:__|_____| D      D        F        TTTT T
+   |     |     |     |  :  |     |D        D      F        T     T
+   |     |     |     |--+0-|     |D         D     FFFF     T     T
+   |_____|_____|_____|__:__|_____|D___      D     F         T    T
+   |     |     |  :  |     |     |D         D     F          TTTTT
+   |     |     |--+0-|     |     | D        D     F         T    T
+   |_____|_____|__:__|_____|_____|          D     F        T     T
+   |     |     |     |     |     |         D               T    T
+   |     |     |     |     |     |   DDDDDD       F         TTTT
+   |_____|_____|_____|_____|_____|______                    www.bigdft.org   "
+
+ Reference Paper                       : The Journal of Chemical Physics 129, 014109 (2008)
+ Version Number                        : 1.8.1
+ Timestamp of this run                 : 2018-01-12 10:58:57.647
+ Root process Hostname                 : ibm-bl02-01
+ Number of MPI tasks                   :  8
+ OpenMP parallelization                :  Yes
+ Maximal OpenMP threads per MPI task   :  2
+ MPI tasks of root process node        :  2
+  #------------------------------------------------------------------ Code compiling options
+ Compilation options:
+   Configure arguments:
+     " '--prefix' '/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install' 'FC=mpif90' 
+     'FCFLAGS=-fopenmp -O2' 'CFLAGS=-O2' 
+     'LDFLAGS=-L/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/lib ' 
+     'C_INCLUDE_PATH=/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/include' 
+     'PKG_CONFIG_PATH=/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/lib/pkgconfig
+     :/srv/ocfs2/isc/dalessandro/BigDFT/binaries/v1.8.2/install/share/pkgconfig:/usr/lib/x86_
+     64-linux-gnu/pkgconfig:/usr/lib/pkgconfig:/usr/share/pkgconfig'"
+   Compilers (CC, FC, CXX)             :  [ gcc, mpif90, g++ ]
+   Compiler flags:
+     CFLAGS                            : -O2
+     FCFLAGS                           : -fopenmp -O2
+     CXXFLAGS                          : -g -O2
+  #------------------------------------------------------------------------ Input parameters
+ radical                               : Rmult_7.0
+ outdir                                : ./log/
+ logfile                               : Yes
+ run_from_files                        : Yes
+ skip                                  : Yes
+ dft:
+   gnrm_cv                             : 1.0e-08 # Convergence criterion gradient
+   hgrids                              : 0.4 #    Grid spacing in the three directions (bohr)
+   inputpsiid                          : 2 #      Input guess wavefunctions
+   itermax                             : 100 #    Max. iterations of wfn. opt. steps
+   gnrm_cv_virt                        : 0.0001 # Convergence criterion gradient for virtual orbitals
+   itermax_virt                        : 30 #     Max. iterations of wfn. opt. steps for virtual orbitals
+   norbv                               : -112 #   Davidson subspace dimension (No. virtual orbitals)
+   rmult: [7.0, 9.0] #                            c(f)rmult*radii_cf(:,1(2))=coarse(fine) atom-based radius
+   disablesym                          : Yes #    Disable the symmetry detection
+   ngrids: [0, 0, 0] #                            Number of grid spacing division in each direction
+   ixc                                 : 1 #      Exchange-correlation parameter (LDA=1,PBE=11)
+   qcharge                             : 0 #      Charge of the system. Can be integer or real.
+   elecfield: [0., 0., 0.] #                      Electric field (Ex,Ey,Ez)
+   nspin                               : 1 #      Spin polarization treatment
+   mpol                                : 0 #      Total magnetic moment
+   itermin                             : 0 #      Minimal iterations of wfn. optimized steps
+   nrepmax                             : 1 #      Max. number of re-diag. runs
+   ncong                               : 6 #      No. of CG it. for preconditioning eq.
+   idsx                                : 6 #      Wfn. diis history
+   dispersion                          : 0 #      Dispersion correction potential (values 1,2,3,4,5), 0=none
+   output_denspot                      : 0 #      Output of the density or the potential
+   rbuf                                : 0. #     Length of the tail (AU)
+   ncongt                              : 30 #     No. of tail CG iterations
+   nvirt                               : 0 #      No. of converged virtual orbs (< norbv)
+   nplot                               : 0 #      No. of plotted orbs
+   external_potential                  : 0.0 #    Multipole moments of an external potential
+   calculate_strten                    : Yes #    Boolean to activate the calculation of the stress tensor. Might be set to No for 
+    #                                              performance reasons
+   plot_mppot_axes: [-1, -1, -1] #                Plot the potential generated by the multipoles along axes through this 
+    #                                              point. Negative values mean no plot.
+   plot_pot_axes: [-1, -1, -1] #                  Plot the potential along axes through this point. Negative values mean 
+    #                                              no plot.
+   occupancy_control                   : None #   Dictionary of the atomic matrices to be applied for a given iteration number
+   itermax_occ_ctrl                    : 0 #      Number of iterations of occupancy control scheme. Should be between itermin and 
+    #                                              itermax
+   nrepmax_occ_ctrl                    : 1 #      Number of re-diagonalizations of occupancy control scheme.
+   alpha_hf                            : -1.0 #   Part of the exact exchange contribution for hybrid functionals
+ output:
+   orbitals                            : binary # Write KS orbitals in the full simulation domain (might take lot of disk space!)
+   verbosity                           : 3 #      Verbosity of the output
+   atomic_density_matrix               : None #   Dictionary of the atoms for which the atomic density matrix has to be plotted
+   sdos                                : No #     Spatially-resolved density of states
+   outputpsiid                         : wavefunction # basename of the output wavefunctions files written in the data directory
+ psolver:
+   kernel:
+     screening                         : 0 #      Mu screening parameter
+     isf_order                         : 16 #     Order of the Interpolating Scaling Function family
+     stress_tensor                     : Yes #    Triggers the calculation of the stress tensor
+   environment:
+     cavity                            : none #   Type of the cavity
+     fd_order                          : 16 #     Order of the Finite-difference derivatives for the GPS solver
+     itermax                           : 200 #    Maximum number of iterations of the GPS outer loop
+     minres                            : 1.e-8 #  Convergence threshold of the loop
+     pb_method                         : none #   Defines the method for the Poisson Boltzmann Equation
+   setup:
+     accel                             : none #   Material Acceleration
+     taskgroup_size                    : 0 #      Size of the taskgroups of the Poisson Solver
+     global_data                       : No #     Charge density and Electrostatic potential are given by global arrays
+     verbose                           : Yes #    Verbosity switch
+     output                            : none #   Quantities to be plotted after the main solver routine
+ chess:
+   foe:
+     ef_interpol_det                   : 1.e-12 # FOE max determinant of cubic interpolation matrix
+     ef_interpol_chargediff            : 1.0 #    FOE max charge difference for interpolation
+     evbounds_nsatur                   : 3 #      Number of FOE cycles before the eigenvalue bounds are shrinked (linear)
+     evboundsshrink_nsatur             : 4 #      Maximal number of unsuccessful eigenvalue bounds shrinkings
+     fscale                            : 5.e-2 #  Initial guess for the error function decay length
+     fscale_lowerbound                 : 5.e-3 #  Lower bound for the error function decay length
+     fscale_upperbound                 : 5.e-2 #  Upper bound for the error function decay length
+     eval_range_foe: [-0.5, 0.5] #                Lower and upper bound of the eigenvalue spectrum, will be adjusted 
+      #                                            automatically if chosen unproperly
+     accuracy_foe                      : 1.e-5 #  Required accuracy for the Chebyshev fit for FOE
+     accuracy_ice                      : 1.e-8 #  Required accuracy for the Chebyshev fit for ICE (calculation of matrix powers)
+     accuracy_penalty                  : 1.e-5 #  Required accuracy for the Chebyshev fit for the penalty function
+     accuracy_entropy                  : 1.e-4 #  Required accuracy for the Chebyshev fit for the function to calculate the entropy term
+     betax_foe                         : -1000.0 # the exponent in the exponential penalty function which is used to determine the 
+      #                                            eigenvalue bounds for FOE
+     betax_ice                         : -1000.0 # the exponent in the exponential penalty function which is used to determine the 
+      #                                            eigenvalue bounds for ICE
+     occupation_function               : 102 #    the function to assign the occupation numbers
+     adjust_fscale                     : yes #    dynamically adjust the value of fscale or not
+   lapack:
+     blocksize_pdsyev                  : -8 #     SCALAPACK linear scaling blocksize for diagonalization
+     blocksize_pdgemm                  : -8 #     SCALAPACK linear scaling blocksize for matrix matrix multiplication
+     maxproc_pdsyev                    : 4 #      SCALAPACK linear scaling max num procs
+     maxproc_pdgemm                    : 4 #      SCALAPACK linear scaling max num procs
+   pexsi:
+     pexsi_npoles                      : 40 #     Number of poles used by PEXSI
+     pexsi_nproc_per_pole              : 1 #      Number of processes used per pole by PEXSI
+     pexsi_mumin                       : -1.0 #   Initial guess for the lower bound of the chemical potential used by PEXSI
+     pexsi_mumax                       : 1.0 #    Initial guess for the upper bound of the chemical potential used by PEXSI
+     pexsi_mu                          : 0.5 #    Initial guess for the  chemical potential used by PEXSI
+     pexsi_temperature                 : 1.e-3 #  Temperature used by PEXSI
+     pexsi_tol_charge                  : 1.e-3 #  Charge tolerance used PEXSI
+     pexsi_np_sym_fact                 : 16 #     Number of tasks for the symbolic factorization used by PEXSI
+     pexsi_DeltaE                      : 10.0 #   Upper bound for the spectral radius of S^-1H (in hartree?) used by PEXSI
+     pexsi_do_inertia_count            : yes #    Decides whether PEXSI should use the inertia count at each iteration
+     pexsi_max_iter                    : 10 #     Maximal number of PEXSI iterations
+     pexsi_verbosity                   : 0 #      Verbosity level of the PEXSI solver
+ kpt:
+   method                              : manual # K-point sampling method
+   kpt: #                                         Kpt coordinates
+   -  [0., 0., 0.]
+   wkpt: [1.] #                                   Kpt weights
+   bands                               : No #     For doing band structure calculation
+ geopt:
+   method                              : none #   Geometry optimisation method
+   ncount_cluster_x                    : 1 #      Maximum number of force evaluations
+   frac_fluct                          : 1. #     Fraction of force fluctuations. Stop if fmax < forces_fluct*frac_fluct
+   forcemax                            : 0. #     Max forces criterion when stop
+   randdis                             : 0. #     Random displacement amplitude
+   betax                               : 4. #     Stepsize for the geometry optimization
+   beta_stretchx                       : 5e-1 #   Stepsize for steepest descent in stretching mode direction (only if in biomode)
+ md:
+   mdsteps                             : 0 #      Number of MD steps
+   print_frequency                     : 1 #      Printing frequency for energy.dat and Trajectory.xyz files
+   temperature                         : 300.d0 # Initial temperature in Kelvin
+   timestep                            : 20.d0 #  Time step for integration (in a.u.)
+   no_translation                      : No #     Logical input to set translational correction
+   thermostat                          : none #   Activates a thermostat for MD
+   wavefunction_extrapolation          : 0 #      Activates the wavefunction extrapolation for MD
+   always_from_scratch                 : No #     When true, always restart wavefunctions from scratch to eliminate dissipation effects
+   restart_nose                        : No #     Restart Nose Hoover Chain information from md.restart
+   restart_pos                         : No #     Restart nuclear position information from md.restart
+   restart_vel                         : No #     Restart nuclear velocities information from md.restart
+ mix:
+   iscf                                : 0 #      Mixing scheme (default=0 i.e. direct minimization)
+   itrpmax                             : 1 #      Maximum number of diagonalisation iterations
+   rpnrm_cv                            : 1.e-4 #  Stop criterion on the residue of potential or density
+   norbsempty                          : 0 #      No. of additional bands
+   tel                                 : 0. #     Electronic temperature
+   occopt                              : 1 #      Smearing method
+   alphamix                            : 0. #     Multiplying factors for the mixing
+   alphadiis                           : 2. #     Multiplying factors for the electronic DIIS
+ sic:
+   sic_approach                        : none #   SIC (self-interaction correction) method
+   sic_alpha                           : 0. #     SIC downscaling parameter
+ tddft:
+   tddft_approach                      : none #   Time-Dependent DFT method
+   decompose_perturbation              : none #   Indicate the directory of the perturbation to be decomposed in the basis of empty 
+    #                                              states
+ mode:
+   method                              : dft #    Run method of BigDFT call
+   add_coulomb_force                   : No #     Boolean to add coulomb force on top of any of above selected force
+ perf:
+   debug                               : No #     Debug option
+   fftcache                            : 8192 #   Cache size for the FFT
+   accel                               : NO #     Acceleration (hardware)
+   ocl_platform                        : ~ #      Chosen OCL platform
+   ocl_devices                         : ~ #      Chosen OCL devices
+   blas                                : No #     CUBLAS acceleration
+   projrad                             : 15. #    Radius of the projector as a function of the maxrad
+   exctxpar                            : OP2P #   Exact exchange parallelisation scheme
+   ig_diag                             : Yes #    Input guess (T=Direct, F=Iterative) diag. of Ham.
+   ig_norbp                            : 5 #      Input guess Orbitals per process for iterative diag.
+   ig_blocks: [300, 800] #                        Input guess Block sizes for orthonormalisation
+   ig_tol                              : 1.0e-4 # Input guess Tolerance criterion
+   methortho                           : 0 #      Orthogonalisation
+   rho_commun                          : DEF #    Density communication scheme (DBL, RSC, MIX)
+   unblock_comms                       : OFF #    Overlap Communications of fields (OFF,DEN,POT)
+   linear                              : OFF #    Linear Input Guess approach
+   tolsym                              : 1.0e-8 # Tolerance for symmetry detection
+   signaling                           : No #     Expose calculation results on Network
+   signaltimeout                       : 0 #      Time out on startup for signal connection (in seconds)
+   domain                              : ~ #      Domain to add to the hostname to find the IP
+   inguess_geopt                       : 0 #      Input guess to be used during the optimization
+   store_index                         : Yes #    Store indices or recalculate them for linear scaling
+   psp_onfly                           : Yes #    Calculate pseudopotential projectors on the fly
+   multipole_preserving                : No #     (EXPERIMENTAL) Preserve the multipole moment of the ionic density
+   mp_isf                              : 16 #     (EXPERIMENTAL) Interpolating scaling function or lifted dual order for the multipole 
+    #                                              preserving
+   mixing_after_inputguess             : 1 #      Mixing step after linear input guess
+   iterative_orthogonalization         : No #     Iterative_orthogonalization for input guess orbitals
+   check_sumrho                        : 1 #      Enables linear sumrho check
+   check_overlap                       : 1 #      Enables linear overlap check
+   experimental_mode                   : No #     Activate the experimental mode in linear scaling
+   explicit_locregcenters              : No #     Linear scaling explicitly specify localization centers
+   calculate_KS_residue                : Yes #    Linear scaling calculate Kohn-Sham residue
+   intermediate_forces                 : No #     Linear scaling calculate intermediate forces
+   kappa_conv                          : 0.1 #    Exit kappa for extended input guess (experimental mode)
+   calculate_gap                       : No #     Linear scaling calculate the HOMO LUMO gap
+   loewdin_charge_analysis             : No #     Linear scaling perform a Loewdin charge analysis at the end of the calculation
+   coeff_weight_analysis               : No #     Linear scaling perform a Loewdin charge analysis of the coefficients for fragment 
+    #                                              calculations
+   check_matrix_compression            : Yes #    Linear scaling perform a check of the matrix compression routines
+   correction_co_contra                : Yes #    Linear scaling correction covariant / contravariant gradient
+   FOE_restart                         : 0 #      Restart method to be used for the FOE method
+   imethod_overlap                     : 1 #      Method to calculate the overlap matrices (1=old, 2=new)
+   enable_matrix_taskgroups            : True #   Enable the matrix taskgroups
+   hamapp_radius_incr                  : 8 #      Radius enlargement for the Hamiltonian application (in grid points)
+   adjust_kernel_iterations            : True #   Enable the adaptive ajustment of the number of kernel iterations
+   adjust_kernel_threshold             : True #   Enable the adaptive ajustment of the kernel convergence threshold according to the 
+    #                                              support function convergence
+   wf_extent_analysis                  : False #  Perform an analysis of the extent of the support functions (and possibly KS orbitals)
+   foe_gap                             : False #  Use the FOE method to calculate the HOMO-LUMO gap at the end of a calculation
+ lin_general:
+   hybrid                              : No #     Activate the hybrid mode; if activated, only the low accuracy values will be relevant
+   nit: [100, 100] #                              Number of iteration with low/high accuracy
+   rpnrm_cv: [1.e-12, 1.e-12] #                   Convergence criterion for low/high accuracy
+   conf_damping                        : -0.5 #   How the confinement should be decreased, only relevant for hybrid mode; negative -> 
+    #                                              automatic
+   taylor_order                        : 0 #      Order of the Taylor approximation; 0 -> exact
+   max_inversion_error                 : 1.d0 #   Linear scaling maximal error of the Taylor approximations to calculate the inverse of 
+    #                                              the overlap matrix
+   output_wf                           : 0 #      Output basis functions; 0 no output, 1 formatted output, 2 Fortran bin, 3 ETSF
+   output_mat                          : 0 #      Output sparse matrices; 0 no output, 1 formatted sparse, 11 formatted dense, 21 
+    #                                              formatted both
+   output_coeff                        : 0 #      Output KS coefficients; 0 no output, 1 formatted output
+   output_fragments                    : 0 #      Output support functions, kernel and coeffs; 0 fragments and full system, 1 
+    #                                              fragments only, 2 full system only
+   kernel_restart_mode                 : 0 #      Method for restarting kernel; 0 kernel, 1 coefficients, 2 random, 3 diagonal, 4 
+    #                                              support function weights
+   kernel_restart_noise                : 0.0d0 #  Add random noise to kernel or coefficients when restarting
+   frag_num_neighbours                 : 0 #      Number of neighbours to output for each fragment
+   frag_neighbour_cutoff               : 12.0d0 # Number of neighbours to output for each fragment
+   cdft_lag_mult_init                  : 0.05d0 # CDFT initial value for Lagrange multiplier
+   cdft_conv_crit                      : 1.e-2 #  CDFT convergence threshold for the constrained charge
+   calc_dipole                         : No #     Calculate dipole
+   calc_quadrupole                     : No #     Calculate quadrupole
+   subspace_diag                       : No #     Diagonalization at the end
+   extra_states                        : 0 #      Number of extra states to include in support function and kernel optimization (dmin 
+    #                                              only), must be equal to norbsempty
+   calculate_onsite_overlap            : No #     Calculate the onsite overlap matrix (has only an effect if the matrices are all 
+    #                                              written to disk)
+   charge_multipoles                   : 0 #      Calculate the atom-centered multipole coefficients; 0 no, 1 old approach Loewdin, 2 
+    #                                              new approach Projector
+   support_function_multipoles         : False #  Calculate the multipole moments of the support functions
+   plot_locreg_grids                   : False #  Plot the scaling function and wavelets grid of each localization region
+   calculate_FOE_eigenvalues: [0, -1] #           First and last eigenvalue to be calculated using the FOE procedure
+   precision_FOE_eigenvalues           : 5.e-3 #  Decay length of the error function used to extract the eigenvalues (i.e. something like 
+    #                                              the resolution)
+   multipole_centers                   : 0.0 #    Determines whether the multipole centers shall be determined automatically (i.e. 
+    #                                              taking the atoms) or whether they are 
+    #                                              provided manually
+   consider_entropy                    : False #  Indicate whether the entropy contribution to the total energy shall be considered
+ lin_basis:
+   nit: [4, 5] #                                  Maximal number of iterations in the optimization of the 
+    #                                              support functions
+   nit_ig                              : 50 #     maximal number of iterations to optimize the support functions in the extended input 
+    #                                              guess (experimental mode only)
+   idsx: [6, 6] #                                 DIIS history for optimization of the support functions 
+    #                                              (low/high accuracy); 0 -> SD
+   gnrm_cv: [1.e-2, 1.e-4] #                      Convergence criterion for the optimization of the support functions 
+    #                                              (low/high accuracy)
+   gnrm_ig                             : 1.e-3 #  Convergence criterion for the optimization of the support functions in the extended 
+    #                                              input guess (experimental mode only)
+   deltae_cv                           : 1.e-4 #  Total relative energy difference to stop the optimization ('experimental_mode' only)
+   gnrm_dyn                            : 1.e-4 #  Dynamic convergence criterion ('experimental_mode' only)
+   min_gnrm_for_dynamic                : 1.e-3 #  Minimal gnrm to active the dynamic gnrm criterion
+   alpha_diis                          : 1.0 #    Multiplicator for DIIS
+   alpha_sd                            : 1.0 #    Initial step size for SD
+   nstep_prec                          : 5 #      Number of iterations in the preconditioner
+   fix_basis                           : 1.e-10 # Fix the support functions if the density change is below this threshold
+   correction_orthoconstraint          : 1 #      Correction for the slight non-orthonormality in the orthoconstraint
+   orthogonalize_ao                    : Yes #    Orthogonalize the atomic orbitals used as input guess
+   reset_DIIS_history                  : No #     Reset the DIIS history when starting the loop which optimizes the support functions
+ lin_kernel:
+   nstep: [1, 1] #                                Number of steps taken when updating the coefficients via 
+    #                                              direct minimization for each iteration of 
+    #                                              the density kernel loop
+   nit: [5, 5] #                                  Number of iterations in the (self-consistent) 
+    #                                              optimization of the density kernel
+   idsx_coeff: [0, 0] #                           DIIS history for direct mininimization
+   idsx: [0, 0] #                                 Mixing method; 0 -> linear mixing, >=1 -> Pulay mixing
+   alphamix: [0.5, 0.5] #                         Mixing parameter (low/high accuracy)
+   gnrm_cv_coeff: [1.e-5, 1.e-5] #                Convergence criterion on the gradient for direct minimization
+   rpnrm_cv: [1.e-10, 1.e-10] #                   Convergence criterion (change in density/potential) for the kernel 
+    #                                              optimization
+   linear_method                       : DIAG #   Method to optimize the density kernel
+   mixing_method                       : DEN #    Quantity to be mixed
+   alpha_sd_coeff                      : 0.2 #    Initial step size for SD for direct minimization
+   alpha_fit_coeff                     : No #     Update the SD step size by fitting a quadratic polynomial
+   coeff_scaling_factor                : 1.0 #    Factor to scale the gradient in direct minimization
+   delta_pnrm                          : -1.0 #   Stop the kernel optimization if the density/potential difference has decreased by this 
+    #                                              factor (deactivated if -1.0)
+ lin_basis_params:
+   nbasis                              : 4 #      Number of support functions per atom
+   ao_confinement                      : 8.3e-3 # Prefactor for the input guess confining potential
+   confinement: [8.3e-3, 0.0] #                   Prefactor for the confining potential (low/high accuracy)
+   rloc: [7.0, 7.0] #                             Localization radius for the support functions
+   rloc_kernel                         : 9.0 #    Localization radius for the density kernel
+   rloc_kernel_foe                     : 14.0 #   Cutoff radius for the FOE matrix vector multiplications
+ psppar.C:
+   Pseudopotential type                : HGH-K
+   Atomic number                       : 6
+   No. of Electrons                    : 4
+   Pseudopotential XC                  : 1
+   Local Pseudo Potential (HGH convention):
+     Rloc                              : 0.34883045
+     Coefficients (c1 .. c4): [-8.5137711, 1.22843203, 0.0, 0.0]
+   NonLocal PSP Parameters:
+   - Channel (l)                       : 0
+     Rloc                              : 0.30455321
+     h_ij terms: [9.522841789999999, 0.0, 0.0, 0.0, 0.0, 0.0]
+   - Channel (l)                       : 1
+     Rloc                              : 0.2326773
+     h_ij terms: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   Source                              : Hard-Coded
+   Radii of active regions (AU):
+     Coarse                            : 1.584366302812153
+     Fine                              : 0.2326773
+     Coarse PSP                        : 0.5075886833333334
+     Source                            : Hard-Coded
+ psppar.H:
+   Pseudopotential type                : HGH-K
+   Atomic number                       : 1
+   No. of Electrons                    : 1
+   Pseudopotential XC                  : 1
+   Local Pseudo Potential (HGH convention):
+     Rloc                              : 0.2
+     Coefficients (c1 .. c4): [-4.1802368, 0.72507482, 0.0, 0.0]
+   Source                              : Hard-Coded
+   Radii of active regions (AU):
+     Coarse                            : 1.463418464633951
+     Fine                              : 0.2
+     Coarse PSP                        : 0.0
+     Source                            : Hard-Coded
+ posinp:
+    #---------------------------------------------- Atomic positions (by default bohr units)
+   units                               : angstroem
+   positions:
+   - C: [0.0, 1.396000027656555, 0.0]
+   - C: [1.208999991416931, 0.6980000138282777, 0.0]
+   - C: [1.208999991416931, -0.6980000138282777, 0.0]
+   - C: [0.0, -1.396000027656555, 0.0]
+   - C: [-1.208999991416931, -0.6980000138282777, 0.0]
+   - C: [-1.208999991416931, 0.6980000138282777, 0.0]
+   - H: [0.0, 2.479000091552734, 0.0]
+   - H: [2.147000074386597, 1.240000009536743, 0.0]
+   - H: [2.147000074386597, -1.240000009536743, 0.0]
+   - H: [0.0, -2.479000091552734, 0.0]
+   - H: [-2.147000074386597, -1.240000009536743, 0.0]
+   - H: [-2.147000074386597, 1.240000009536743, 0.0]
+   properties:
+     format                            : xyz
+     source                            : C6H6_posinp.xyz
+  #--------------------------------------------------------------------------------------- |
+ Data Writing directory                : ./log/data-Rmult_7.0/
+  #--------------------------------------------- Input Atomic System (file: C6H6_posinp.xyz)
+ Atomic System Properties:
+   Number of atomic types              :  2
+   Number of atoms                     :  12
+   Types of atoms                      :  [ C, H ]
+   Boundary Conditions                 : Free #Code: F
+   Number of Symmetries                :  0
+   Space group                         : disabled
+  #-------------------------- Geometry optimization Input Parameters (file: Rmult_7.0.geopt)
+ Geometry Optimization Parameters:
+   Maximum steps                       :  1
+   Algorithm                           : none
+   Random atomic displacement          :  0.0E+00
+   Fluctuation in forces               :  1.0E+00
+   Maximum in forces                   :  0.0E+00
+   Steepest descent step               :  4.0E+00
+ Material acceleration                 :  No #iproc=0
+  #------------------------------------------------------------------------ Input parameters
+ DFT parameters:
+   eXchange Correlation:
+     XC ID                             :  &ixc  1
+     Exchange-Correlation reference    : "XC: Teter 93"
+     XC functional implementation      : ABINIT
+     Spin polarization                 :  No
+ Basis set definition:
+   Suggested Grid Spacings (a0)        :  [  0.40,  0.40,  0.40 ]
+   Coarse and Fine Radii Multipliers   :  [  7.0,  9.0 ]
+ Self-Consistent Cycle Parameters:
+   Wavefunction:
+     Gradient Norm Threshold           :  &gnrm_cv  1.0E-08
+     CG Steps for Preconditioner       :  6
+     DIIS History length               :  6
+     Max. Wfn Iterations               :  &itermax  100
+     Max. Subspace Diagonalizations    :  1
+     Input wavefunction policy         : INPUT_PSI_DISK_WVL # 2
+     Output wavefunction policy        : BINARY # 2
+     Output grid policy                : NONE # 0
+     Virtual orbitals                  :  0
+     Number of plotted density orbitals:  0
+   Density/Potential:
+     Max. Iterations                   :  1
+ Post Optimization Parameters:
+   Finite-Size Effect estimation:
+     Scheduled                         :  No
+  #----------------------------------------------------------------------- System Properties
+ Properties of atoms in the system:
+ - Symbol                              : C #Type No.  01
+   No. of Electrons                    :  4
+   No. of Atoms                        :  6
+   Radii of active regions (AU):
+     Coarse                            :  1.58437
+     Fine                              :  0.23268
+     Coarse PSP                        :  0.50759
+     Source                            : Hard-Coded
+   Grid Spacing threshold (AU)         :  0.58
+   Pseudopotential type                : HGH-K
+   Local Pseudo Potential (HGH convention):
+     Rloc                              :  0.34883
+     Coefficients (c1 .. c4)           :  [ -8.51377,  1.22843,  0.00000,  0.00000 ]
+   NonLocal PSP Parameters:
+   - Channel (l)                       :  0
+     Rloc                              :  0.30455
+     h_ij matrix:
+     -  [  9.52284,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+   - Channel (l)                       :  1
+     Rloc                              :  0.23268
+     h_ij matrix:
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+     -  [  0.00000,  0.00000,  0.00000 ]
+   No. of projectors                   :  1
+   PSP XC                              : "XC: Teter 93"
+ - Symbol                              : H #Type No.  02
+   No. of Electrons                    :  1
+   No. of Atoms                        :  6
+   Radii of active regions (AU):
+     Coarse                            :  1.46342
+     Fine                              :  0.20000
+     Coarse PSP                        :  0.00000
+     Source                            : Hard-Coded
+   Grid Spacing threshold (AU)         :  0.50
+   Pseudopotential type                : HGH-K
+   Local Pseudo Potential (HGH convention):
+     Rloc                              :  0.20000
+     Coefficients (c1 .. c4)           :  [ -4.18024,  0.72507,  0.00000,  0.00000 ]
+   No. of projectors                   :  0
+   PSP XC                              : "XC: Teter 93"
+  #----------------------------------------------- Atom Positions (specified and grid units)
+ Atomic structure:
+   Units                               : angstroem
+   Positions:
+   - C: [ 7.514316395,  9.227822749,  5.820949320] # [  35.50,  43.60,  27.50 ] 0001
+   - C: [ 8.723316386,  8.529822735,  5.820949320] # [  41.21,  40.30,  27.50 ] 0002
+   - C: [ 8.723316386,  7.133822708,  5.820949320] # [  41.21,  33.70,  27.50 ] 0003
+   - C: [ 7.514316395,  6.435822694,  5.820949320] # [  35.50,  30.40,  27.50 ] 0004
+   - C: [ 6.305316404,  7.133822708,  5.820949320] # [  29.79,  33.70,  27.50 ] 0005
+   - C: [ 6.305316404,  8.529822735,  5.820949320] # [  29.79,  40.30,  27.50 ] 0006
+   - H: [ 7.514316395,  10.31082281,  5.820949320] # [  35.50,  48.71,  27.50 ] 0007
+   - H: [ 9.661316469,  9.071822731,  5.820949320] # [  45.64,  42.86,  27.50 ] 0008
+   - H: [ 9.661316469,  6.591822712,  5.820949320] # [  45.64,  31.14,  27.50 ] 0009
+   - H: [ 7.514316395,  5.352822630,  5.820949320] # [  35.50,  25.29,  27.50 ] 0010
+   - H: [ 5.367316321,  6.591822712,  5.820949320] # [  25.36,  31.14,  27.50 ] 0011
+   - H: [ 5.367316321,  9.071822731,  5.820949320] # [  25.36,  42.86,  27.50 ] 0012
+   Rigid Shift Applied (AU)            :  [  14.200,  14.800,  11.000 ]
+  #------------------------------------------------------------------------- Grid properties
+ Box Grid spacings                     :  [  0.4000,  0.4000,  0.4000 ]
+ Sizes of the simulation domain:
+   AU                                  :  [  28.400,  29.600,  22.000 ]
+   Angstroem                           :  [  15.029,  15.664,  11.642 ]
+   Grid Spacing Units                  :  [  71,  74,  55 ]
+   High resolution region boundaries (GU):
+     From                              :  [  21,  21,  23 ]
+     To                                :  [  50,  53,  32 ]
+ High Res. box is treated separately   :  Yes
+ Wavefunctions Descriptors, full simulation domain:
+   Coarse resolution grid:
+     No. of segments                   :  3414
+     No. of points                     :  163100
+   Fine resolution grid:
+     No. of segments                   :  424
+     No. of points                     :  4396
+  #------------------------------------------------------------------- Kernel Initialization
+ Poisson Kernel Initialization:
+    #---------------------------------------------------------------------- Input parameters
+   kernel:
+     screening                         : 0 #      Mu screening parameter
+     isf_order                         : 16 #     Order of the Interpolating Scaling Function family
+     stress_tensor                     : Yes #    Triggers the calculation of the stress tensor
+   environment:
+     cavity                            : none #   Type of the cavity
+     fd_order                          : 16 #     Order of the Finite-difference derivatives for the GPS solver
+     itermax                           : 200 #    Maximum number of iterations of the GPS outer loop
+     minres                            : 1.e-8 #  Convergence threshold of the loop
+     pb_method                         : none #   Defines the method for the Poisson Boltzmann Equation
+   setup:
+     accel                             : none #   Material Acceleration
+     taskgroup_size                    : 0 #      Size of the taskgroups of the Poisson Solver
+     global_data                       : No #     Charge density and Electrostatic potential are given by global arrays
+     verbose                           : Yes #    Verbosity switch
+     output                            : none #   Quantities to be plotted after the main solver routine
+   MPI tasks                           :  8
+   OpenMP threads per MPI task         :  2
+ Poisson Kernel Creation:
+   Boundary Conditions                 : Free
+   Memory Requirements per MPI task:
+     Density (MB)                      :  4.45
+     Kernel (MB)                       :  4.57
+     Full Grid Arrays (MB)             :  33.31
+     Load Balancing of calculations:
+       Density:
+         MPI tasks 0- 7                : 100%
+       Kernel:
+         MPI tasks 0- 6                : 100%
+         MPI task 7                    :  87%
+       Complete LB per task            : 1/3 LB_density + 2/3 LB_kernel
+  #------------------------------------------------------- Electronic Orbital Initialization
+ Total Number of Electrons             :  30
+ Spin treatment                        : Averaged
+ Orbitals Repartition:
+   MPI tasks  0- 6                     :  2
+   MPI tasks  7- 7                     :  1
+ Total Number of Orbitals              :  15
+ Input Occupation Numbers:
+ - Occupation Numbers: {Orbitals No. 1-15:  2.0000}
+ Wavefunctions memory occupation for root MPI process:  2 MB 981 KB 256 B
+ NonLocal PSP Projectors Descriptors:
+   Creation strategy                   : On-the-fly
+   Total number of projectors          :  6
+   Total number of components          :  10444
+   Percent of zero components          :  0
+   Size of workspaces                  :  41792
+   Maximum size of masking arrays for a projector:  1476
+   Cumulative size of masking arrays   :  8844
+ Communication checks:
+   Transpositions                      :  Yes
+   Reverse transpositions              :  Yes
+  #-------------------------------------------------------- Estimation of Memory Consumption
+ Memory requirements for principal quantities (MiB.KiB):
+   Subspace Matrix                     : 0.1 #    (Number of Orbitals: 15)
+   Single orbital                      : 1.491 #  (Number of Components: 193872)
+   All (distributed) orbitals          : 8.896 #  (Number of Orbitals per MPI task: 2)
+   Wavefunction storage size           : 44.383 # (DIIS/SD workspaces included)
+   Nonlocal Pseudopotential Arrays     : 0.82
+   Full Uncompressed (ISF) grid        : 33.321
+   Workspaces storage size             : 3.202
+ Accumulated memory requirements during principal run stages (MiB.KiB):
+   Kernel calculation                  : 87.515
+   Density Construction                : 151.555
+   Poisson Solver                      : 102.464
+   Hamiltonian application             : 154.619
+   Orbitals Orthonormalization         : 154.619
+ Estimated Memory Peak (MB)            :  154
+ Ion-Ion interaction energy            :  1.03110083991060E+02
+  #---------------------------------------------------------------- Ionic Potential Creation
+ Total ionic charge                    : -30.000000024001
+ Poisson Solver:
+   BC                                  : Free
+   Box                                 :  [  173,  179,  141 ]
+   MPI tasks                           :  8
+ Interaction energy ions multipoles    :  0.0
+ Interaction energy multipoles multipoles:  0.0
+  #--------------------------------------------------------- Reading Wavefunctions from disk
+ Input Hamiltonian:
+   Need to reformat wavefunctions      :  No
+   Need to reformat wavefunctions      :  No
+   Reading Waves Time:
+   -  {Process:  0, Timing:  [  1.04E-01,  1.770E-01 ]}
+  #------------------------------------------------------------------- Self-Consistent Cycle
+ Ground State Optimization:
+ - Hamiltonian Optimization: &itrp001
+   - Subspace Optimization: &itrep001-01
+       Wavefunctions Iterations:
+       -  { #---------------------------------------------------------------------- iter: 1
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  29.999999874177, 
+ Poisson Solver: {BC: Free, Box:  [  173,  179,  141 ], MPI tasks:  8}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  1.818418999320E-10,  # 00001
+  4.411991268256E-10,  # 00002
+  5.599507161571E-10,  # 00003
+  5.026828612888E-10,  # 00004
+  2.800213611433E-10,  # 00005
+  5.503173071830E-10,  # 00006
+  2.451061782912E-10,  # 00007
+  6.301478797452E-10,  # 00008
+  1.085970041726E-09,  # 00009
+  5.492567404591E-10,  # 00010
+  8.453735257414E-10,  # 00011
+  2.874858315377E-09,  # 00012
+  1.177856311617E-09,  # 00013
+  6.796412474843E-10,  # 00014
+  5.176442212583E-09],  # 00015
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  2.94814088317E+01, Epot: -4.55953515363E+01, Enl:  2.72618620379E+00, 
+              EH:  1.31208809472E+02,  EXC: -1.23428895597E+01, EvXC: -1.61452798951E+01}, 
+ iter:  1, EKS: -3.76840916462605406E+01, gnrm:  1.65E-09, 
+ DIIS weights: [ 1.00E+00,  1.00E+00], Orthogonalization Method:  0}
+       -  &FINAL001  { #----------------------------------------------------------- iter: 2
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  29.999999874177, 
+ Poisson Solver: {BC: Free, Box:  [  173,  179,  141 ], MPI tasks:  8}, 
+ Hamiltonian Applied:  Yes, 
+ iter:  2, EKS: -3.76840916462611943E+01, gnrm:  1.65E-09, D: -6.54E-13,  #FINAL
+ Energies: {Ekin:  2.94814088320E+01, Epot: -4.55953515366E+01, Enl:  2.72618620366E+00, 
+              EH:  1.31208809472E+02,  EXC: -1.23428895597E+01, EvXC: -1.61452798951E+01, 
+            Eion:  1.03110083991E+02}, 
+ }
+       Non-Hermiticity of Hamiltonian in the Subspace:  8.41E-32
+        #Eigenvalues and New Occupation Numbers
+       Orbitals: [
+ {e: -7.775814606594E-01, f:  2.0000},  # 00001
+ {e: -6.748734315498E-01, f:  2.0000},  # 00002
+ {e: -6.748502835650E-01, f:  2.0000},  # 00003
+ {e: -5.446719563969E-01, f:  2.0000},  # 00004
+ {e: -5.446566314714E-01, f:  2.0000},  # 00005
+ {e: -4.777423109888E-01, f:  2.0000},  # 00006
+ {e: -4.095930352098E-01, f:  2.0000},  # 00007
+ {e: -4.065459134998E-01, f:  2.0000},  # 00008
+ {e: -3.780349235433E-01, f:  2.0000},  # 00009
+ {e: -3.780159160908E-01, f:  2.0000},  # 00010
+ {e: -3.397527085839E-01, f:  2.0000},  # 00011
+ {e: -3.046452936561E-01, f:  2.0000},  # 00012
+ {e: -3.045748580271E-01, f:  2.0000},  # 00013
+ {e: -2.391733659632E-01, f:  2.0000},  # 00014
+ {e: -2.391661612723E-01, f:  2.0000}] # 00015
+ Last Iteration                        : *FINAL001
+ Write wavefunctions to file           : ./log/data-Rmult_7.0/wavefunction.*
+  # 1th wavefunction written
+  # 2th wavefunction written
+ Write Waves Time:
+ -  {Process:  0, Timing:  [  1.681E-01,  3.030E-01 ]}
+  #---------------------------------------------------------------------- Forces Calculation
+ GPU acceleration                      :  No
+ Rho Commun                            : RED_SCT
+ Total electronic charge               :  29.999999874177
+ Poisson Solver:
+   BC                                  : Free
+   Box                                 :  [  173,  179,  141 ]
+   MPI tasks                           :  8
+ Multipole analysis origin             :  [  1.42E+01,  1.480000E+01,  1.100000E+01 ]
+ Electric Dipole Moment (AU):
+   P vector                            :  [ -8.0473E-06, -6.4454E-06, -1.9080E-05 ]
+   norm(P)                             :  2.168754E-05
+ Electric Dipole Moment (Debye):
+   P vector                            :  [ -2.0454E-05, -1.6383E-05, -4.8497E-05 ]
+   norm(P)                             :  5.512422E-05
+ Quadrupole Moment (AU):
+   Q matrix:
+   -  [ 5.9101E+00,  2.1442E-06,  5.4396E-06]
+   -  [ 2.1442E-06,  5.9222E+00,  5.4514E-06]
+   -  [ 5.4396E-06,  5.4514E-06, -1.1832E+01]
+   trace                               : -3.37E-11
+ Calculate local forces                :  Yes
+ Calculate Non Local forces            :  Yes
+  #------------ Iterative subspace diagonalization of virtual orbitals (Direct Minimization)
+ Orbital restart:
+ #(10:59:07.980)  6% / [>                        ] ( 1/15,  2.47E+05 it/s), ETA  0.0s
+ #(10:59:08.079) 13% - [==>                      ] ( 2/15,  20. it/s), ETA  0.6s
+ #(10:59:08.179) 20% \ [====>                    ] ( 3/15,  15. it/s), ETA  0.8s
+ #(10:59:08.279) 26% | [=====>                   ] ( 4/15,  13. it/s), ETA  0.8s
+ #(10:59:08.376) 33% / [=======>                 ] ( 5/15,  13. it/s), ETA  0.8s
+ #(10:59:08.471) 40% - [=========>               ] ( 6/15,  12. it/s), ETA  0.7s
+ #(10:59:08.572) 46% \ [==========>              ] ( 7/15,  12. it/s), ETA  0.7s
+ #(10:59:08.619) 53% | [============>            ] ( 8/15,  13. it/s), ETA  0.6s
+ #(10:59:08.665) 60% / [==============>          ] ( 9/15,  13. it/s), ETA  0.5s
+ #(10:59:08.712) 66% - [===============>         ] ( 10/15,  14. it/s), ETA  0.4s
+ #(10:59:08.759) 73% \ [=================>       ] ( 11/15,  14. it/s), ETA  0.3s
+ #(10:59:08.805) 80% | [===================>     ] ( 12/15,  15. it/s), ETA  0.2s
+ #(10:59:08.852) 86% / [====================>    ] ( 13/15,  15. it/s), ETA  0.1s
+ #(10:59:08.899) 93% - [======================>  ] ( 14/15,  15. it/s), ETA  0.1s
+ #(10:59:08.945)100% \ [========================>] ( 15/15,  16. it/s), Tot  1.0s
+ Generation of input wavefunction data for atom: C
+ Electronic configuration: {
+ s: [ 2.00], 
+ p: [ 2/3,  2/3,  2/3]}
+ Generation of input wavefunction data for atom: H
+ Electronic configuration: {
+ s: [ 1.00]}
+ Wavelet conversion succeeded          :  Yes
+ Deviation from normalization          :  9.91E-01
+ Optimization of virtual orbitals:
+    #------------------------------------------------------------------------------- iter= 1
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.558000749768E-09,  # 00001
+  1.602805352689E-09,  # 00002
+  1.053126224729E-10,  # 00003
+  8.978256065674E-11,  # 00004
+  8.679378156802E-11,  # 00005
+  4.633975637015E-10,  # 00006
+  6.342039898063E-11,  # 00007
+  6.107199025570E-11,  # 00008
+  7.516991193697E-11,  # 00009
+  3.005500760275E-09,  # 00010
+  7.672619546294E-09,  # 00011
+  5.626035840561E-11,  # 00012
+  1.450812640481E-10,  # 00013
+  8.130030726014E-09,  # 00014
+  3.965457659241E-09,  # 00015
+  3.366995011909E-09,  # 00016
+  1.369727593373E-07,  # 00017
+  3.793785845616E-08,  # 00018
+  3.940125331226E-08,  # 00019
+  1.458308767194E-08,  # 00020
+  1.104586412027E-08,  # 00021
+  2.503446960374E-08,  # 00022
+  3.990641237311E-08,  # 00023
+  4.292152397006E-08,  # 00024
+  2.254554592411E-07,  # 00025
+  3.096298542145E-07,  # 00026
+  1.390086761196E-07,  # 00027
+  4.009944192268E-06,  # 00028
+  9.215368484768E-07,  # 00029
+  7.159690064926E-07,  # 00030
+  5.363950499670E-07,  # 00031
+  7.054745685613E-06,  # 00032
+  1.084019504480E-05,  # 00033
+  1.082640403198E-05,  # 00034
+  1.997510642215E-06,  # 00035
+  1.263838414045E-06,  # 00036
+  5.408749428415E-06,  # 00037
+  2.778272342239E-06,  # 00038
+  4.655174606368E-06,  # 00039
+  6.009336360952E-05,  # 00040
+  1.547438835026E-04,  # 00041
+  7.935824498886E-05,  # 00042
+  4.623881515964E-05,  # 00043
+  6.489986664670E-05,  # 00044
+  5.298520599197E-05,  # 00045
+  1.931162131120E-04,  # 00046
+  1.044923532949E-04,  # 00047
+  3.225939144136E-05,  # 00048
+  6.852413381159E-05,  # 00049
+  5.590353888216E-04,  # 00050
+  3.549402639410E-04,  # 00051
+  5.269106979501E-04,  # 00052
+  1.120126151141E-04,  # 00053
+  1.763484224647E-04,  # 00054
+  7.150925564927E-04,  # 00055
+  5.977516376348E-04,  # 00056
+  6.475286774533E-04,  # 00057
+  7.196796225585E-04,  # 00058
+  1.843135500378E-03,  # 00059
+  2.482101361381E-03,  # 00060
+  7.551922388741E-04,  # 00061
+  2.656548176549E-03,  # 00062
+  8.371706789750E-04,  # 00063
+  1.807919956752E-03,  # 00064
+  1.428606010888E-03,  # 00065
+  3.321980031177E-03,  # 00066
+  5.305910552044E-03,  # 00067
+  1.967690032226E-03,  # 00068
+  2.019789471349E-03,  # 00069
+  3.618341615816E-03,  # 00070
+  6.422185140820E-03,  # 00071
+  6.774322498055E-03,  # 00072
+  7.601016296715E-03,  # 00073
+  3.937427630409E-03,  # 00074
+  6.385316076024E-03,  # 00075
+  5.006169485617E-03,  # 00076
+  1.227550917509E-02,  # 00077
+  7.540788955708E-03,  # 00078
+  1.495928749619E-02,  # 00079
+  1.413679197302E-02,  # 00080
+  7.822725806777E-03,  # 00081
+  9.802758394709E-03,  # 00082
+  7.998184259549E-03,  # 00083
+  1.018630156485E-02,  # 00084
+  1.635040159508E-02,  # 00085
+  8.330569071383E-03,  # 00086
+  1.019259317444E-02,  # 00087
+  1.686169050172E-02,  # 00088
+  2.256195682386E-02,  # 00089
+  1.891230663499E-02,  # 00090
+  2.295845784284E-02,  # 00091
+  1.659718609256E-02,  # 00092
+  1.966092924178E-02,  # 00093
+  1.310455310072E-02,  # 00094
+  2.476393315803E-02,  # 00095
+  3.146874578176E-02,  # 00096
+  9.191872856026E+00,  # 00097
+  5.219661332015E+00,  # 00098
+  2.605786669118E+00,  # 00099
+  8.256041733131E-01,  # 00100
+  1.440367561976E+00,  # 00101
+  1.378225868158E+00,  # 00102
+  3.562919356827E+00,  # 00103
+  6.587654279438E+00,  # 00104
+  1.174218883310E+01,  # 00105
+  2.119249669699E+01,  # 00106
+  2.028455041497E+01,  # 00107
+  1.037711049477E+01,  # 00108
+  5.899502506342E+00,  # 00109
+  3.050736140466E+00,  # 00110
+  1.063901387950E+00,  # 00111
+  1.864668704873E+00],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  4.82098172262E+02, Epot: -2.51345531047E+01, Enl:  1.17082817551E+00}, 
+ iter:  1, EKS:  4.58134447332886964E+02, gnrm:  3.45E+00, 
+ DIIS weights: [ 1.00E+00,  1.00E+00], Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 2
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.466934838580E-09,  # 00001
+  1.569890821436E-09,  # 00002
+  1.002303637841E-10,  # 00003
+  8.444948245952E-11,  # 00004
+  8.257245563265E-11,  # 00005
+  2.456767432155E-10,  # 00006
+  6.116567518496E-11,  # 00007
+  5.805970319927E-11,  # 00008
+  7.087139496498E-11,  # 00009
+  1.602711335676E-09,  # 00010
+  4.072241289680E-09,  # 00011
+  4.124766180041E-11,  # 00012
+  8.727530860135E-11,  # 00013
+  4.535397806995E-09,  # 00014
+  2.224090828234E-09,  # 00015
+  1.863166451458E-09,  # 00016
+  8.147886329633E-08,  # 00017
+  2.210850401199E-08,  # 00018
+  2.275004114884E-08,  # 00019
+  8.185181420627E-09,  # 00020
+  6.415033216886E-09,  # 00021
+  1.504354396876E-08,  # 00022
+  2.351812718947E-08,  # 00023
+  3.084129242451E-08,  # 00024
+  1.383699655991E-07,  # 00025
+  1.721193586268E-07,  # 00026
+  9.038502808721E-08,  # 00027
+  2.438971084013E-06,  # 00028
+  6.626270297991E-07,  # 00029
+  3.898587683722E-07,  # 00030
+  3.646781881996E-07,  # 00031
+  4.354000940548E-06,  # 00032
+  7.804162564908E-06,  # 00033
+  6.899627022271E-06,  # 00034
+  1.281119390034E-06,  # 00035
+  7.863462885029E-07,  # 00036
+  3.121056788515E-06,  # 00037
+  1.865194710838E-06,  # 00038
+  2.881550872638E-06,  # 00039
+  4.044863905292E-05,  # 00040
+  1.142185749570E-04,  # 00041
+  5.732147735670E-05,  # 00042
+  3.213598731426E-05,  # 00043
+  4.763245548874E-05,  # 00044
+  3.745552837870E-05,  # 00045
+  1.301253111796E-04,  # 00046
+  7.205569352223E-05,  # 00047
+  2.073866499867E-05,  # 00048
+  4.695476638997E-05,  # 00049
+  4.201731268665E-04,  # 00050
+  2.591603187658E-04,  # 00051
+  3.587976552894E-04,  # 00052
+  7.963460394507E-05,  # 00053
+  1.183133270763E-04,  # 00054
+  5.147369521897E-04,  # 00055
+  3.936854421770E-04,  # 00056
+  4.847707029488E-04,  # 00057
+  4.900873318984E-04,  # 00058
+  1.445408369889E-03,  # 00059
+  1.829294882288E-03,  # 00060
+  5.094562090625E-04,  # 00061
+  2.019282743120E-03,  # 00062
+  6.393648306685E-04,  # 00063
+  1.422984904295E-03,  # 00064
+  9.677701723809E-04,  # 00065
+  2.747746293059E-03,  # 00066
+  4.460764135449E-03,  # 00067
+  1.452453231833E-03,  # 00068
+  1.657325959215E-03,  # 00069
+  2.990428233944E-03,  # 00070
+  5.618952208563E-03,  # 00071
+  6.162903577305E-03,  # 00072
+  6.336182543177E-03,  # 00073
+  2.769116370540E-03,  # 00074
+  5.612636315606E-03,  # 00075
+  4.287923040381E-03,  # 00076
+  1.127796733594E-02,  # 00077
+  6.267706155639E-03,  # 00078
+  1.366525963518E-02,  # 00079
+  1.304026352070E-02,  # 00080
+  6.821680602823E-03,  # 00081
+  8.598343969980E-03,  # 00082
+  6.964004678509E-03,  # 00083
+  9.014655841459E-03,  # 00084
+  1.520165269325E-02,  # 00085
+  7.898221285497E-03,  # 00086
+  7.722345189405E-03,  # 00087
+  1.615102571369E-02,  # 00088
+  2.191572387444E-02,  # 00089
+  1.822611251856E-02,  # 00090
+  2.208393173675E-02,  # 00091
+  1.572374803296E-02,  # 00092
+  1.879299745036E-02,  # 00093
+  1.227947702809E-02,  # 00094
+  2.404756778742E-02,  # 00095
+  3.091593756197E-02,  # 00096
+  2.152753325961E+01,  # 00097
+  7.374301837508E+00,  # 00098
+  1.656063747642E+00,  # 00099
+  4.137860143729E-01,  # 00100
+  4.002427084057E-01,  # 00101
+  7.103148305887E-01,  # 00102
+  3.006119271329E+00,  # 00103
+  1.223473039575E+01,  # 00104
+  2.540019157997E+01,  # 00105
+  2.411379488850E+01,  # 00106
+  2.322400314388E+01,  # 00107
+  2.404633176930E+01,  # 00108
+  9.400244078798E+00,  # 00109
+  2.207374889848E+00,  # 00110
+  5.580387089696E-01,  # 00111
+  1.616062961718E+00],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  2.41773715682E+02, Epot: -2.82174484635E+01, Enl:  1.28663421730E+00}, 
+ iter:  2, EKS:  2.14842901435481849E+02, gnrm:  5.28E+00, 
+ DIIS weights: [ 8.68E-01,  1.32E-01, -1.90E+01], Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 3
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.464895404317E-09,  # 00001
+  1.568629208315E-09,  # 00002
+  1.000379875276E-10,  # 00003
+  8.426331320177E-11,  # 00004
+  8.242963624860E-11,  # 00005
+  2.429898339540E-10,  # 00006
+  6.106080505541E-11,  # 00007
+  5.788201162408E-11,  # 00008
+  7.070928319846E-11,  # 00009
+  1.582262573210E-09,  # 00010
+  4.018637576181E-09,  # 00011
+  4.099451844468E-11,  # 00012
+  8.531084616164E-11,  # 00013
+  4.484197964018E-09,  # 00014
+  2.194965805867E-09,  # 00015
+  1.835623651469E-09,  # 00016
+  8.033860382487E-08,  # 00017
+  2.177374511165E-08,  # 00018
+  2.226519465515E-08,  # 00019
+  8.008073478866E-09,  # 00020
+  6.266387024032E-09,  # 00021
+  1.478829675769E-08,  # 00022
+  2.313649002464E-08,  # 00023
+  3.035949449315E-08,  # 00024
+  1.351999195027E-07,  # 00025
+  1.681182725373E-07,  # 00026
+  8.886871640920E-08,  # 00027
+  2.369240925255E-06,  # 00028
+  6.513186141921E-07,  # 00029
+  3.804161915340E-07,  # 00030
+  3.591952375591E-07,  # 00031
+  4.268419845479E-06,  # 00032
+  7.665769295715E-06,  # 00033
+  6.737577333793E-06,  # 00034
+  1.255474723960E-06,  # 00035
+  7.689817000433E-07,  # 00036
+  3.047487778101E-06,  # 00037
+  1.833304599638E-06,  # 00038
+  2.808550254832E-06,  # 00039
+  3.988159999715E-05,  # 00040
+  1.123882504868E-04,  # 00041
+  5.622376628740E-05,  # 00042
+  3.169831550617E-05,  # 00043
+  4.678426719049E-05,  # 00044
+  3.700060375998E-05,  # 00045
+  1.281576126041E-04,  # 00046
+  7.079677858608E-05,  # 00047
+  2.021931129685E-05,  # 00048
+  4.619371898709E-05,  # 00049
+  4.136150903334E-04,  # 00050
+  2.542431591216E-04,  # 00051
+  3.505385176389E-04,  # 00052
+  7.829456011035E-05,  # 00053
+  1.164102178298E-04,  # 00054
+  5.045957361559E-04,  # 00055
+  3.854698811128E-04,  # 00056
+  4.768257781298E-04,  # 00057
+  4.834153809972E-04,  # 00058
+  1.421915002322E-03,  # 00059
+  1.801189272980E-03,  # 00060
+  5.020224497517E-04,  # 00061
+  1.996208598794E-03,  # 00062
+  6.296179098419E-04,  # 00063
+  1.396157754072E-03,  # 00064
+  9.500821439001E-04,  # 00065
+  2.710856829271E-03,  # 00066
+  4.383913443691E-03,  # 00067
+  1.429948303431E-03,  # 00068
+  1.639674023972E-03,  # 00069
+  2.949195872341E-03,  # 00070
+  5.577370388586E-03,  # 00071
+  6.105309687580E-03,  # 00072
+  6.253881068540E-03,  # 00073
+  2.714818456643E-03,  # 00074
+  5.555522290784E-03,  # 00075
+  4.238517132860E-03,  # 00076
+  1.117319091142E-02,  # 00077
+  6.188775904409E-03,  # 00078
+  1.354697279502E-02,  # 00079
+  1.288489626878E-02,  # 00080
+  6.729132150200E-03,  # 00081
+  8.496624815111E-03,  # 00082
+  6.886102750261E-03,  # 00083
+  8.908960143908E-03,  # 00084
+  1.501538017573E-02,  # 00085
+  7.842580407178E-03,  # 00086
+  7.553642781080E-03,  # 00087
+  1.601777829531E-02,  # 00088
+  2.179578763435E-02,  # 00089
+  1.811410171247E-02,  # 00090
+  2.193263861363E-02,  # 00091
+  1.564233191614E-02,  # 00092
+  1.869422231548E-02,  # 00093
+  1.218699274023E-02,  # 00094
+  2.393744887561E-02,  # 00095
+  3.083455331021E-02,  # 00096
+  2.044477019569E+01,  # 00097
+  9.011259856320E+00,  # 00098
+  1.797334052306E+00,  # 00099
+  4.068188787972E-01,  # 00100
+  3.801356415472E-01,  # 00101
+  7.153411989289E-01,  # 00102
+  3.509223680302E+00,  # 00103
+  1.409480954748E+01,  # 00104
+  2.267449976355E+01,  # 00105
+  2.222109394141E+01,  # 00106
+  2.133056794885E+01,  # 00107
+  2.202481477831E+01,  # 00108
+  1.136233774543E+01,  # 00109
+  2.445792795239E+00,  # 00110
+  5.416316939526E-01,  # 00111
+  1.404717983972E+00],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  2.08228489624E+02, Epot: -2.85749088130E+01, Enl:  1.26604233678E+00}, 
+ iter:  3, EKS:  1.80919623147543803E+02, gnrm:  5.00E+00, 
+ DIIS weights: [ 6.70E-01, -1.95E+00,  2.28E+00, -1.21E+01], Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 4
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.458608521214E-09,  # 00001
+  1.566622206985E-09,  # 00002
+  9.974828442910E-11,  # 00003
+  8.403140233402E-11,  # 00004
+  8.214857503462E-11,  # 00005
+  2.285119916596E-10,  # 00006
+  6.075791677074E-11,  # 00007
+  5.746132030412E-11,  # 00008
+  7.030528555103E-11,  # 00009
+  1.503060069001E-09,  # 00010
+  3.808367816652E-09,  # 00011
+  4.025202974647E-11,  # 00012
+  7.996305320423E-11,  # 00013
+  4.275636712752E-09,  # 00014
+  2.083828870896E-09,  # 00015
+  1.727253055764E-09,  # 00016
+  7.615631805165E-08,  # 00017
+  2.040626482544E-08,  # 00018
+  2.086809103683E-08,  # 00019
+  7.442407424465E-09,  # 00020
+  5.850292474267E-09,  # 00021
+  1.391790882591E-08,  # 00022
+  2.190005439413E-08,  # 00023
+  2.868201461864E-08,  # 00024
+  1.249348796874E-07,  # 00025
+  1.566515784053E-07,  # 00026
+  8.410298323396E-08,  # 00027
+  2.170677607669E-06,  # 00028
+  6.169565431430E-07,  # 00029
+  3.536678000126E-07,  # 00030
+  3.413233567499E-07,  # 00031
+  3.997703633617E-06,  # 00032
+  7.231706064052E-06,  # 00033
+  6.258507846337E-06,  # 00034
+  1.167592124000E-06,  # 00035
+  7.237716612822E-07,  # 00036
+  2.827183803479E-06,  # 00037
+  1.739032615670E-06,  # 00038
+  2.627616778710E-06,  # 00039
+  3.805497681934E-05,  # 00040
+  1.068322039356E-04,  # 00041
+  5.255231600714E-05,  # 00042
+  3.015128677435E-05,  # 00043
+  4.423989541277E-05,  # 00044
+  3.552841660454E-05,  # 00045
+  1.217762113132E-04,  # 00046
+  6.722021587622E-05,  # 00047
+  1.868723126246E-05,  # 00048
+  4.391135646774E-05,  # 00049
+  3.941569688260E-04,  # 00050
+  2.385658792466E-04,  # 00051
+  3.309705143434E-04,  # 00052
+  7.435174824095E-05,  # 00053
+  1.096058232562E-04,  # 00054
+  4.716771915970E-04,  # 00055
+  3.606554070998E-04,  # 00056
+  4.600766450440E-04,  # 00057
+  4.624651526406E-04,  # 00058
+  1.347371687405E-03,  # 00059
+  1.716681704009E-03,  # 00060
+  4.827070946156E-04,  # 00061
+  1.932857284104E-03,  # 00062
+  5.993625716499E-04,  # 00063
+  1.311534970735E-03,  # 00064
+  9.026659019257E-04,  # 00065
+  2.587779564032E-03,  # 00066
+  4.155103326095E-03,  # 00067
+  1.375923255037E-03,  # 00068
+  1.585721719469E-03,  # 00069
+  2.805390518725E-03,  # 00070
+  5.427806661602E-03,  # 00071
+  5.914722953171E-03,  # 00072
+  5.980200891521E-03,  # 00073
+  2.554640173123E-03,  # 00074
+  5.365604179711E-03,  # 00075
+  4.089147924110E-03,  # 00076
+  1.079078632853E-02,  # 00077
+  5.958322612577E-03,  # 00078
+  1.315677641619E-02,  # 00079
+  1.241303616119E-02,  # 00080
+  6.411615838169E-03,  # 00081
+  8.126323072177E-03,  # 00082
+  6.633751780715E-03,  # 00083
+  8.546684065205E-03,  # 00084
+  1.440906325670E-02,  # 00085
+  7.658019152280E-03,  # 00086
+  7.061939339391E-03,  # 00087
+  1.554738641456E-02,  # 00088
+  2.115481189357E-02,  # 00089
+  1.781979497565E-02,  # 00090
+  2.136557258005E-02,  # 00091
+  1.525955113400E-02,  # 00092
+  1.836007621691E-02,  # 00093
+  1.177925978734E-02,  # 00094
+  2.354191925058E-02,  # 00095
+  3.045446790320E-02,  # 00096
+  1.776237033816E+01,  # 00097
+  8.231836359246E+00,  # 00098
+  2.807658093315E+00,  # 00099
+  3.963523132672E-01,  # 00100
+  3.333338390544E-01,  # 00101
+  7.768661953449E-01,  # 00102
+  6.230976105122E+00,  # 00103
+  7.542141250046E+00,  # 00104
+  2.534991519335E+01,  # 00105
+  2.129385517867E+01,  # 00106
+  2.096919906597E+01,  # 00107
+  2.328001583304E+01,  # 00108
+  7.868208217410E+00,  # 00109
+  4.182144134706E+00,  # 00110
+  7.192906186878E-01,  # 00111
+  2.295210770612E+00],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  1.55417628363E+02, Epot: -2.87259538717E+01, Enl:  1.28959029800E+00}, 
+ iter:  4, EKS:  1.27981264789523053E+02, gnrm:  4.86E+00, 
+ DIIS weights: [ 5.30E-01, -2.22E+00,  2.08E+00,  6.03E-01, -9.68E+00], 
+     Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 5
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.455301787939E-09,  # 00001
+  1.566049983644E-09,  # 00002
+  9.961595252360E-11,  # 00003
+  8.392145891565E-11,  # 00004
+  8.197258822643E-11,  # 00005
+  2.034392373987E-10,  # 00006
+  6.057786367109E-11,  # 00007
+  5.722675300763E-11,  # 00008
+  7.004636059339E-11,  # 00009
+  1.348427841315E-09,  # 00010
+  3.420927994373E-09,  # 00011
+  3.911875199369E-11,  # 00012
+  7.589723946745E-11,  # 00013
+  3.863197832181E-09,  # 00014
+  1.905451116282E-09,  # 00015
+  1.583373824871E-09,  # 00016
+  6.914332932696E-08,  # 00017
+  1.859738344348E-08,  # 00018
+  1.926530042458E-08,  # 00019
+  6.937681260859E-09,  # 00020
+  5.506442593767E-09,  # 00021
+  1.294535312582E-08,  # 00022
+  2.025088188913E-08,  # 00023
+  2.693026430905E-08,  # 00024
+  1.158951275195E-07,  # 00025
+  1.455620315213E-07,  # 00026
+  7.923838047902E-08,  # 00027
+  2.013416452782E-06,  # 00028
+  5.879079275827E-07,  # 00029
+  3.273508532540E-07,  # 00030
+  3.246039755927E-07,  # 00031
+  3.769797202312E-06,  # 00032
+  6.848554574129E-06,  # 00033
+  5.855609652101E-06,  # 00034
+  1.081755731569E-06,  # 00035
+  6.796087817025E-07,  # 00036
+  2.621695160663E-06,  # 00037
+  1.637129973849E-06,  # 00038
+  2.465251619179E-06,  # 00039
+  3.621808537720E-05,  # 00040
+  1.014775631801E-04,  # 00041
+  4.956819204580E-05,  # 00042
+  2.874562626259E-05,  # 00043
+  4.213176585965E-05,  # 00044
+  3.389032689678E-05,  # 00045
+  1.161468658984E-04,  # 00046
+  6.371523337349E-05,  # 00047
+  1.742453590444E-05,  # 00048
+  4.202058276685E-05,  # 00049
+  3.734971881129E-04,  # 00050
+  2.252562417910E-04,  # 00051
+  3.150939730775E-04,  # 00052
+  6.824658303375E-05,  # 00053
+  1.029268126399E-04,  # 00054
+  4.453988198396E-04,  # 00055
+  3.392611076538E-04,  # 00056
+  4.429750186170E-04,  # 00057
+  4.357923613309E-04,  # 00058
+  1.286342999141E-03,  # 00059
+  1.625160033035E-03,  # 00060
+  4.581781645803E-04,  # 00061
+  1.853444278048E-03,  # 00062
+  5.714227878758E-04,  # 00063
+  1.258787926809E-03,  # 00064
+  8.479723277846E-04,  # 00065
+  2.497543300946E-03,  # 00066
+  3.969528671052E-03,  # 00067
+  1.316721115559E-03,  # 00068
+  1.547609990267E-03,  # 00069
+  2.721570601102E-03,  # 00070
+  5.319382961873E-03,  # 00071
+  5.766808028578E-03,  # 00072
+  5.787646963966E-03,  # 00073
+  2.454905020839E-03,  # 00074
+  5.208044791123E-03,  # 00075
+  3.960605685642E-03,  # 00076
+  1.047277948299E-02,  # 00077
+  5.809852303492E-03,  # 00078
+  1.287113625423E-02,  # 00079
+  1.210331403142E-02,  # 00080
+  6.241425540727E-03,  # 00081
+  7.826324470997E-03,  # 00082
+  6.462980770792E-03,  # 00083
+  8.366069744711E-03,  # 00084
+  1.401106567679E-02,  # 00085
+  7.548351582322E-03,  # 00086
+  6.701253592642E-03,  # 00087
+  1.515199382695E-02,  # 00088
+  2.075009790193E-02,  # 00089
+  1.731447950557E-02,  # 00090
+  2.091437407018E-02,  # 00091
+  1.503229654986E-02,  # 00092
+  1.808792924764E-02,  # 00093
+  1.153903405652E-02,  # 00094
+  2.305749633078E-02,  # 00095
+  3.025144138527E-02,  # 00096
+  9.662266137834E+00,  # 00097
+  3.505369476870E+00,  # 00098
+  3.872327148020E+00,  # 00099
+  3.885674264398E-01,  # 00100
+  3.030889552839E-01,  # 00101
+  8.739006275565E-01,  # 00102
+  5.462455848044E+00,  # 00103
+  2.137700561184E+00,  # 00104
+  1.613686452337E+01,  # 00105
+  1.905756399094E+01,  # 00106
+  1.811460625139E+01,  # 00107
+  1.253695880262E+01,  # 00108
+  2.803650326626E+00,  # 00109
+  5.115424691140E+00,  # 00110
+  5.858486811033E-01,  # 00111
+  8.901790548797E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  1.02235913996E+02, Epot: -2.83270097653E+01, Enl:  1.35286450506E+00}, 
+ iter:  5, EKS:  7.52617687352471023E+01, gnrm:  3.41E+00, 
+ DIIS weights: [-1.05E-01, -1.07E-01,  2.93E-01, -4.41E-01,  1.36E+00, -3.54E+00], 
+     Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 6
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.456599935824E-09,  # 00001
+  1.561007561026E-09,  # 00002
+  9.910236051929E-11,  # 00003
+  8.358149925467E-11,  # 00004
+  8.156859528562E-11,  # 00005
+  1.660363408147E-10,  # 00006
+  6.009657690766E-11,  # 00007
+  5.659279567419E-11,  # 00008
+  6.942178062188E-11,  # 00009
+  1.101761428895E-09,  # 00010
+  2.795757478990E-09,  # 00011
+  3.727292861605E-11,  # 00012
+  6.579178749691E-11,  # 00013
+  3.235391529670E-09,  # 00014
+  1.608555076849E-09,  # 00015
+  1.335012475177E-09,  # 00016
+  5.777035367119E-08,  # 00017
+  1.559124365618E-08,  # 00018
+  1.657415588411E-08,  # 00019
+  6.075622825205E-09,  # 00020
+  4.763165310919E-09,  # 00021
+  1.109611836969E-08,  # 00022
+  1.740469407948E-08,  # 00023
+  2.373837965100E-08,  # 00024
+  9.896394850683E-08,  # 00025
+  1.215542396977E-07,  # 00026
+  6.962868841816E-08,  # 00027
+  1.668049893105E-06,  # 00028
+  5.230905145422E-07,  # 00029
+  2.715138026670E-07,  # 00030
+  2.923989952394E-07,  # 00031
+  3.278707364024E-06,  # 00032
+  6.035747109800E-06,  # 00033
+  4.999710268861E-06,  # 00034
+  9.343834559480E-07,  # 00035
+  5.875062656112E-07,  # 00036
+  2.219197925852E-06,  # 00037
+  1.418189233567E-06,  # 00038
+  2.133363365640E-06,  # 00039
+  3.283470533023E-05,  # 00040
+  9.052109212284E-05,  # 00041
+  4.466971227515E-05,  # 00042
+  2.606480460804E-05,  # 00043
+  3.818650404292E-05,  # 00044
+  3.067550858044E-05,  # 00045
+  1.044125316434E-04,  # 00046
+  5.584245488646E-05,  # 00047
+  1.465317235354E-05,  # 00048
+  3.820751147865E-05,  # 00049
+  3.342175866293E-04,  # 00050
+  1.987414020900E-04,  # 00051
+  2.829114142108E-04,  # 00052
+  5.986997142255E-05,  # 00053
+  9.040402644358E-05,  # 00054
+  3.884342388193E-04,  # 00055
+  2.951782397330E-04,  # 00056
+  4.144954300792E-04,  # 00057
+  3.915169818154E-04,  # 00058
+  1.166545481285E-03,  # 00059
+  1.454610359979E-03,  # 00060
+  4.119796305597E-04,  # 00061
+  1.697881129344E-03,  # 00062
+  5.122187849918E-04,  # 00063
+  1.146235945659E-03,  # 00064
+  7.630688284098E-04,  # 00065
+  2.305031880351E-03,  # 00066
+  3.688901982547E-03,  # 00067
+  1.211142457209E-03,  # 00068
+  1.459288780899E-03,  # 00069
+  2.563175810638E-03,  # 00070
+  5.069216983220E-03,  # 00071
+  5.535065198394E-03,  # 00072
+  5.385924189934E-03,  # 00073
+  2.270474228054E-03,  # 00074
+  4.846018716030E-03,  # 00075
+  3.785373922598E-03,  # 00076
+  1.002389815152E-02,  # 00077
+  5.493474499705E-03,  # 00078
+  1.226274917128E-02,  # 00079
+  1.171759566218E-02,  # 00080
+  5.890877642180E-03,  # 00081
+  7.374777889013E-03,  # 00082
+  6.152771682220E-03,  # 00083
+  7.876268270000E-03,  # 00084
+  1.337701528292E-02,  # 00085
+  7.351040744676E-03,  # 00086
+  5.903188056625E-03,  # 00087
+  1.465236815015E-02,  # 00088
+  2.009847988051E-02,  # 00089
+  1.694631937412E-02,  # 00090
+  2.007388957193E-02,  # 00091
+  1.462527873539E-02,  # 00092
+  1.748262007046E-02,  # 00093
+  1.120462017082E-02,  # 00094
+  2.263179812854E-02,  # 00095
+  2.998614737759E-02,  # 00096
+  3.076156940104E+00,  # 00097
+  5.633925317554E-01,  # 00098
+  3.009004159475E+00,  # 00099
+  3.829317751264E-01,  # 00100
+  2.162636724814E-01,  # 00101
+  1.173865352252E+00,  # 00102
+  1.130253793475E+00,  # 00103
+  1.059801033948E+00,  # 00104
+  4.072558435511E+00,  # 00105
+  3.751064215749E+00,  # 00106
+  3.739889208503E+00,  # 00107
+  8.385787543567E+00,  # 00108
+  7.104826716831E-01,  # 00109
+  2.327352176269E+00,  # 00110
+  7.969364638889E-01,  # 00111
+  8.982517818015E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  7.00469077442E+01, Epot: -2.77699197955E+01, Enl:  1.16905983204E+00}, 
+ iter:  6, EKS:  4.34460477807936911E+01, gnrm:  1.14E+00, 
+ DIIS weights: [ 2.96E-02, -1.64E-02,  7.07E-02, -1.13E-01,  2.44E-02,  1.00E+00, 
+                -4.22E-01],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 7
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.449408833409E-09,  # 00001
+  1.559582151124E-09,  # 00002
+  9.876683994701E-11,  # 00003
+  8.324231385739E-11,  # 00004
+  8.131451288754E-11,  # 00005
+  1.463435497744E-10,  # 00006
+  5.981290802843E-11,  # 00007
+  5.632319222453E-11,  # 00008
+  6.905450324027E-11,  # 00009
+  9.741831830123E-10,  # 00010
+  2.470121273412E-09,  # 00011
+  3.637492466779E-11,  # 00012
+  5.953718577983E-11,  # 00013
+  2.907086749066E-09,  # 00014
+  1.447898312420E-09,  # 00015
+  1.199640163253E-09,  # 00016
+  5.150854955734E-08,  # 00017
+  1.394415489641E-08,  # 00018
+  1.489179507538E-08,  # 00019
+  5.468070623267E-09,  # 00020
+  4.240901278001E-09,  # 00021
+  9.987637003764E-09,  # 00022
+  1.585515175865E-08,  # 00023
+  2.168211178785E-08,  # 00024
+  8.803441685406E-08,  # 00025
+  1.098333918952E-07,  # 00026
+  6.362336114456E-08,  # 00027
+  1.493067739149E-06,  # 00028
+  4.780710154607E-07,  # 00029
+  2.462367302445E-07,  # 00030
+  2.694214292125E-07,  # 00031
+  2.993154233069E-06,  # 00032
+  5.442388557709E-06,  # 00033
+  4.413959746800E-06,  # 00034
+  8.441200195736E-07,  # 00035
+  5.338177496452E-07,  # 00036
+  1.982269856062E-06,  # 00037
+  1.299663418938E-06,  # 00038
+  1.937914857731E-06,  # 00039
+  3.049655023253E-05,  # 00040
+  8.226715636575E-05,  # 00041
+  4.052500966790E-05,  # 00042
+  2.408492860887E-05,  # 00043
+  3.491508079450E-05,  # 00044
+  2.839414232894E-05,  # 00045
+  9.675841376685E-05,  # 00046
+  5.144953810925E-05,  # 00047
+  1.329087720596E-05,  # 00048
+  3.526185321027E-05,  # 00049
+  3.083823790939E-04,  # 00050
+  1.799525666749E-04,  # 00051
+  2.603774411933E-04,  # 00052
+  5.413942109261E-05,  # 00053
+  8.343429108619E-05,  # 00054
+  3.554876043199E-04,  # 00055
+  2.682002928778E-04,  # 00056
+  3.886499576508E-04,  # 00057
+  3.652489955452E-04,  # 00058
+  1.085741710897E-03,  # 00059
+  1.347301106095E-03,  # 00060
+  3.817332516391E-04,  # 00061
+  1.591687778100E-03,  # 00062
+  4.755494862548E-04,  # 00063
+  1.070331070063E-03,  # 00064
+  7.022218880027E-04,  # 00065
+  2.175480378203E-03,  # 00066
+  3.451004524080E-03,  # 00067
+  1.144656538227E-03,  # 00068
+  1.389368400830E-03,  # 00069
+  2.439617183177E-03,  # 00070
+  4.898455114967E-03,  # 00071
+  5.317062175948E-03,  # 00072
+  5.097094196825E-03,  # 00073
+  2.131257996373E-03,  # 00074
+  4.591705214958E-03,  # 00075
+  3.624493472573E-03,  # 00076
+  9.634026022537E-03,  # 00077
+  5.271674932807E-03,  # 00078
+  1.182877091224E-02,  # 00079
+  1.128921737420E-02,  # 00080
+  5.624042957504E-03,  # 00081
+  7.032598994847E-03,  # 00082
+  5.912753470082E-03,  # 00083
+  7.523529380090E-03,  # 00084
+  1.281478095622E-02,  # 00085
+  7.185800875868E-03,  # 00086
+  5.531287564721E-03,  # 00087
+  1.415271996503E-02,  # 00088
+  1.957558018731E-02,  # 00089
+  1.639529194138E-02,  # 00090
+  1.941318938867E-02,  # 00091
+  1.429946264721E-02,  # 00092
+  1.703804597215E-02,  # 00093
+  1.090667744315E-02,  # 00094
+  2.210956558249E-02,  # 00095
+  2.966318241067E-02,  # 00096
+  9.970121418926E-01,  # 00097
+  1.283396301598E+00,  # 00098
+  1.500968548079E+00,  # 00099
+  4.001092563871E-01,  # 00100
+  1.919135640931E-01,  # 00101
+  1.439892959420E+00,  # 00102
+  7.158350524295E-01,  # 00103
+  1.323817616680E+00,  # 00104
+  5.503655425755E-01,  # 00105
+  1.948410107166E+00,  # 00106
+  1.872062584645E+00,  # 00107
+  1.267888769547E+00,  # 00108
+  1.397311485454E+00,  # 00109
+  1.049248449589E+00,  # 00110
+  7.286817515648E-01,  # 00111
+  5.059304558487E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  6.46041405825E+01, Epot: -2.77297222681E+01, Enl:  1.12642725091E+00}, 
+ iter:  7, EKS:  3.80008455652911010E+01, gnrm:  4.48E-01, 
+ DIIS weights: [-1.47E-02,  1.89E-02, -7.24E-03, -5.33E-04, -7.92E-02,  1.08E+00, 
+                -1.86E-01],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 8
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.447679900427E-09,  # 00001
+  1.558851953014E-09,  # 00002
+  9.853748365219E-11,  # 00003
+  8.302746063928E-11,  # 00004
+  8.109826299060E-11,  # 00005
+  1.277127247370E-10,  # 00006
+  5.958334793109E-11,  # 00007
+  5.611539321704E-11,  # 00008
+  6.880560339502E-11,  # 00009
+  8.489790542892E-10,  # 00010
+  2.151029398154E-09,  # 00011
+  3.559320920679E-11,  # 00012
+  5.399209314612E-11,  # 00013
+  2.581930519839E-09,  # 00014
+  1.287074962119E-09,  # 00015
+  1.065104954375E-09,  # 00016
+  4.537020830570E-08,  # 00017
+  1.233692354222E-08,  # 00018
+  1.328814225529E-08,  # 00019
+  4.879480189322E-09,  # 00020
+  3.741654870780E-09,  # 00021
+  8.898179251653E-09,  # 00022
+  1.435571032807E-08,  # 00023
+  1.968294295432E-08,  # 00024
+  7.801142331375E-08,  # 00025
+  9.886406889535E-08,  # 00026
+  5.791203120908E-08,  # 00027
+  1.333882207279E-06,  # 00028
+  4.337254089593E-07,  # 00029
+  2.220922549402E-07,  # 00030
+  2.470229632971E-07,  # 00031
+  2.727387853214E-06,  # 00032
+  4.859928966173E-06,  # 00033
+  3.902706296588E-06,  # 00034
+  7.616289579825E-07,  # 00035
+  4.854010892525E-07,  # 00036
+  1.767187533137E-06,  # 00037
+  1.182813855323E-06,  # 00038
+  1.755819231687E-06,  # 00039
+  2.823762944567E-05,  # 00040
+  7.440862425052E-05,  # 00041
+  3.672891846226E-05,  # 00042
+  2.221311828888E-05,  # 00043
+  3.176521822425E-05,  # 00044
+  2.615306871638E-05,  # 00045
+  8.913367625852E-05,  # 00046
+  4.708802680991E-05,  # 00047
+  1.202432290946E-05,  # 00048
+  3.234198822494E-05,  # 00049
+  2.826608929359E-04,  # 00050
+  1.628082924762E-04,  # 00051
+  2.397754502762E-04,  # 00052
+  4.940906420806E-05,  # 00053
+  7.670401648906E-05,  # 00054
+  3.234296209432E-04,  # 00055
+  2.437128136466E-04,  # 00056
+  3.634239379881E-04,  # 00057
+  3.392146701955E-04,  # 00058
+  1.003115478892E-03,  # 00059
+  1.240977564275E-03,  # 00060
+  3.552007377313E-04,  # 00061
+  1.485951877072E-03,  # 00062
+  4.389938584288E-04,  # 00063
+  9.941346758544E-04,  # 00064
+  6.492760606854E-04,  # 00065
+  2.042360630681E-03,  # 00066
+  3.214563254899E-03,  # 00067
+  1.077904156861E-03,  # 00068
+  1.322505321634E-03,  # 00069
+  2.308037247592E-03,  # 00070
+  4.726563657990E-03,  # 00071
+  5.094632544741E-03,  # 00072
+  4.813093527751E-03,  # 00073
+  1.989922819627E-03,  # 00074
+  4.342158163422E-03,  # 00075
+  3.458786602895E-03,  # 00076
+  9.257949048633E-03,  # 00077
+  5.054513812845E-03,  # 00078
+  1.142147193183E-02,  # 00079
+  1.087825285681E-02,  # 00080
+  5.344072095425E-03,  # 00081
+  6.702449857212E-03,  # 00082
+  5.681798795887E-03,  # 00083
+  7.176604510510E-03,  # 00084
+  1.223989622242E-02,  # 00085
+  7.036036579520E-03,  # 00086
+  5.222550604307E-03,  # 00087
+  1.362834764585E-02,  # 00088
+  1.902464536528E-02,  # 00089
+  1.594928024916E-02,  # 00090
+  1.875006353722E-02,  # 00091
+  1.399444808559E-02,  # 00092
+  1.664282930253E-02,  # 00093
+  1.062176016285E-02,  # 00094
+  2.169303223374E-02,  # 00095
+  2.938143091984E-02,  # 00096
+  3.350873026462E-01,  # 00097
+  4.217013060465E-01,  # 00098
+  6.672963019798E-01,  # 00099
+  4.292037897379E-01,  # 00100
+  1.730271541363E-01,  # 00101
+  1.537959501291E+00,  # 00102
+  3.776569703841E-01,  # 00103
+  3.596835215586E-01,  # 00104
+  2.561297888733E-01,  # 00105
+  3.572544500061E-01,  # 00106
+  3.048016733985E-01,  # 00107
+  5.454019468643E-01,  # 00108
+  4.217806258409E-01,  # 00109
+  5.167770019015E-01,  # 00110
+  8.440349980506E-01,  # 00111
+  4.178702915229E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  6.19842937647E+01, Epot: -2.76147724771E+01, Enl:  1.12118617270E+00}, 
+ iter:  8, EKS:  3.54907074602179478E+01, gnrm:  2.22E-01, 
+ DIIS weights: [ 1.91E-02, -3.37E-02,  4.74E-02,  9.58E-02, -5.76E-01,  1.45E+00, 
+                -1.40E-01],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------- iter= 9
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.448189234836E-09,  # 00001
+  1.559078791066E-09,  # 00002
+  9.837013841223E-11,  # 00003
+  8.286967657414E-11,  # 00004
+  8.094447443973E-11,  # 00005
+  1.103088796462E-10,  # 00006
+  5.939625516310E-11,  # 00007
+  5.595740295205E-11,  # 00008
+  6.862999728642E-11,  # 00009
+  7.265873691210E-10,  # 00010
+  1.839406680885E-09,  # 00011
+  3.490477536907E-11,  # 00012
+  4.883636072929E-11,  # 00013
+  2.259235910182E-09,  # 00014
+  1.125173207874E-09,  # 00015
+  9.302835347560E-10,  # 00016
+  3.931007244441E-08,  # 00017
+  1.076950439190E-08,  # 00018
+  1.166943047912E-08,  # 00019
+  4.282353278380E-09,  # 00020
+  3.229781179979E-09,  # 00021
+  7.771664013440E-09,  # 00022
+  1.283421455472E-08,  # 00023
+  1.758994924900E-08,  # 00024
+  6.803441591111E-08,  # 00025
+  8.789046683286E-08,  # 00026
+  5.200304784027E-08,  # 00027
+  1.179773124573E-06,  # 00028
+  3.869920142952E-07,  # 00029
+  1.980391209223E-07,  # 00030
+  2.232247697079E-07,  # 00031
+  2.449845182030E-06,  # 00032
+  4.236968780865E-06,  # 00033
+  3.390610442503E-06,  # 00034
+  6.777000932008E-07,  # 00035
+  4.369617465965E-07,  # 00036
+  1.555697667589E-06,  # 00037
+  1.057869775893E-06,  # 00038
+  1.572208737776E-06,  # 00039
+  2.585326185801E-05,  # 00040
+  6.594355206334E-05,  # 00041
+  3.265659418132E-05,  # 00042
+  2.020786890933E-05,  # 00043
+  2.831067156663E-05,  # 00044
+  2.372902867185E-05,  # 00045
+  8.088285077941E-05,  # 00046
+  4.237245902329E-05,  # 00047
+  1.078791244291E-05,  # 00048
+  2.909831614422E-05,  # 00049
+  2.553396005774E-04,  # 00050
+  1.452915422687E-04,  # 00051
+  2.184535002491E-04,  # 00052
+  4.469143584708E-05,  # 00053
+  6.978089935650E-05,  # 00054
+  2.911305703568E-04,  # 00055
+  2.190985527266E-04,  # 00056
+  3.364126764938E-04,  # 00057
+  3.115898158341E-04,  # 00058
+  9.179663191561E-04,  # 00059
+  1.130157942117E-03,  # 00060
+  3.284684374239E-04,  # 00061
+  1.370091760932E-03,  # 00062
+  4.005221539731E-04,  # 00063
+  9.166893388718E-04,  # 00064
+  5.946394779207E-04,  # 00065
+  1.902152401010E-03,  # 00066
+  2.965736855121E-03,  # 00067
+  1.009180693806E-03,  # 00068
+  1.248285951357E-03,  # 00069
+  2.165528997189E-03,  # 00070
+  4.533655038939E-03,  # 00071
+  4.848913446577E-03,  # 00072
+  4.509112731019E-03,  # 00073
+  1.838569209732E-03,  # 00074
+  4.073705623480E-03,  # 00075
+  3.278064812464E-03,  # 00076
+  8.844793055116E-03,  # 00077
+  4.824156912560E-03,  # 00078
+  1.098487492748E-02,  # 00079
+  1.044775416832E-02,  # 00080
+  5.040087578443E-03,  # 00081
+  6.365687758743E-03,  # 00082
+  5.452174858898E-03,  # 00083
+  6.802080274022E-03,  # 00084
+  1.163185177886E-02,  # 00085
+  6.881217504052E-03,  # 00086
+  4.951384115446E-03,  # 00087
+  1.306546457876E-02,  # 00088
+  1.838670733953E-02,  # 00089
+  1.546341147168E-02,  # 00090
+  1.804097237659E-02,  # 00091
+  1.365059747679E-02,  # 00092
+  1.622411934358E-02,  # 00093
+  1.031707696440E-02,  # 00094
+  2.123914967796E-02,  # 00095
+  2.905761455309E-02,  # 00096
+  2.375499899195E-01,  # 00097
+  3.377999539336E-01,  # 00098
+  4.523072921630E-01,  # 00099
+  4.725226236614E-01,  # 00100
+  1.563398518127E-01,  # 00101
+  1.232157746710E+00,  # 00102
+  2.957088271925E-01,  # 00103
+  3.163828748095E-01,  # 00104
+  2.569640217181E-01,  # 00105
+  2.950490243609E-01,  # 00106
+  2.385749757221E-01,  # 00107
+  4.677396339278E-01,  # 00108
+  3.521098049674E-01,  # 00109
+  4.038809823512E-01,  # 00110
+  9.521033024802E-01,  # 00111
+  3.499601009175E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.98500966752E+01, Epot: -2.74947395237E+01, Enl:  1.12032377320E+00}, 
+ iter:  9, EKS:  3.34756809246928881E+01, gnrm:  1.91E-01, 
+ DIIS weights: [-5.04E-03,  1.12E-02,  2.76E-02,  4.98E-01, -1.53E+00,  2.00E+00, 
+                -9.41E-02],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 10
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.451179527203E-09,  # 00001
+  1.561194263674E-09,  # 00002
+  9.836337838579E-11,  # 00003
+  8.280342025455E-11,  # 00004
+  8.088778805892E-11,  # 00005
+  9.413768268649E-11,  # 00006
+  5.929698787028E-11,  # 00007
+  5.588123455844E-11,  # 00008
+  6.857120970707E-11,  # 00009
+  6.051231882524E-10,  # 00010
+  1.530608960235E-09,  # 00011
+  3.431067061515E-11,  # 00012
+  4.402037221176E-11,  # 00013
+  1.931094397523E-09,  # 00014
+  9.573856996615E-10,  # 00015
+  7.916009546787E-10,  # 00016
+  3.314645843693E-08,  # 00017
+  9.188068065345E-09,  # 00018
+  9.962296506127E-09,  # 00019
+  3.653437483683E-09,  # 00020
+  2.693686439435E-09,  # 00021
+  6.592528133196E-09,  # 00022
+  1.119820333771E-08,  # 00023
+  1.532442636952E-08,  # 00024
+  5.772697842918E-08,  # 00025
+  7.619559494885E-08,  # 00026
+  4.556166808251E-08,  # 00027
+  1.022285713819E-06,  # 00028
+  3.363272844572E-07,  # 00029
+  1.724887267141E-07,  # 00030
+  1.969377316006E-07,  # 00031
+  2.146170405922E-06,  # 00032
+  3.591781131525E-06,  # 00033
+  2.869440461184E-06,  # 00034
+  5.897223617238E-07,  # 00035
+  3.855060837267E-07,  # 00036
+  1.334238339349E-06,  # 00037
+  9.189815193039E-07,  # 00038
+  1.377736078693E-06,  # 00039
+  2.317687867992E-05,  # 00040
+  5.706053238221E-05,  # 00041
+  2.834788328512E-05,  # 00042
+  1.799688662573E-05,  # 00043
+  2.459912032773E-05,  # 00044
+  2.107989993324E-05,  # 00045
+  7.158516324157E-05,  # 00046
+  3.706715866805E-05,  # 00047
+  9.520755629623E-06,  # 00048
+  2.549137893160E-05,  # 00049
+  2.250693671732E-04,  # 00050
+  1.271570213970E-04,  # 00051
+  1.954814268557E-04,  # 00052
+  3.967563840292E-05,  # 00053
+  6.214238246323E-05,  # 00054
+  2.567778788637E-04,  # 00055
+  1.929397772502E-04,  # 00056
+  3.057236101301E-04,  # 00057
+  2.806095456790E-04,  # 00058
+  8.259493008088E-04,  # 00059
+  1.008983393731E-03,  # 00060
+  2.996574776450E-04,  # 00061
+  1.240938909705E-03,  # 00062
+  3.577956930686E-04,  # 00063
+  8.335144991433E-04,  # 00064
+  5.363713057690E-04,  # 00065
+  1.747133140099E-03,  # 00066
+  2.688024045408E-03,  # 00067
+  9.334013228648E-04,  # 00068
+  1.161162567057E-03,  # 00069
+  2.000570533813E-03,  # 00070
+  4.301650445077E-03,  # 00071
+  4.561247803641E-03,  # 00072
+  4.164516751071E-03,  # 00073
+  1.673764381632E-03,  # 00074
+  3.773615898147E-03,  # 00075
+  3.069435689922E-03,  # 00076
+  8.353039998180E-03,  # 00077
+  4.561750061319E-03,  # 00078
+  1.050433421458E-02,  # 00079
+  9.949030261314E-03,  # 00080
+  4.697338596532E-03,  # 00081
+  6.004334956036E-03,  # 00082
+  5.209574498626E-03,  # 00083
+  6.378901793834E-03,  # 00084
+  1.095858228369E-02,  # 00085
+  6.699772068208E-03,  # 00086
+  4.688677583119E-03,  # 00087
+  1.243214990456E-02,  # 00088
+  1.759880641199E-02,  # 00089
+  1.492210076650E-02,  # 00090
+  1.724848278006E-02,  # 00091
+  1.322971895091E-02,  # 00092
+  1.578545913638E-02,  # 00093
+  9.972919884607E-03,  # 00094
+  2.071179894501E-02,  # 00095
+  2.867172485974E-02,  # 00096
+  1.857523973321E-01,  # 00097
+  2.630043944347E-01,  # 00098
+  4.043913273730E-01,  # 00099
+  5.245558976113E-01,  # 00100
+  1.400552832522E-01,  # 00101
+  6.282969519829E-01,  # 00102
+  2.344893795907E-01,  # 00103
+  2.408989428739E-01,  # 00104
+  1.595343731196E-01,  # 00105
+  2.661338631245E-01,  # 00106
+  2.003408148923E-01,  # 00107
+  3.313049114271E-01,  # 00108
+  2.632043513729E-01,  # 00109
+  3.485763407239E-01,  # 00110
+  8.984184393189E-01,  # 00111
+  2.900417382989E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.78490409907E+01, Epot: -2.73431286902E+01, Enl:  1.12245444666E+00}, 
+ iter:  10, EKS:  3.16283667471979975E+01, gnrm:  1.46E-01, 
+ DIIS weights: [ 1.81E-02, -3.56E-03, -4.01E-01,  2.06E+00, -3.28E+00,  2.61E+00, 
+                -5.02E-02],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 11
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.459706841905E-09,  # 00001
+  1.568882541248E-09,  # 00002
+  9.872160268836E-11,  # 00003
+  8.308570476012E-11,  # 00004
+  8.118870400215E-11,  # 00005
+  8.260919771125E-11,  # 00006
+  5.946370999258E-11,  # 00007
+  5.606029264832E-11,  # 00008
+  6.879852958536E-11,  # 00009
+  5.083136614915E-10,  # 00010
+  1.284974196006E-09,  # 00011
+  3.396809018605E-11,  # 00012
+  4.063489888696E-11,  # 00013
+  1.658505690995E-09,  # 00014
+  8.129332487434E-10,  # 00015
+  6.737093260774E-10,  # 00016
+  2.789383488871E-08,  # 00017
+  7.846892700925E-09,  # 00018
+  8.501571875080E-09,  # 00019
+  3.118334132518E-09,  # 00020
+  2.245955454714E-09,  # 00021
+  5.573122804390E-09,  # 00022
+  9.748682251649E-09,  # 00023
+  1.332215336425E-08,  # 00024
+  4.898108579246E-08,  # 00025
+  6.581432363023E-08,  # 00026
+  3.973895132465E-08,  # 00027
+  8.847587821816E-07,  # 00028
+  2.918467105341E-07,  # 00029
+  1.497868883886E-07,  # 00030
+  1.727358212866E-07,  # 00031
+  1.872630742734E-06,  # 00032
+  3.022524958772E-06,  # 00033
+  2.438100806617E-06,  # 00034
+  5.118627827381E-07,  # 00035
+  3.397817346624E-07,  # 00036
+  1.139950278096E-06,  # 00037
+  7.913979063038E-07,  # 00038
+  1.203113760118E-06,  # 00039
+  2.067129188128E-05,  # 00040
+  4.930582863248E-05,  # 00041
+  2.457890696472E-05,  # 00042
+  1.597352222990E-05,  # 00043
+  2.129503168406E-05,  # 00044
+  1.862336836963E-05,  # 00045
+  6.302132989625E-05,  # 00046
+  3.217584669420E-05,  # 00047
+  8.386172860618E-06,  # 00048
+  2.221161043748E-05,  # 00049
+  1.975191658485E-04,  # 00050
+  1.116276054285E-04,  # 00051
+  1.746139395317E-04,  # 00052
+  3.516325002690E-05,  # 00053
+  5.500098695917E-05,  # 00054
+  2.260984929571E-04,  # 00055
+  1.698812206618E-04,  # 00056
+  2.761176853679E-04,  # 00057
+  2.510490973549E-04,  # 00058
+  7.409758577903E-04,  # 00059
+  8.972759500037E-04,  # 00060
+  2.735415371419E-04,  # 00061
+  1.118045359772E-03,  # 00062
+  3.178543898327E-04,  # 00063
+  7.575419291589E-04,  # 00064
+  4.850620047566E-04,  # 00065
+  1.601300195029E-03,  # 00066
+  2.427357996562E-03,  # 00067
+  8.626069822602E-04,  # 00068
+  1.074428055830E-03,  # 00069
+  1.837102353907E-03,  # 00070
+  4.057864840548E-03,  # 00071
+  4.269886672327E-03,  # 00072
+  3.835369979536E-03,  # 00073
+  1.526728006158E-03,  # 00074
+  3.494428292553E-03,  # 00075
+  2.860380492980E-03,  # 00076
+  7.849430728770E-03,  # 00077
+  4.304825546032E-03,  # 00078
+  1.004377105971E-02,  # 00079
+  9.432542069063E-03,  # 00080
+  4.357723278128E-03,  # 00081
+  5.669954747870E-03,  # 00082
+  4.988675505140E-03,  # 00083
+  5.969854248841E-03,  # 00084
+  1.031654707713E-02,  # 00085
+  6.505891028931E-03,  # 00086
+  4.460287531766E-03,  # 00087
+  1.181750544327E-02,  # 00088
+  1.676386456222E-02,  # 00089
+  1.439442313162E-02,  # 00090
+  1.644294435181E-02,  # 00091
+  1.276967013264E-02,  # 00092
+  1.538669022005E-02,  # 00093
+  9.649695731034E-03,  # 00094
+  2.016881102564E-02,  # 00095
+  2.827154860615E-02,  # 00096
+  1.690812911282E-01,  # 00097
+  2.185692528750E-01,  # 00098
+  3.217777950630E-01,  # 00099
+  5.477211021498E-01,  # 00100
+  1.268822757665E-01,  # 00101
+  5.165787700331E-01,  # 00102
+  1.971927459046E-01,  # 00103
+  2.000745588853E-01,  # 00104
+  1.533081561304E-01,  # 00105
+  2.378824179153E-01,  # 00106
+  1.736493099262E-01,  # 00107
+  2.616866959572E-01,  # 00108
+  2.130730851608E-01,  # 00109
+  2.839388141106E-01,  # 00110
+  5.922096777493E-01,  # 00111
+  2.523128652525E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.64326229695E+01, Epot: -2.71952480048E+01, Enl:  1.12456384400E+00}, 
+ iter:  11, EKS:  3.03619388087313595E+01, gnrm:  1.18E-01, 
+ DIIS weights: [ 2.45E-02,  6.47E-02,  1.85E-01, -3.90E-01, -5.60E-01,  1.68E+00, 
+                -3.94E-02],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 12
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.455475463277E-09,  # 00001
+  1.558451104211E-09,  # 00002
+  9.818226010729E-11,  # 00003
+  8.257097301442E-11,  # 00004
+  8.059040809455E-11,  # 00005
+  7.358462457840E-11,  # 00006
+  5.901076007235E-11,  # 00007
+  5.575642249668E-11,  # 00008
+  6.839626528026E-11,  # 00009
+  4.251595923444E-10,  # 00010
+  1.073999150363E-09,  # 00011
+  3.362883309240E-11,  # 00012
+  3.814682942485E-11,  # 00013
+  1.424777687763E-09,  # 00014
+  6.871241062295E-10,  # 00015
+  5.705901437355E-10,  # 00016
+  2.335825583694E-08,  # 00017
+  6.678028504933E-09,  # 00018
+  7.184939566173E-09,  # 00019
+  2.645647950023E-09,  # 00020
+  1.867762338507E-09,  # 00021
+  4.697251872173E-09,  # 00022
+  8.422084559075E-09,  # 00023
+  1.149579343203E-08,  # 00024
+  4.125619061008E-08,  # 00025
+  5.621283141715E-08,  # 00026
+  3.441958389447E-08,  # 00027
+  7.603142944882E-07,  # 00028
+  2.519260626057E-07,  # 00029
+  1.288096926015E-07,  # 00030
+  1.503661404135E-07,  # 00031
+  1.624471918928E-06,  # 00032
+  2.564614730213E-06,  # 00033
+  2.059624501517E-06,  # 00034
+  4.442159117937E-07,  # 00035
+  2.973073836859E-07,  # 00036
+  9.626557576386E-07,  # 00037
+  6.753590300431E-07,  # 00038
+  1.046147416137E-06,  # 00039
+  1.832592998516E-05,  # 00040
+  4.273544596864E-05,  # 00041
+  2.142968874708E-05,  # 00042
+  1.413523697464E-05,  # 00043
+  1.854496325778E-05,  # 00044
+  1.638962927349E-05,  # 00045
+  5.511985500906E-05,  # 00046
+  2.771015158532E-05,  # 00047
+  7.354116410342E-06,  # 00048
+  1.936259254264E-05,  # 00049
+  1.719066002416E-04,  # 00050
+  9.787940111551E-05,  # 00051
+  1.553244749582E-04,  # 00052
+  3.119423806757E-05,  # 00053
+  4.824415993375E-05,  # 00054
+  1.973290719217E-04,  # 00055
+  1.487860580818E-04,  # 00056
+  2.489448478065E-04,  # 00057
+  2.235068313175E-04,  # 00058
+  6.638870273491E-04,  # 00059
+  7.933610880893E-04,  # 00060
+  2.489301099228E-04,  # 00061
+  1.003603140540E-03,  # 00062
+  2.800182209773E-04,  # 00063
+  6.869302702415E-04,  # 00064
+  4.380908584523E-04,  # 00065
+  1.461790523898E-03,  # 00066
+  2.182520706643E-03,  # 00067
+  7.963328102153E-04,  # 00068
+  9.891345022658E-04,  # 00069
+  1.677694425579E-03,  # 00070
+  3.809257839591E-03,  # 00071
+  3.976848370822E-03,  # 00072
+  3.520743965222E-03,  # 00073
+  1.398799706160E-03,  # 00074
+  3.228123036733E-03,  # 00075
+  2.654616428974E-03,  # 00076
+  7.359469765735E-03,  # 00077
+  4.058484250172E-03,  # 00078
+  9.609401250607E-03,  # 00079
+  8.919872649170E-03,  # 00080
+  4.053466259010E-03,  # 00081
+  5.344238773526E-03,  # 00082
+  4.779112826905E-03,  # 00083
+  5.588145005339E-03,  # 00084
+  9.700556717144E-03,  # 00085
+  6.303790354594E-03,  # 00086
+  4.242399390347E-03,  # 00087
+  1.124528351927E-02,  # 00088
+  1.591879525614E-02,  # 00089
+  1.387033429874E-02,  # 00090
+  1.562837355793E-02,  # 00091
+  1.229523357337E-02,  # 00092
+  1.500036021331E-02,  # 00093
+  9.339887066140E-03,  # 00094
+  1.962782280082E-02,  # 00095
+  2.784402906087E-02,  # 00096
+  1.533778498774E-01,  # 00097
+  1.901447766883E-01,  # 00098
+  2.695562701370E-01,  # 00099
+  4.897955365106E-01,  # 00100
+  1.144130713896E-01,  # 00101
+  4.974209483972E-01,  # 00102
+  1.704594405722E-01,  # 00103
+  1.649128853005E-01,  # 00104
+  1.306625549678E-01,  # 00105
+  2.120245159512E-01,  # 00106
+  1.479067623604E-01,  # 00107
+  2.193194964156E-01,  # 00108
+  1.761855094331E-01,  # 00109
+  2.423818927750E-01,  # 00110
+  2.789383991665E-01,  # 00111
+  2.209823870351E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.53981964721E+01, Epot: -2.70271748284E+01, Enl:  1.12466940529E+00}, 
+ iter:  12, EKS:  2.94956910490463002E+01, gnrm:  9.64E-02, 
+ DIIS weights: [-2.41E-01,  1.18E+00, -2.32E+00,  3.76E+00, -4.76E+00,  3.38E+00, 
+                -2.05E-02],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 13
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.487626599466E-09,  # 00001
+  1.579476579570E-09,  # 00002
+  9.915373780766E-11,  # 00003
+  8.371954799380E-11,  # 00004
+  8.181132182947E-11,  # 00005
+  6.545244327533E-11,  # 00006
+  5.942653049562E-11,  # 00007
+  5.654299749400E-11,  # 00008
+  6.900246045054E-11,  # 00009
+  3.389384929411E-10,  # 00010
+  8.539564342960E-10,  # 00011
+  3.383769844950E-11,  # 00012
+  3.627511315715E-11,  # 00013
+  1.186693040805E-09,  # 00014
+  5.559903230166E-10,  # 00015
+  4.631322647186E-10,  # 00016
+  1.862209563161E-08,  # 00017
+  5.440219854982E-09,  # 00018
+  5.761036384447E-09,  # 00019
+  2.148080300787E-09,  # 00020
+  1.504989965072E-09,  # 00021
+  3.821405882426E-09,  # 00022
+  6.989908026948E-09,  # 00023
+  9.565751840100E-09,  # 00024
+  3.363885441158E-08,  # 00025
+  4.598287797800E-08,  # 00026
+  2.868668006889E-08,  # 00027
+  6.255815600719E-07,  # 00028
+  2.091373925369E-07,  # 00029
+  1.057781738703E-07,  # 00030
+  1.265593719682E-07,  # 00031
+  1.363189412584E-06,  # 00032
+  2.107493279400E-06,  # 00033
+  1.684169435177E-06,  # 00034
+  3.739172073299E-07,  # 00035
+  2.517510713727E-07,  # 00036
+  7.814013167982E-07,  # 00037
+  5.540993191634E-07,  # 00038
+  8.864271731110E-07,  # 00039
+  1.582464628407E-05,  # 00040
+  3.582240695970E-05,  # 00041
+  1.825691893638E-05,  # 00042
+  1.213441430652E-05,  # 00043
+  1.578032623615E-05,  # 00044
+  1.392620007303E-05,  # 00045
+  4.692958830443E-05,  # 00046
+  2.304317977023E-05,  # 00047
+  6.224560418110E-06,  # 00048
+  1.647737718072E-05,  # 00049
+  1.446273072868E-04,  # 00050
+  8.339967735398E-05,  # 00051
+  1.352469487878E-04,  # 00052
+  2.722409631805E-05,  # 00053
+  4.121553837193E-05,  # 00054
+  1.667363689447E-04,  # 00055
+  1.269470988223E-04,  # 00056
+  2.204649946384E-04,  # 00057
+  1.950345505470E-04,  # 00058
+  5.818899850621E-04,  # 00059
+  6.848247055874E-04,  # 00060
+  2.220521135541E-04,  # 00061
+  8.786116087279E-04,  # 00062
+  2.406436213921E-04,  # 00063
+  6.113611353299E-04,  # 00064
+  3.887013937876E-04,  # 00065
+  1.311219402219E-03,  # 00066
+  1.920603486440E-03,  # 00067
+  7.253850765588E-04,  # 00068
+  8.931920541224E-04,  # 00069
+  1.505580652142E-03,  # 00070
+  3.519360427824E-03,  # 00071
+  3.642376172551E-03,  # 00072
+  3.190897149521E-03,  # 00073
+  1.264468563230E-03,  # 00074
+  2.949164749195E-03,  # 00075
+  2.424714061489E-03,  # 00076
+  6.827083859706E-03,  # 00077
+  3.791716710006E-03,  # 00078
+  9.148433380253E-03,  # 00079
+  8.343022265630E-03,  # 00080
+  3.732292301867E-03,  # 00081
+  5.008345250510E-03,  # 00082
+  4.565067921609E-03,  # 00083
+  5.193312979192E-03,  # 00084
+  9.037405796528E-03,  # 00085
+  6.060860689791E-03,  # 00086
+  4.006564234975E-03,  # 00087
+  1.065196129202E-02,  # 00088
+  1.499900855543E-02,  # 00089
+  1.328716439339E-02,  # 00090
+  1.471256223277E-02,  # 00091
+  1.179695252694E-02,  # 00092
+  1.463435253383E-02,  # 00093
+  9.024355246936E-03,  # 00094
+  1.905941333683E-02,  # 00095
+  2.740879957716E-02,  # 00096
+  1.194841141489E-01,  # 00097
+  1.659486548207E-01,  # 00098
+  1.982854708048E-01,  # 00099
+  3.438508819851E-01,  # 00100
+  1.002574550915E-01,  # 00101
+  2.114150611521E-01,  # 00102
+  1.292297013555E-01,  # 00103
+  1.426703543158E-01,  # 00104
+  1.163521932205E-01,  # 00105
+  1.819106208385E-01,  # 00106
+  1.210143090347E-01,  # 00107
+  1.673931615663E-01,  # 00108
+  1.523648508888E-01,  # 00109
+  1.895806118004E-01,  # 00110
+  1.905235776486E-01,  # 00111
+  1.834206142939E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.44252222965E+01, Epot: -2.67979914097E+01, Enl:  1.12132657644E+00}, 
+ iter:  13, EKS:  2.87485574631888596E+01, gnrm:  6.76E-02, 
+ DIIS weights: [-3.50E-02,  4.50E-01, -6.97E-01,  9.19E-01, -2.06E+00,  2.42E+00, 
+                -1.22E-02],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 14
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.465465234261E-09,  # 00001
+  1.564173850626E-09,  # 00002
+  9.830334620676E-11,  # 00003
+  8.256246791725E-11,  # 00004
+  8.059248718627E-11,  # 00005
+  5.908107430446E-11,  # 00006
+  5.899654301984E-11,  # 00007
+  5.575108414121E-11,  # 00008
+  6.853872332526E-11,  # 00009
+  2.594133563764E-10,  # 00010
+  6.524500686617E-10,  # 00011
+  3.319739806361E-11,  # 00012
+  3.481783003527E-11,  # 00013
+  9.732960584856E-10,  # 00014
+  4.301470322214E-10,  # 00015
+  3.598877054875E-10,  # 00016
+  1.426048782836E-08,  # 00017
+  4.276539430505E-09,  # 00018
+  4.326732504949E-09,  # 00019
+  1.656857340846E-09,  # 00020
+  1.195158841454E-09,  # 00021
+  3.000754815149E-09,  # 00022
+  5.560586929543E-09,  # 00023
+  7.605285318002E-09,  # 00024
+  2.659621403924E-08,  # 00025
+  3.564857933442E-08,  # 00026
+  2.296281763713E-08,  # 00027
+  4.952366366987E-07,  # 00028
+  1.660683774286E-07,  # 00029
+  8.293667460865E-08,  # 00030
+  1.018436740031E-07,  # 00031
+  1.091501202351E-06,  # 00032
+  1.725777116469E-06,  # 00033
+  1.333375838394E-06,  # 00034
+  3.040179376753E-07,  # 00035
+  2.040212580138E-07,  # 00036
+  6.125357788371E-07,  # 00037
+  4.365829904308E-07,  # 00038
+  7.309186083837E-07,  # 00039
+  1.308658536083E-05,  # 00040
+  2.937367215035E-05,  # 00041
+  1.542387766557E-05,  # 00042
+  9.951629704568E-06,  # 00043
+  1.335566733987E-05,  # 00044
+  1.137783474382E-05,  # 00045
+  3.859808762909E-05,  # 00046
+  1.870036044972E-05,  # 00047
+  5.122220850800E-06,  # 00048
+  1.387738501670E-05,  # 00049
+  1.183015251651E-04,  # 00050
+  6.922821218721E-05,  # 00051
+  1.144627793590E-04,  # 00052
+  2.316602403665E-05,  # 00053
+  3.413340223210E-05,  # 00054
+  1.365820031376E-04,  # 00055
+  1.051975662595E-04,  # 00056
+  1.910615890201E-04,  # 00057
+  1.664589046645E-04,  # 00058
+  4.971506937043E-04,  # 00059
+  5.741675707692E-04,  # 00060
+  1.921876572878E-04,  # 00061
+  7.491747583554E-04,  # 00062
+  1.999295934271E-04,  # 00063
+  5.301420296642E-04,  # 00064
+  3.380676475480E-04,  # 00065
+  1.143921026869E-03,  # 00066
+  1.640522618219E-03,  # 00067
+  6.444905495024E-04,  # 00068
+  7.837331844172E-04,  # 00069
+  1.309147345264E-03,  # 00070
+  3.175312213425E-03,  # 00071
+  3.233946677398E-03,  # 00072
+  2.820273269438E-03,  # 00073
+  1.140303137764E-03,  # 00074
+  2.632077833980E-03,  # 00075
+  2.149598354798E-03,  # 00076
+  6.222403396207E-03,  # 00077
+  3.478465995127E-03,  # 00078
+  8.638348742660E-03,  # 00079
+  7.659055438357E-03,  # 00080
+  3.411722630783E-03,  # 00081
+  4.615853171784E-03,  # 00082
+  4.315773147376E-03,  # 00083
+  4.782517717029E-03,  # 00084
+  8.255516895181E-03,  # 00085
+  5.749893281786E-03,  # 00086
+  3.734217829323E-03,  # 00087
+  1.002695846517E-02,  # 00088
+  1.392350048045E-02,  # 00089
+  1.258506361759E-02,  # 00090
+  1.358009924441E-02,  # 00091
+  1.114529683074E-02,  # 00092
+  1.422213493104E-02,  # 00093
+  8.650944125908E-03,  # 00094
+  1.831159453670E-02,  # 00095
+  2.678404898065E-02,  # 00096
+  9.755574170039E-02,  # 00097
+  1.380625465954E-01,  # 00098
+  1.373967883376E-01,  # 00099
+  1.655302727168E-01,  # 00100
+  8.492166541314E-02,  # 00101
+  1.464425809672E-01,  # 00102
+  9.764528290616E-02,  # 00103
+  1.205793693080E-01,  # 00104
+  1.010893611274E-01,  # 00105
+  1.493867423310E-01,  # 00106
+  9.933965873344E-02,  # 00107
+  1.309588396851E-01,  # 00108
+  1.284466107711E-01,  # 00109
+  1.479536001778E-01,  # 00110
+  2.707376463969E-01,  # 00111
+  1.505227843983E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.36152440866E+01, Epot: -2.65140852523E+01, Enl:  1.11550286225E+00}, 
+ iter:  14, EKS:  2.82166616965328956E+01, gnrm:  5.38E-02, 
+ DIIS weights: [ 3.13E-02,  1.93E-01, -8.05E-01,  7.57E-01, -5.32E-01,  1.36E+00, 
+                -1.04E-02],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 15
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.468441620271E-09,  # 00001
+  1.560327620532E-09,  # 00002
+  9.828171180851E-11,  # 00003
+  8.242712198141E-11,  # 00004
+  8.047619970085E-11,  # 00005
+  5.585727678136E-11,  # 00006
+  5.886785089549E-11,  # 00007
+  5.567049502381E-11,  # 00008
+  6.848588357006E-11,  # 00009
+  2.077897522101E-10,  # 00010
+  5.208177193178E-10,  # 00011
+  3.306053988536E-11,  # 00012
+  3.426230676949E-11,  # 00013
+  8.448905155380E-10,  # 00014
+  3.510321568153E-10,  # 00015
+  2.946907139458E-10,  # 00016
+  1.159278362416E-08,  # 00017
+  3.537230427495E-09,  # 00018
+  3.390516599425E-09,  # 00019
+  1.334677452250E-09,  # 00020
+  1.022323363014E-09,  # 00021
+  2.516857123103E-09,  # 00022
+  4.640403688687E-09,  # 00023
+  6.347608849951E-09,  # 00024
+  2.278706189103E-08,  # 00025
+  2.933665633294E-08,  # 00026
+  1.935923874283E-08,  # 00027
+  4.140329297130E-07,  # 00028
+  1.389987532874E-07,  # 00029
+  6.874778577463E-08,  # 00030
+  8.616294220023E-08,  # 00031
+  9.210071150497E-07,  # 00032
+  1.508140067764E-06,  # 00033
+  1.147679197251E-06,  # 00034
+  2.619921736585E-07,  # 00035
+  1.726547105352E-07,  # 00036
+  5.194948430338E-07,  # 00037
+  3.630722428993E-07,  # 00038
+  6.352108901928E-07,  # 00039
+  1.132681276446E-05,  # 00040
+  2.544238273841E-05,  # 00041
+  1.367098068873E-05,  # 00042
+  8.544651281258E-06,  # 00043
+  1.185598524480E-05,  # 00044
+  9.702868598320E-06,  # 00045
+  3.336934725151E-05,  # 00046
+  1.596651661018E-05,  # 00047
+  4.417788017652E-06,  # 00048
+  1.222986501639E-05,  # 00049
+  1.015819623130E-04,  # 00050
+  6.036627650524E-05,  # 00051
+  1.013760190798E-04,  # 00052
+  2.083735355086E-05,  # 00053
+  2.973127046654E-05,  # 00054
+  1.174381812634E-04,  # 00055
+  9.197686068871E-05,  # 00056
+  1.717234139333E-04,  # 00057
+  1.482102669689E-04,  # 00058
+  4.413256627292E-04,  # 00059
+  5.064911989110E-04,  # 00060
+  1.730152096453E-04,  # 00061
+  6.681799558122E-04,  # 00062
+  1.758457413664E-04,  # 00063
+  4.763547717385E-04,  # 00064
+  3.042268737451E-04,  # 00065
+  1.036759901850E-03,  # 00066
+  1.467658466413E-03,  # 00067
+  5.907719857061E-04,  # 00068
+  7.159145705736E-04,  # 00069
+  1.187808652542E-03,  # 00070
+  2.947903169600E-03,  # 00071
+  2.968377626580E-03,  # 00072
+  2.593268556051E-03,  # 00073
+  1.055201443237E-03,  # 00074
+  2.439145915517E-03,  # 00075
+  1.973608655680E-03,  # 00076
+  5.829913560828E-03,  # 00077
+  3.274683354412E-03,  # 00078
+  8.315568346786E-03,  # 00079
+  7.234000233197E-03,  # 00080
+  3.214037264384E-03,  # 00081
+  4.373890445200E-03,  # 00082
+  4.158343746496E-03,  # 00083
+  4.542328643487E-03,  # 00084
+  7.765469307008E-03,  # 00085
+  5.538898876063E-03,  # 00086
+  3.556300806386E-03,  # 00087
+  9.624044931293E-03,  # 00088
+  1.326831505880E-02,  # 00089
+  1.213396375868E-02,  # 00090
+  1.289522740285E-02,  # 00091
+  1.074964541481E-02,  # 00092
+  1.400669473294E-02,  # 00093
+  8.422573746215E-03,  # 00094
+  1.783342186733E-02,  # 00095
+  2.636301349136E-02,  # 00096
+  8.635156636194E-02,  # 00097
+  1.197132618649E-01,  # 00098
+  1.123591135033E-01,  # 00099
+  1.436708798507E-01,  # 00100
+  7.450783036504E-02,  # 00101
+  1.336922201555E-01,  # 00102
+  8.071333875671E-02,  # 00103
+  1.036371478301E-01,  # 00104
+  9.331852055844E-02,  # 00105
+  1.293956851334E-01,  # 00106
+  8.588954869103E-02,  # 00107
+  1.078815178643E-01,  # 00108
+  1.122390507099E-01,  # 00109
+  1.251471682100E-01,  # 00110
+  1.971199854023E-01,  # 00111
+  1.292755007307E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.31510081007E+01, Epot: -2.63046744617E+01, Enl:  1.11142276169E+00}, 
+ iter:  15, EKS:  2.79577564006335457E+01, gnrm:  4.50E-02, 
+ DIIS weights: [-2.60E-01,  1.20E+00, -1.61E+00,  1.81E+00, -3.28E+00,  3.14E+00, 
+                -6.75E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 16
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.484385711965E-09,  # 00001
+  1.576085883430E-09,  # 00002
+  9.898692116730E-11,  # 00003
+  8.309657140043E-11,  # 00004
+  8.120450078458E-11,  # 00005
+  5.392540022502E-11,  # 00006
+  5.934826464460E-11,  # 00007
+  5.602892271109E-11,  # 00008
+  6.905190709011E-11,  # 00009
+  1.648464779814E-10,  # 00010
+  4.105312325780E-10,  # 00011
+  3.324357430249E-11,  # 00012
+  3.426638443022E-11,  # 00013
+  7.498945249192E-10,  # 00014
+  2.854513612753E-10,  # 00015
+  2.392962911659E-10,  # 00016
+  9.433909135768E-09,  # 00017
+  2.905387993448E-09,  # 00018
+  2.613535580596E-09,  # 00019
+  1.069098029215E-09,  # 00020
+  8.872236746659E-10,  # 00021
+  2.131515431925E-09,  # 00022
+  3.861547286049E-09,  # 00023
+  5.318560837954E-09,  # 00024
+  1.960081091370E-08,  # 00025
+  2.420232979181E-08,  # 00026
+  1.631615922708E-08,  # 00027
+  3.420573032869E-07,  # 00028
+  1.156786860596E-07,  # 00029
+  5.702189885594E-08,  # 00030
+  7.314592439599E-08,  # 00031
+  7.670304574269E-07,  # 00032
+  1.304392014654E-06,  # 00033
+  9.881859052276E-07,  # 00034
+  2.251344998367E-07,  # 00035
+  1.459943188774E-07,  # 00036
+  4.408177839224E-07,  # 00037
+  2.970873639142E-07,  # 00038
+  5.512819177536E-07,  # 00039
+  9.788347808535E-06,  # 00040
+  2.173717769425E-05,  # 00041
+  1.203630629756E-05,  # 00042
+  7.220102250046E-06,  # 00043
+  1.041657006601E-05,  # 00044
+  8.157380743419E-06,  # 00045
+  2.858599978561E-05,  # 00046
+  1.342930150942E-05,  # 00047
+  3.775585264007E-06,  # 00048
+  1.064606607683E-05,  # 00049
+  8.626471722671E-05,  # 00050
+  5.215923323203E-05,  # 00051
+  9.006671583416E-05,  # 00052
+  1.866935185207E-05,  # 00053
+  2.553338547115E-05,  # 00054
+  9.944028372356E-05,  # 00055
+  7.997549678084E-05,  # 00056
+  1.546210679285E-04,  # 00057
+  1.308808280110E-04,  # 00058
+  3.883780986646E-04,  # 00059
+  4.436415714203E-04,  # 00060
+  1.550604589661E-04,  # 00061
+  5.910677790763E-04,  # 00062
+  1.523935653605E-04,  # 00063
+  4.246339177082E-04,  # 00064
+  2.734324087382E-04,  # 00065
+  9.331196516924E-04,  # 00066
+  1.305166610484E-03,  # 00067
+  5.387106643108E-04,  # 00068
+  6.510137291817E-04,  # 00069
+  1.071350766286E-03,  # 00070
+  2.701941924828E-03,  # 00071
+  2.707359650019E-03,  # 00072
+  2.380484941480E-03,  # 00073
+  9.714029920240E-04,  # 00074
+  2.257668895089E-03,  # 00075
+  1.800544291521E-03,  # 00076
+  5.438556236762E-03,  # 00077
+  3.065559012962E-03,  # 00078
+  7.994323411412E-03,  # 00079
+  6.793960768272E-03,  # 00080
+  3.025928153502E-03,  # 00081
+  4.136688890580E-03,  # 00082
+  4.003372144295E-03,  # 00083
+  4.313128712077E-03,  # 00084
+  7.309582897899E-03,  # 00085
+  5.311816527611E-03,  # 00086
+  3.370567135260E-03,  # 00087
+  9.255324889513E-03,  # 00088
+  1.265642955004E-02,  # 00089
+  1.170896492250E-02,  # 00090
+  1.220293526000E-02,  # 00091
+  1.031104035641E-02,  # 00092
+  1.382577187652E-02,  # 00093
+  8.217978137098E-03,  # 00094
+  1.735315368044E-02,  # 00095
+  2.590833546803E-02,  # 00096
+  7.658125970845E-02,  # 00097
+  1.052217487267E-01,  # 00098
+  9.542661725779E-02,  # 00099
+  1.180922765760E-01,  # 00100
+  6.574884806046E-02,  # 00101
+  8.912054007185E-02,  # 00102
+  6.922356290609E-02,  # 00103
+  8.991485537252E-02,  # 00104
+  8.621013114911E-02,  # 00105
+  1.152684355895E-01,  # 00106
+  7.572312955822E-02,  # 00107
+  8.715113030696E-02,  # 00108
+  9.967554159251E-02,  # 00109
+  1.098380982706E-01,  # 00110
+  1.125139335885E-01,  # 00111
+  1.138234076197E-01],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.27627851678E+01, Epot: -2.61207306424E+01, Enl:  1.10846555043E+00}, 
+ iter:  16, EKS:  2.77505200757772634E+01, gnrm:  3.65E-02, 
+ DIIS weights: [ 2.61E-01,  2.84E-01, -1.23E+00,  8.02E-01, -1.55E+00,  2.44E+00, 
+                -4.73E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 17
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.474628323576E-09,  # 00001
+  1.561592726298E-09,  # 00002
+  9.860019912931E-11,  # 00003
+  8.263344534351E-11,  # 00004
+  8.061820949219E-11,  # 00005
+  5.177557017625E-11,  # 00006
+  5.881755625668E-11,  # 00007
+  5.570427323292E-11,  # 00008
+  6.864801980135E-11,  # 00009
+  1.147474760200E-10,  # 00010
+  2.793040102265E-10,  # 00011
+  3.292037222604E-11,  # 00012
+  3.364987611401E-11,  # 00013
+  6.451242883467E-10,  # 00014
+  2.049722194214E-10,  # 00015
+  1.731293653586E-10,  # 00016
+  7.051759471407E-09,  # 00017
+  2.134214478368E-09,  # 00018
+  1.702850227986E-09,  # 00019
+  7.315553012936E-10,  # 00020
+  6.996876077740E-10,  # 00021
+  1.623555689262E-09,  # 00022
+  2.871570731021E-09,  # 00023
+  3.863859165223E-09,  # 00024
+  1.522798039781E-08,  # 00025
+  1.776350691943E-08,  # 00026
+  1.230445233789E-08,  # 00027
+  2.555272462978E-07,  # 00028
+  8.439147410856E-08,  # 00029
+  4.278757384996E-08,  # 00030
+  5.495296022642E-08,  # 00031
+  5.615650059397E-07,  # 00032
+  1.067713758320E-06,  # 00033
+  7.749303102373E-07,  # 00034
+  1.798588876598E-07,  # 00035
+  1.073656405176E-07,  # 00036
+  3.455477620814E-07,  # 00037
+  2.283626755957E-07,  # 00038
+  4.397893808843E-07,  # 00039
+  7.469719268702E-06,  # 00040
+  1.678323632714E-05,  # 00041
+  1.000932187338E-05,  # 00042
+  5.305626366574E-06,  # 00043
+  8.704163748055E-06,  # 00044
+  5.919285996929E-06,  # 00045
+  2.264920773241E-05,  # 00046
+  1.085100048472E-05,  # 00047
+  2.901409972646E-06,  # 00048
+  8.896786852221E-06,  # 00049
+  6.840435686253E-05,  # 00050
+  4.033020199387E-05,  # 00051
+  7.314715413678E-05,  # 00052
+  1.601541437126E-05,  # 00053
+  2.038993147317E-05,  # 00054
+  7.618209387649E-05,  # 00055
+  6.322249766704E-05,  # 00056
+  1.287812750599E-04,  # 00057
+  1.069263857830E-04,  # 00058
+  3.086394112449E-04,  # 00059
+  3.630601660295E-04,  # 00060
+  1.272596578741E-04,  # 00061
+  4.786971731151E-04,  # 00062
+  1.243112529710E-04,  # 00063
+  3.435909006178E-04,  # 00064
+  2.264186054617E-04,  # 00065
+  7.742623550126E-04,  # 00066
+  1.087395926267E-03,  # 00067
+  4.536532192441E-04,  # 00068
+  5.421750918387E-04,  # 00069
+  8.888944948069E-04,  # 00070
+  2.302445410091E-03,  # 00071
+  2.272639521310E-03,  # 00072
+  2.025023597889E-03,  # 00073
+  8.596899936740E-04,  # 00074
+  1.968136999915E-03,  # 00075
+  1.520159663488E-03,  # 00076
+  4.831085904135E-03,  # 00077
+  2.723166241865E-03,  # 00078
+  7.431015837852E-03,  # 00079
+  6.139076023513E-03,  # 00080
+  2.745811121067E-03,  # 00081
+  3.767157481409E-03,  # 00082
+  3.734106746762E-03,  # 00083
+  3.962275188911E-03,  # 00084
+  6.527670066489E-03,  # 00085
+  4.903500375418E-03,  # 00086
+  3.078004986575E-03,  # 00087
+  8.669055321008E-03,  # 00088
+  1.159735683932E-02,  # 00089
+  1.095552404284E-02,  # 00090
+  1.107649754378E-02,  # 00091
+  9.593193621643E-03,  # 00092
+  1.348124791914E-02,  # 00093
+  7.842028890960E-03,  # 00094
+  1.649989804263E-02,  # 00095
+  2.493583158197E-02,  # 00096
+  6.563732454633E-02,  # 00097
+  8.632343798025E-02,  # 00098
+  7.484007466270E-02,  # 00099
+  1.261091339378E-01,  # 00100
+  5.328812621993E-02,  # 00101
+  8.833048909777E-02,  # 00102
+  5.698348827270E-02,  # 00103
+  7.305719028886E-02,  # 00104
+  7.581182637361E-02,  # 00105
+  9.405835544188E-02,  # 00106
+  6.259039797717E-02,  # 00107
+  7.206314021412E-02,  # 00108
+  8.540806178286E-02,  # 00109
+  8.923238843198E-02,  # 00110
+  1.190766749704E-01,  # 00111
+  9.341444907548E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.21743088468E+01, Epot: -2.58069999929E+01, Enl:  1.10045656407E+00}, 
+ iter:  17, EKS:  2.74677654180045110E+01, gnrm:  3.22E-02, 
+ DIIS weights: [-1.28E-01,  4.93E-01, -1.51E+00,  1.89E+00, -1.24E+00,  1.49E+00, 
+                -4.25E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 18
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.483655731841E-09,  # 00001
+  1.563514396513E-09,  # 00002
+  9.869180704867E-11,  # 00003
+  8.260219517727E-11,  # 00004
+  8.063888875982E-11,  # 00005
+  5.129884269939E-11,  # 00006
+  5.886737617235E-11,  # 00007
+  5.575870571463E-11,  # 00008
+  6.875977501620E-11,  # 00009
+  9.229284383146E-11,  # 00010
+  2.184322673977E-10,  # 00011
+  3.295759138960E-11,  # 00012
+  3.372822878271E-11,  # 00013
+  6.066726038689E-10,  # 00014
+  1.721524573252E-10,  # 00015
+  1.422261978832E-10,  # 00016
+  6.384499241967E-09,  # 00017
+  1.759338308210E-09,  # 00018
+  1.418571866699E-09,  # 00019
+  6.098341666872E-10,  # 00020
+  6.604283438792E-10,  # 00021
+  1.474004016775E-09,  # 00022
+  2.413113110915E-09,  # 00023
+  3.212840516692E-09,  # 00024
+  1.378546733686E-08,  # 00025
+  1.582067223909E-08,  # 00026
+  1.072679831492E-08,  # 00027
+  2.114072152456E-07,  # 00028
+  7.006446798618E-08,  # 00029
+  3.829854510792E-08,  # 00030
+  4.658400578345E-08,  # 00031
+  4.570966372540E-07,  # 00032
+  1.001793739010E-06,  # 00033
+  7.115350406850E-07,  # 00034
+  1.607911779428E-07,  # 00035
+  8.645809677834E-08,  # 00036
+  3.142584946411E-07,  # 00037
+  1.996929627824E-07,  # 00038
+  3.809219805981E-07,  # 00039
+  6.197055300691E-06,  # 00040
+  1.457733549595E-05,  # 00041
+  9.024838918663E-06,  # 00042
+  4.280768678796E-06,  # 00043
+  7.837539755384E-06,  # 00044
+  4.698513785873E-06,  # 00045
+  1.914580195314E-05,  # 00046
+  9.515687282928E-06,  # 00047
+  2.391350131018E-06,  # 00048
+  7.865535730159E-06,  # 00049
+  5.807176400970E-05,  # 00050
+  3.403253987006E-05,  # 00051
+  6.406455508796E-05,  # 00052
+  1.468297927225E-05,  # 00053
+  1.707786680302E-05,  # 00054
+  6.118007410087E-05,  # 00055
+  5.498945330049E-05,  # 00056
+  1.137894921461E-04,  # 00057
+  9.186673519434E-05,  # 00058
+  2.611100592839E-04,  # 00059
+  3.197830004507E-04,  # 00060
+  1.118464932918E-04,  # 00061
+  4.255668528247E-04,  # 00062
+  1.093324130179E-04,  # 00063
+  2.929145210269E-04,  # 00064
+  1.982794385116E-04,  # 00065
+  6.798497097987E-04,  # 00066
+  9.828378893061E-04,  # 00067
+  4.011638142921E-04,  # 00068
+  4.884168923643E-04,  # 00069
+  7.977174561888E-04,  # 00070
+  2.062839347804E-03,  # 00071
+  2.040052088527E-03,  # 00072
+  1.836534570330E-03,  # 00073
+  7.894966696673E-04,  # 00074
+  1.815198325344E-03,  # 00075
+  1.375608787210E-03,  # 00076
+  4.456987397112E-03,  # 00077
+  2.515651602371E-03,  # 00078
+  7.095499221751E-03,  # 00079
+  5.785197470316E-03,  # 00080
+  2.593882426566E-03,  # 00081
+  3.559752792714E-03,  # 00082
+  3.567674559398E-03,  # 00083
+  3.787084331773E-03,  # 00084
+  6.121109912333E-03,  # 00085
+  4.658304786559E-03,  # 00086
+  2.889678543516E-03,  # 00087
+  8.314128856824E-03,  # 00088
+  1.104961563141E-02,  # 00089
+  1.052972244926E-02,  # 00090
+  1.053087411084E-02,  # 00091
+  9.180252373388E-03,  # 00092
+  1.335077781737E-02,  # 00093
+  7.650696406040E-03,  # 00094
+  1.599402571808E-02,  # 00095
+  2.430397398651E-02,  # 00096
+  5.761083095006E-02,  # 00097
+  7.329839249318E-02,  # 00098
+  6.112769513461E-02,  # 00099
+  8.635936971491E-02,  # 00100
+  4.622204088934E-02,  # 00101
+  8.249050289817E-02,  # 00102
+  4.985676835184E-02,  # 00103
+  6.132428004247E-02,  # 00104
+  6.915405201818E-02,  # 00105
+  8.012070930702E-02,  # 00106
+  5.336656279333E-02,  # 00107
+  6.217465076877E-02,  # 00108
+  7.494129024803E-02,  # 00109
+  7.563489336741E-02,  # 00110
+  9.380810585091E-02,  # 00111
+  8.137626993267E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.18024125074E+01, Epot: -2.55806922901E+01, Enl:  1.09306551170E+00}, 
+ iter:  18, EKS:  2.73147857290161937E+01, gnrm:  2.70E-02, 
+ DIIS weights: [-1.79E-01,  3.20E+00, -4.11E+00,  1.83E+00, -4.61E+00,  4.87E+00, 
+                -2.15E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 19
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.518200000899E-09,  # 00001
+  1.591447707075E-09,  # 00002
+  1.009835747346E-10,  # 00003
+  8.392764598486E-11,  # 00004
+  8.252651822031E-11,  # 00005
+  5.146652819360E-11,  # 00006
+  5.994328110196E-11,  # 00007
+  5.663615299691E-11,  # 00008
+  7.004540611574E-11,  # 00009
+  8.344802732757E-11,  # 00010
+  1.920902501457E-10,  # 00011
+  3.360647458909E-11,  # 00012
+  3.414185107925E-11,  # 00013
+  5.963765469010E-10,  # 00014
+  1.472695765497E-10,  # 00015
+  1.195291465509E-10,  # 00016
+  5.690298820626E-09,  # 00017
+  1.489690176695E-09,  # 00018
+  1.296367374495E-09,  # 00019
+  5.322488961591E-10,  # 00020
+  5.446979725451E-10,  # 00021
+  1.253766065623E-09,  # 00022
+  1.956792172645E-09,  # 00023
+  2.688715323814E-09,  # 00024
+  1.081686478301E-08,  # 00025
+  1.347367709476E-08,  # 00026
+  8.953018213784E-09,  # 00027
+  1.759985538672E-07,  # 00028
+  5.413723826899E-08,  # 00029
+  3.259029239071E-08,  # 00030
+  3.859625082797E-08,  # 00031
+  3.455544900511E-07,  # 00032
+  8.637662231929E-07,  # 00033
+  5.729362695348E-07,  # 00034
+  1.391259452036E-07,  # 00035
+  7.030923740811E-08,  # 00036
+  2.556180584694E-07,  # 00037
+  1.760892956622E-07,  # 00038
+  3.166652313465E-07,  # 00039
+  4.968075894545E-06,  # 00040
+  1.162043107971E-05,  # 00041
+  7.757726852855E-06,  # 00042
+  3.141300056680E-06,  # 00043
+  6.688088838745E-06,  # 00044
+  3.574968862580E-06,  # 00045
+  1.601967888117E-05,  # 00046
+  8.306221645498E-06,  # 00047
+  1.896092400990E-06,  # 00048
+  6.821345786464E-06,  # 00049
+  4.787134844555E-05,  # 00050
+  2.650102034843E-05,  # 00051
+  5.435615399494E-05,  # 00052
+  1.263671562046E-05,  # 00053
+  1.369657071490E-05,  # 00054
+  4.606807108728E-05,  # 00055
+  4.482530293044E-05,  # 00056
+  9.731873310200E-05,  # 00057
+  7.506166697916E-05,  # 00058
+  2.001100428359E-04,  # 00059
+  2.625956142354E-04,  # 00060
+  9.131791911576E-05,  # 00061
+  3.434291009673E-04,  # 00062
+  8.948261059897E-05,  # 00063
+  2.276988688623E-04,  # 00064
+  1.658014814529E-04,  # 00065
+  5.467383073145E-04,  # 00066
+  8.378349139720E-04,  # 00067
+  3.317290021909E-04,  # 00068
+  3.926182903097E-04,  # 00069
+  6.497949005671E-04,  # 00070
+  1.667354230784E-03,  # 00071
+  1.683559062348E-03,  # 00072
+  1.540500888531E-03,  # 00073
+  6.974471560086E-04,  # 00074
+  1.566655961178E-03,  # 00075
+  1.145983361368E-03,  # 00076
+  3.929184740742E-03,  # 00077
+  2.191375843926E-03,  # 00078
+  6.507193251062E-03,  # 00079
+  5.230112469123E-03,  # 00080
+  2.324404404496E-03,  # 00081
+  3.230438405500E-03,  # 00082
+  3.281956745850E-03,  # 00083
+  3.477885823687E-03,  # 00084
+  5.603421333047E-03,  # 00085
+  4.248362845227E-03,  # 00086
+  2.627589182815E-03,  # 00087
+  7.834282576814E-03,  # 00088
+  1.014703048574E-02,  # 00089
+  9.936580936490E-03,  # 00090
+  9.659126645168E-03,  # 00091
+  8.571150976250E-03,  # 00092
+  1.308630283470E-02,  # 00093
+  7.445596964418E-03,  # 00094
+  1.527564116470E-02,  # 00095
+  2.302028512153E-02,  # 00096
+  4.940137876241E-02,  # 00097
+  6.202179682930E-02,  # 00098
+  5.108687519063E-02,  # 00099
+  7.326024175663E-02,  # 00100
+  3.982619007026E-02,  # 00101
+  6.367936180997E-02,  # 00102
+  4.669328717918E-02,  # 00103
+  5.056934939142E-02,  # 00104
+  6.102000532236E-02,  # 00105
+  6.826057084654E-02,  # 00106
+  4.747310294358E-02,  # 00107
+  5.251750266310E-02,  # 00108
+  6.394770804023E-02,  # 00109
+  6.502774056283E-02,  # 00110
+  8.258493138459E-02,  # 00111
+  7.044656402041E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.13120660770E+01, Epot: -2.52777610095E+01, Enl:  1.08142150772E+00}, 
+ iter:  19, EKS:  2.71157265752637606E+01, gnrm:  2.31E-02, 
+ DIIS weights: [ 1.95E+00, -2.57E+00,  1.10E+00, -3.27E+00,  3.36E+00,  4.35E-01, 
+                -2.15E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 20
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.495533558196E-09,  # 00001
+  1.573484444250E-09,  # 00002
+  9.956484828843E-11,  # 00003
+  8.296780532688E-11,  # 00004
+  8.128902603931E-11,  # 00005
+  5.086616622708E-11,  # 00006
+  5.929334201683E-11,  # 00007
+  5.605301922111E-11,  # 00008
+  6.920915236805E-11,  # 00009
+  7.912639459518E-11,  # 00010
+  1.794752439238E-10,  # 00011
+  3.320894637287E-11,  # 00012
+  3.357024813389E-11,  # 00013
+  5.825900097609E-10,  # 00014
+  1.376722542668E-10,  # 00015
+  1.115237045826E-10,  # 00016
+  5.394544494835E-09,  # 00017
+  1.393461719749E-09,  # 00018
+  1.256321638841E-09,  # 00019
+  5.037839820683E-10,  # 00020
+  5.066012495960E-10,  # 00021
+  1.169266722482E-09,  # 00022
+  1.822093144968E-09,  # 00023
+  2.491887837153E-09,  # 00024
+  9.998330616810E-09,  # 00025
+  1.281506598270E-08,  # 00026
+  8.458502178188E-09,  # 00027
+  1.661133045561E-07,  # 00028
+  5.105414409760E-08,  # 00029
+  3.121357887601E-08,  # 00030
+  3.570863879087E-08,  # 00031
+  3.207417851525E-07,  # 00032
+  8.275466580522E-07,  # 00033
+  5.413333553737E-07,  # 00034
+  1.323094604141E-07,  # 00035
+  6.457828321130E-08,  # 00036
+  2.413998746781E-07,  # 00037
+  1.706329359677E-07,  # 00038
+  2.961080173951E-07,  # 00039
+  4.558597795547E-06,  # 00040
+  1.100230811084E-05,  # 00041
+  7.339419335955E-06,  # 00042
+  2.942961429434E-06,  # 00043
+  6.321798554921E-06,  # 00044
+  3.305140262228E-06,  # 00045
+  1.501262284443E-05,  # 00046
+  8.017291660768E-06,  # 00047
+  1.768523722057E-06,  # 00048
+  6.460038596432E-06,  # 00049
+  4.608140866121E-05,  # 00050
+  2.476360401881E-05,  # 00051
+  5.079570041039E-05,  # 00052
+  1.207948400235E-05,  # 00053
+  1.284087648680E-05,  # 00054
+  4.340492240643E-05,  # 00055
+  4.212579612284E-05,  # 00056
+  9.104972800975E-05,  # 00057
+  6.961267004023E-05,  # 00058
+  1.866247945662E-04,  # 00059
+  2.526183473846E-04,  # 00060
+  8.627970372298E-05,  # 00061
+  3.223286195248E-04,  # 00062
+  8.641267068292E-05,  # 00063
+  2.128543625763E-04,  # 00064
+  1.562373868607E-04,  # 00065
+  5.166539013137E-04,  # 00066
+  8.081651256218E-04,  # 00067
+  3.131258450077E-04,  # 00068
+  3.692976983454E-04,  # 00069
+  6.172618931147E-04,  # 00070
+  1.579816850651E-03,  # 00071
+  1.608886662944E-03,  # 00072
+  1.447898951370E-03,  # 00073
+  6.682957824846E-04,  # 00074
+  1.512193111299E-03,  # 00075
+  1.100394435092E-03,  # 00076
+  3.764413694114E-03,  # 00077
+  2.116746617944E-03,  # 00078
+  6.325828666378E-03,  # 00079
+  5.066809346713E-03,  # 00080
+  2.248940409911E-03,  # 00081
+  3.149646620537E-03,  # 00082
+  3.217673140902E-03,  # 00083
+  3.399287161028E-03,  # 00084
+  5.395087721793E-03,  # 00085
+  4.113726668861E-03,  # 00086
+  2.536400196678E-03,  # 00087
+  7.630764274063E-03,  # 00088
+  9.820833049031E-03,  # 00089
+  9.656661292640E-03,  # 00090
+  9.377865925613E-03,  # 00091
+  8.337498447505E-03,  # 00092
+  1.294155972674E-02,  # 00093
+  7.264433832759E-03,  # 00094
+  1.500014277942E-02,  # 00095
+  2.266742560224E-02,  # 00096
+  4.769964603103E-02,  # 00097
+  5.949243061841E-02,  # 00098
+  4.963079780723E-02,  # 00099
+  7.511912084065E-02,  # 00100
+  3.871228399755E-02,  # 00101
+  6.670524187755E-02,  # 00102
+  4.610024872862E-02,  # 00103
+  4.832233469127E-02,  # 00104
+  5.927606467011E-02,  # 00105
+  6.567739346587E-02,  # 00106
+  4.584426174708E-02,  # 00107
+  5.129964817013E-02,  # 00108
+  6.140782471218E-02,  # 00109
+  6.284508326539E-02,  # 00110
+  8.349552449293E-02,  # 00111
+  6.692073155785E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.12230461408E+01, Epot: -2.52195220108E+01, Enl:  1.07939815279E+00}, 
+ iter:  20, EKS:  2.70829222827267060E+01, gnrm:  2.27E-02, 
+ DIIS weights: [ 1.20E-01, -1.27E-01, -2.74E-01,  5.00E-01, -3.01E+00,  3.79E+00, 
+                -2.27E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 21
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.479562884207E-09,  # 00001
+  1.559580251796E-09,  # 00002
+  9.839616417959E-11,  # 00003
+  8.227677641977E-11,  # 00004
+  8.030400752688E-11,  # 00005
+  5.031120677672E-11,  # 00006
+  5.876956655108E-11,  # 00007
+  5.560250861053E-11,  # 00008
+  6.857312466988E-11,  # 00009
+  7.155821909246E-11,  # 00010
+  1.567697405535E-10,  # 00011
+  3.290779034553E-11,  # 00012
+  3.307990325621E-11,  # 00013
+  5.656137674189E-10,  # 00014
+  1.214821424176E-10,  # 00015
+  9.683644079609E-11,  # 00016
+  4.915114509132E-09,  # 00017
+  1.221623879473E-09,  # 00018
+  1.244601319103E-09,  # 00019
+  4.766723509607E-10,  # 00020
+  4.542840838011E-10,  # 00021
+  1.039543098622E-09,  # 00022
+  1.604750653503E-09,  # 00023
+  2.201714587946E-09,  # 00024
+  8.806087381982E-09,  # 00025
+  1.197604667360E-08,  # 00026
+  7.716434859075E-09,  # 00027
+  1.485253399202E-07,  # 00028
+  4.486424744618E-08,  # 00029
+  2.903302095955E-08,  # 00030
+  3.128828901684E-08,  # 00031
+  2.782935812428E-07,  # 00032
+  7.437091245521E-07,  # 00033
+  4.924635115660E-07,  # 00034
+  1.196344410412E-07,  # 00035
+  5.553966967576E-08,  # 00036
+  2.213241173106E-07,  # 00037
+  1.609900248804E-07,  # 00038
+  2.559478476632E-07,  # 00039
+  3.848265563491E-06,  # 00040
+  9.565351150972E-06,  # 00041
+  6.459878586014E-06,  # 00042
+  2.533260357458E-06,  # 00043
+  5.527774166325E-06,  # 00044
+  2.792109518257E-06,  # 00045
+  1.314999030921E-05,  # 00046
+  7.399258990878E-06,  # 00047
+  1.482918314991E-06,  # 00048
+  5.717087198914E-06,  # 00049
+  4.185685925688E-05,  # 00050
+  2.100573810104E-05,  # 00051
+  4.429473439615E-05,  # 00052
+  1.095590748209E-05,  # 00053
+  1.105099437279E-05,  # 00054
+  3.707120327303E-05,  # 00055
+  3.748022944013E-05,  # 00056
+  7.928489707689E-05,  # 00057
+  5.867602944053E-05,  # 00058
+  1.553288561045E-04,  # 00059
+  2.290101710061E-04,  # 00060
+  7.527207201703E-05,  # 00061
+  2.814594781953E-04,  # 00062
+  7.946167605221E-05,  # 00063
+  1.777059044505E-04,  # 00064
+  1.360017230212E-04,  # 00065
+  4.456451027304E-04,  # 00066
+  7.449664437899E-04,  # 00067
+  2.709871478587E-04,  # 00068
+  3.185928318011E-04,  # 00069
+  5.480056296128E-04,  # 00070
+  1.371529844196E-03,  # 00071
+  1.438704526283E-03,  # 00072
+  1.257985522062E-03,  # 00073
+  6.037210795176E-04,  # 00074
+  1.382099647122E-03,  # 00075
+  9.944114672719E-04,  # 00076
+  3.408365429629E-03,  # 00077
+  1.936164542651E-03,  # 00078
+  5.906907651535E-03,  # 00079
+  4.736406345681E-03,  # 00080
+  2.069499925065E-03,  # 00081
+  2.960485838411E-03,  # 00082
+  3.045545958616E-03,  # 00083
+  3.233275296955E-03,  # 00084
+  5.032559376974E-03,  # 00085
+  3.828709474235E-03,  # 00086
+  2.337376021595E-03,  # 00087
+  7.214080296080E-03,  # 00088
+  9.163779739478E-03,  # 00089
+  9.117865535724E-03,  # 00090
+  8.844720181156E-03,  # 00091
+  7.912305646182E-03,  # 00092
+  1.268926796472E-02,  # 00093
+  6.980308773708E-03,  # 00094
+  1.445819077449E-02,  # 00095
+  2.176706579694E-02,  # 00096
+  4.251356381879E-02,  # 00097
+  5.235890638016E-02,  # 00098
+  4.381151098445E-02,  # 00099
+  6.207438839732E-02,  # 00100
+  3.593934492453E-02,  # 00101
+  7.073192925451E-02,  # 00102
+  4.411137375189E-02,  # 00103
+  4.190001266995E-02,  # 00104
+  5.421924851678E-02,  # 00105
+  5.866866697136E-02,  # 00106
+  4.142908824545E-02,  # 00107
+  4.574870000582E-02,  # 00108
+  5.387857569543E-02,  # 00109
+  5.658093632272E-02,  # 00110
+  7.493994359471E-02,  # 00111
+  5.901449678127E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.09659400444E+01, Epot: -2.50449094010E+01, Enl:  1.07350937787E+00}, 
+ iter:  21, EKS:  2.69945400212200468E+01, gnrm:  2.05E-02, 
+ DIIS weights: [ 6.87E-02,  9.06E-01, -1.40E+00,  5.54E+00, -9.12E+00,  5.01E+00, 
+                -1.47E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 22
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.488183508414E-09,  # 00001
+  1.571917590110E-09,  # 00002
+  9.890484860286E-11,  # 00003
+  8.286390050884E-11,  # 00004
+  8.076325105642E-11,  # 00005
+  5.017783363448E-11,  # 00006
+  5.919215932991E-11,  # 00007
+  5.589944952592E-11,  # 00008
+  6.884550843114E-11,  # 00009
+  6.621730858623E-11,  # 00010
+  1.386737977239E-10,  # 00011
+  3.319750937360E-11,  # 00012
+  3.302168167556E-11,  # 00013
+  5.572948891563E-10,  # 00014
+  1.020558857677E-10,  # 00015
+  8.123830081871E-11,  # 00016
+  4.131575758381E-09,  # 00017
+  1.092690035333E-09,  # 00018
+  9.921542411962E-10,  # 00019
+  3.872479125959E-10,  # 00020
+  3.736844078953E-10,  # 00021
+  8.389227182383E-10,  # 00022
+  1.319988547179E-09,  # 00023
+  1.758646418377E-09,  # 00024
+  6.905402015874E-09,  # 00025
+  9.638075263194E-09,  # 00026
+  6.511137506977E-09,  # 00027
+  1.280108099091E-07,  # 00028
+  3.523649747690E-08,  # 00029
+  2.313147617066E-08,  # 00030
+  2.559303589008E-08,  # 00031
+  2.221659234720E-07,  # 00032
+  6.373379087064E-07,  # 00033
+  4.199465730306E-07,  # 00034
+  1.032672596120E-07,  # 00035
+  4.721739957979E-08,  # 00036
+  1.814620698057E-07,  # 00037
+  1.416497280115E-07,  # 00038
+  2.056942810520E-07,  # 00039
+  3.032594241518E-06,  # 00040
+  8.189810941073E-06,  # 00041
+  5.349284545470E-06,  # 00042
+  2.152821622820E-06,  # 00043
+  4.542191534775E-06,  # 00044
+  2.493495386483E-06,  # 00045
+  1.088275409535E-05,  # 00046
+  6.472917520014E-06,  # 00047
+  1.255596257806E-06,  # 00048
+  4.825074771368E-06,  # 00049
+  3.576943605763E-05,  # 00050
+  1.710270745920E-05,  # 00051
+  3.559323952917E-05,  # 00052
+  9.260734209645E-06,  # 00053
+  8.719125713066E-06,  # 00054
+  3.097951252492E-05,  # 00055
+  3.196258704841E-05,  # 00056
+  6.445567606297E-05,  # 00057
+  4.427425778585E-05,  # 00058
+  1.156704405854E-04,  # 00059
+  1.881400352292E-04,  # 00060
+  5.808761038408E-05,  # 00061
+  2.247705211077E-04,  # 00062
+  6.669247099963E-05,  # 00063
+  1.298681727281E-04,  # 00064
+  1.077195169015E-04,  # 00065
+  3.287329336028E-04,  # 00066
+  6.164241464075E-04,  # 00067
+  2.037630669008E-04,  # 00068
+  2.275494989052E-04,  # 00069
+  4.298944517921E-04,  # 00070
+  1.003396697337E-03,  # 00071
+  1.139800374650E-03,  # 00072
+  9.444488672381E-04,  # 00073
+  5.044567626340E-04,  # 00074
+  1.132632100396E-03,  # 00075
+  8.052215824963E-04,  # 00076
+  2.815591099097E-03,  # 00077
+  1.606354628220E-03,  # 00078
+  5.062083616967E-03,  # 00079
+  4.205170534584E-03,  # 00080
+  1.733466713861E-03,  # 00081
+  2.598684229067E-03,  # 00082
+  2.689359015107E-03,  # 00083
+  2.959401674409E-03,  # 00084
+  4.518078047294E-03,  # 00085
+  3.334530825422E-03,  # 00086
+  1.983602708904E-03,  # 00087
+  6.489636330161E-03,  # 00088
+  7.988107365136E-03,  # 00089
+  8.148922265103E-03,  # 00090
+  7.920851322858E-03,  # 00091
+  7.300600842046E-03,  # 00092
+  1.216429219317E-02,  # 00093
+  6.550836978123E-03,  # 00094
+  1.352959127868E-02,  # 00095
+  1.980266940179E-02,  # 00096
+  3.501226540751E-02,  # 00097
+  4.267485453720E-02,  # 00098
+  3.727823771037E-02,  # 00099
+  5.408101678891E-02,  # 00100
+  3.206498068391E-02,  # 00101
+  4.032405591049E-02,  # 00102
+  4.286576822851E-02,  # 00103
+  3.515330742852E-02,  # 00104
+  4.509446508433E-02,  # 00105
+  4.936925215626E-02,  # 00106
+  3.782856468603E-02,  # 00107
+  3.946596638101E-02,  # 00108
+  4.223289636016E-02,  # 00109
+  4.993200579629E-02,  # 00110
+  6.361419860755E-02,  # 00111
+  4.849240677184E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.04940905341E+01, Epot: -2.47176608800E+01, Enl:  1.06154881377E+00}, 
+ iter:  22, EKS:  2.68379784679119737E+01, gnrm:  1.70E-02, 
+ DIIS weights: [-1.26E+00,  1.97E+00, -8.38E+00,  1.27E+01, -6.60E+00,  2.59E+00, 
+                -1.32E-03],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 23
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.501781475153E-09,  # 00001
+  1.586323338956E-09,  # 00002
+  9.958997981941E-11,  # 00003
+  8.347915958410E-11,  # 00004
+  8.141750082158E-11,  # 00005
+  5.035847560159E-11,  # 00006
+  5.965554077694E-11,  # 00007
+  5.624975456227E-11,  # 00008
+  6.922656042079E-11,  # 00009
+  6.209714093748E-11,  # 00010
+  1.251869249613E-10,  # 00011
+  3.350454562382E-11,  # 00012
+  3.319444736036E-11,  # 00013
+  5.555103702577E-10,  # 00014
+  9.277902428240E-11,  # 00015
+  7.369641854715E-11,  # 00016
+  3.745694315683E-09,  # 00017
+  1.027951382076E-09,  # 00018
+  8.783914856997E-10,  # 00019
+  3.465212190151E-10,  # 00020
+  3.470341630002E-10,  # 00021
+  7.601664073721E-10,  # 00022
+  1.230707512295E-09,  # 00023
+  1.572830053939E-09,  # 00024
+  6.352089108842E-09,  # 00025
+  8.573897574499E-09,  # 00026
+  6.105430489504E-09,  # 00027
+  1.177854743190E-07,  # 00028
+  3.178593953370E-08,  # 00029
+  2.015410121496E-08,  # 00030
+  2.366230615030E-08,  # 00031
+  2.038420519223E-07,  # 00032
+  5.766009256562E-07,  # 00033
+  3.992687314293E-07,  # 00034
+  9.584436787304E-08,  # 00035
+  4.419461386983E-08,  # 00036
+  1.686066727365E-07,  # 00037
+  1.298258051146E-07,  # 00038
+  1.852185856354E-07,  # 00039
+  2.723583701541E-06,  # 00040
+  7.569320250832E-06,  # 00041
+  4.783278724807E-06,  # 00042
+  2.051659098882E-06,  # 00043
+  4.043097447379E-06,  # 00044
+  2.389582967347E-06,  # 00045
+  9.800026857831E-06,  # 00046
+  5.904802528452E-06,  # 00047
+  1.172563953398E-06,  # 00048
+  4.339873832493E-06,  # 00049
+  3.298621269885E-05,  # 00050
+  1.567314723831E-05,  # 00051
+  3.193469363422E-05,  # 00052
+  8.613495124175E-06,  # 00053
+  7.711487810616E-06,  # 00054
+  2.901030933371E-05,  # 00055
+  3.038504500038E-05,  # 00056
+  5.770243234116E-05,  # 00057
+  3.821033497805E-05,  # 00058
+  1.032484943466E-04,  # 00059
+  1.713984742681E-04,  # 00060
+  5.133026696750E-05,  # 00061
+  2.113667244626E-04,  # 00062
+  6.150875535161E-05,  # 00063
+  1.128566243880E-04,  # 00064
+  9.489913534022E-05,  # 00065
+  2.811250365869E-04,  # 00066
+  5.574617468977E-04,  # 00067
+  1.715367053473E-04,  # 00068
+  1.961753292979E-04,  # 00069
+  3.882476959680E-04,  # 00070
+  8.620347602676E-04,  # 00071
+  1.017111898664E-03,  # 00072
+  8.132587623728E-04,  # 00073
+  4.508289022546E-04,  # 00074
+  1.014203092246E-03,  # 00075
+  7.296672251799E-04,  # 00076
+  2.505487031270E-03,  # 00077
+  1.438772044161E-03,  # 00078
+  4.588789510570E-03,  # 00079
+  3.961988215408E-03,  # 00080
+  1.561068212834E-03,  # 00081
+  2.409341088349E-03,  # 00082
+  2.489087470930E-03,  # 00083
+  2.841851734043E-03,  # 00084
+  4.291707628327E-03,  # 00085
+  3.099808466327E-03,  # 00086
+  1.794388328401E-03,  # 00087
+  6.084714174829E-03,  # 00088
+  7.437475081421E-03,  # 00089
+  7.610190849024E-03,  # 00090
+  7.492626766204E-03,  # 00091
+  7.052966669934E-03,  # 00092
+  1.183767601683E-02,  # 00093
+  6.315157372787E-03,  # 00094
+  1.301308453191E-02,  # 00095
+  1.865135518941E-02,  # 00096
+  3.035918063725E-02,  # 00097
+  3.725352760131E-02,  # 00098
+  3.328212002576E-02,  # 00099
+  5.290854747547E-02,  # 00100
+  3.018821912524E-02,  # 00101
+  3.248510915552E-02,  # 00102
+  4.136058873661E-02,  # 00103
+  3.094634163813E-02,  # 00104
+  3.996837536279E-02,  # 00105
+  4.439988844376E-02,  # 00106
+  3.500640487892E-02,  # 00107
+  3.495504970200E-02,  # 00108
+  3.543090028417E-02,  # 00109
+  4.627210002201E-02,  # 00110
+  5.163944902705E-02,  # 00111
+  4.330444699244E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.02506045491E+01, Epot: -2.45378247708E+01, Enl:  1.05442453783E+00}, 
+ iter:  23, EKS:  2.67672043162116005E+01, gnrm:  1.52E-02, 
+ DIIS weights: [ 5.32E-02,  2.34E-01, -6.50E-02, -2.06E-02, -1.79E+00,  2.59E+00, 
+                -9.93E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 24
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.485750538663E-09,  # 00001
+  1.563621921960E-09,  # 00002
+  9.874080307418E-11,  # 00003
+  8.239182226598E-11,  # 00004
+  8.036724139247E-11,  # 00005
+  4.979976963393E-11,  # 00006
+  5.906036719476E-11,  # 00007
+  5.566472113664E-11,  # 00008
+  6.863702510396E-11,  # 00009
+  5.776005508588E-11,  # 00010
+  1.123855388477E-10,  # 00011
+  3.303315271521E-11,  # 00012
+  3.291809662643E-11,  # 00013
+  5.474470497071E-10,  # 00014
+  8.344355495052E-11,  # 00015
+  6.666912554035E-11,  # 00016
+  3.308816872632E-09,  # 00017
+  9.651337094724E-10,  # 00018
+  7.089875860596E-10,  # 00019
+  2.888468623568E-10,  # 00020
+  3.088533601296E-10,  # 00021
+  6.801213529945E-10,  # 00022
+  1.116373090986E-09,  # 00023
+  1.362073753248E-09,  # 00024
+  5.617146131518E-09,  # 00025
+  7.005829902522E-09,  # 00026
+  5.479921305856E-09,  # 00027
+  1.034617975779E-07,  # 00028
+  2.751136496387E-08,  # 00029
+  1.592650362617E-08,  # 00030
+  2.140465050963E-08,  # 00031
+  1.789228097687E-07,  # 00032
+  5.100562811743E-07,  # 00033
+  3.713347595935E-07,  # 00034
+  8.653064816910E-08,  # 00035
+  4.112839307005E-08,  # 00036
+  1.484547979449E-07,  # 00037
+  1.117690611507E-07,  # 00038
+  1.686091530283E-07,  # 00039
+  2.376914636405E-06,  # 00040
+  6.910206716858E-06,  # 00041
+  4.224142055337E-06,  # 00042
+  1.894322445863E-06,  # 00043
+  3.568266686091E-06,  # 00044
+  2.241006598857E-06,  # 00045
+  8.477856099231E-06,  # 00046
+  5.094822367734E-06,  # 00047
+  1.115882583472E-06,  # 00048
+  3.760404544231E-06,  # 00049
+  2.918820049443E-05,  # 00050
+  1.430051447655E-05,  # 00051
+  2.824124187465E-05,  # 00052
+  7.893990974795E-06,  # 00053
+  6.699373540539E-06,  # 00054
+  2.684461023436E-05,  # 00055
+  2.813014710662E-05,  # 00056
+  4.991357209924E-05,  # 00057
+  3.264653065063E-05,  # 00058
+  9.162102284314E-05,  # 00059
+  1.510135360919E-04,  # 00060
+  4.460258543129E-05,  # 00061
+  1.976630649956E-04,  # 00062
+  5.385902811845E-05,  # 00063
+  9.859854410964E-05,  # 00064
+  8.278529586065E-05,  # 00065
+  2.322045034685E-04,  # 00066
+  4.691221157346E-04,  # 00067
+  1.385528556257E-04,  # 00068
+  1.668210380127E-04,  # 00069
+  3.348022847498E-04,  # 00070
+  7.209608311067E-04,  # 00071
+  8.565518332882E-04,  # 00072
+  6.742430098527E-04,  # 00073
+  3.882696701216E-04,  # 00074
+  8.717381842938E-04,  # 00075
+  6.373248601474E-04,  # 00076
+  2.134577905156E-03,  # 00077
+  1.234360725938E-03,  # 00078
+  3.971310528516E-03,  # 00079
+  3.614507565375E-03,  # 00080
+  1.357055549454E-03,  # 00081
+  2.161675319799E-03,  # 00082
+  2.247932604637E-03,  # 00083
+  2.676534078514E-03,  # 00084
+  3.952920677740E-03,  # 00085
+  2.790325304763E-03,  # 00086
+  1.567549880915E-03,  # 00087
+  5.500220731142E-03,  # 00088
+  6.740074059163E-03,  # 00089
+  6.838868192905E-03,  # 00090
+  6.859568822950E-03,  # 00091
+  6.665701175884E-03,  # 00092
+  1.126932433646E-02,  # 00093
+  5.935907868646E-03,  # 00094
+  1.223749893733E-02,  # 00095
+  1.718210784267E-02,  # 00096
+  2.673030688087E-02,  # 00097
+  3.295761259416E-02,  # 00098
+  2.961481731431E-02,  # 00099
+  4.805665257196E-02,  # 00100
+  2.842526534235E-02,  # 00101
+  2.964936556253E-02,  # 00102
+  3.986329910527E-02,  # 00103
+  2.804694750067E-02,  # 00104
+  3.523759547274E-02,  # 00105
+  4.019105836983E-02,  # 00106
+  3.343634730742E-02,  # 00107
+  3.126198328081E-02,  # 00108
+  2.976876440841E-02,  # 00109
+  4.364214086292E-02,  # 00110
+  4.984890773512E-02,  # 00111
+  3.858797305010E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  5.00185661604E+01, Epot: -2.43648995249E+01, Enl:  1.04791594652E+00}, 
+ iter:  24, EKS:  2.67015825820443027E+01, gnrm:  1.39E-02, 
+ DIIS weights: [-8.04E-01,  5.21E-01, -3.66E-02,  2.65E+00, -4.43E+00,  3.10E+00, 
+                -8.99E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 25
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.497764669320E-09,  # 00001
+  1.566120969926E-09,  # 00002
+  9.938140877150E-11,  # 00003
+  8.268412257416E-11,  # 00004
+  8.069240516512E-11,  # 00005
+  4.996852726181E-11,  # 00006
+  5.933359750798E-11,  # 00007
+  5.594628498202E-11,  # 00008
+  6.889317161422E-11,  # 00009
+  5.384646469584E-11,  # 00010
+  9.884628683070E-11,  # 00011
+  3.324371187428E-11,  # 00012
+  3.317715356570E-11,  # 00013
+  5.478090784124E-10,  # 00014
+  7.687898947371E-11,  # 00015
+  6.222222894722E-11,  # 00016
+  3.007707169707E-09,  # 00017
+  9.253183348123E-10,  # 00018
+  6.246690933225E-10,  # 00019
+  2.624508723168E-10,  # 00020
+  2.919714536327E-10,  # 00021
+  6.300344777617E-10,  # 00022
+  1.047629354092E-09,  # 00023
+  1.251047451514E-09,  # 00024
+  5.309463962680E-09,  # 00025
+  6.205153392335E-09,  # 00026
+  5.216015213948E-09,  # 00027
+  9.233975824852E-08,  # 00028
+  2.459832684638E-08,  # 00029
+  1.371948836018E-08,  # 00030
+  2.021677904646E-08,  # 00031
+  1.638788020799E-07,  # 00032
+  4.576753583837E-07,  # 00033
+  3.591113217322E-07,  # 00034
+  8.043655051217E-08,  # 00035
+  3.917311401858E-08,  # 00036
+  1.398608469239E-07,  # 00037
+  1.013544292151E-07,  # 00038
+  1.575453049249E-07,  # 00039
+  2.137758556499E-06,  # 00040
+  6.384694835285E-06,  # 00041
+  3.834778976802E-06,  # 00042
+  1.803560366003E-06,  # 00043
+  3.246694769577E-06,  # 00044
+  2.135509793184E-06,  # 00045
+  7.590318001239E-06,  # 00046
+  4.601716016841E-06,  # 00047
+  1.081745889105E-06,  # 00048
+  3.372786891997E-06,  # 00049
+  2.684145562760E-05,  # 00050
+  1.331651473774E-05,  # 00051
+  2.601226718249E-05,  # 00052
+  7.441567737800E-06,  # 00053
+  6.066885565450E-06,  # 00054
+  2.553700618802E-05,  # 00055
+  2.729764088657E-05,  # 00056
+  4.451348836234E-05,  # 00057
+  3.005311970282E-05,  # 00058
+  8.732689218372E-05,  # 00059
+  1.398231380190E-04,  # 00060
+  4.121587130545E-05,  # 00061
+  1.990600391238E-04,  # 00062
+  4.968502229312E-05,  # 00063
+  9.307988809793E-05,  # 00064
+  7.476649922043E-05,  # 00065
+  2.062712686176E-04,  # 00066
+  4.234633459486E-04,  # 00067
+  1.161546510758E-04,  # 00068
+  1.641100139606E-04,  # 00069
+  3.034998608742E-04,  # 00070
+  6.836772273039E-04,  # 00071
+  7.713819210555E-04,  # 00072
+  5.968487073553E-04,  # 00073
+  3.402715201214E-04,  # 00074
+  7.742453264061E-04,  # 00075
+  5.871741374046E-04,  # 00076
+  1.847464167407E-03,  # 00077
+  1.075106231931E-03,  # 00078
+  3.469729917084E-03,  # 00079
+  3.359853646370E-03,  # 00080
+  1.212023289284E-03,  # 00081
+  1.977843356045E-03,  # 00082
+  2.049175737809E-03,  # 00083
+  2.548445855412E-03,  # 00084
+  3.732782574303E-03,  # 00085
+  2.566238112896E-03,  # 00086
+  1.408234596976E-03,  # 00087
+  5.063107035152E-03,  # 00088
+  6.304570756396E-03,  # 00089
+  6.293285174112E-03,  # 00090
+  6.465902850376E-03,  # 00091
+  6.442641254726E-03,  # 00092
+  1.081073883580E-02,  # 00093
+  5.674937547493E-03,  # 00094
+  1.160453081196E-02,  # 00095
+  1.596886772781E-02,  # 00096
+  2.361742884414E-02,  # 00097
+  2.931056363856E-02,  # 00098
+  2.652849896903E-02,  # 00099
+  4.164577924906E-02,  # 00100
+  2.674237729727E-02,  # 00101
+  2.522234084605E-02,  # 00102
+  3.808296301384E-02,  # 00103
+  2.483388405544E-02,  # 00104
+  3.084454692139E-02,  # 00105
+  3.642477421980E-02,  # 00106
+  3.112125344605E-02,  # 00107
+  2.888600243108E-02,  # 00108
+  2.473907278839E-02,  # 00109
+  4.097554947557E-02,  # 00110
+  4.081409057615E-02,  # 00111
+  3.566165955066E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  4.98055992072E+01, Epot: -2.42016934903E+01, Enl:  1.04246901809E+00}, 
+ iter:  25, EKS:  2.66463747349300277E+01, gnrm:  1.25E-02, 
+ DIIS weights: [ 1.05E+00, -4.12E-01, -5.24E+00,  8.95E+00, -7.35E+00,  4.01E+00, 
+                -6.11E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 26
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.569966537479E-09,  # 00001
+  1.599806248508E-09,  # 00002
+  1.028823193622E-10,  # 00003
+  8.449270378402E-11,  # 00004
+  8.308857649029E-11,  # 00005
+  5.108276062730E-11,  # 00006
+  6.120577568140E-11,  # 00007
+  5.749134450922E-11,  # 00008
+  7.042726139934E-11,  # 00009
+  5.237494415370E-11,  # 00010
+  8.977858433796E-11,  # 00011
+  3.438835739715E-11,  # 00012
+  3.466509529470E-11,  # 00013
+  5.649334672354E-10,  # 00014
+  7.621266894278E-11,  # 00015
+  6.250731760313E-11,  # 00016
+  2.948969847348E-09,  # 00017
+  9.433698998682E-10,  # 00018
+  6.057165237942E-10,  # 00019
+  2.599073894664E-10,  # 00020
+  2.883461385997E-10,  # 00021
+  6.071240088433E-10,  # 00022
+  1.025983109934E-09,  # 00023
+  1.186393303889E-09,  # 00024
+  5.233100895016E-09,  # 00025
+  5.904678683305E-09,  # 00026
+  5.301422326875E-09,  # 00027
+  8.635202926766E-08,  # 00028
+  2.290146924697E-08,  # 00029
+  1.297725313663E-08,  # 00030
+  2.021494019817E-08,  # 00031
+  1.567088821634E-07,  # 00032
+  4.260163336487E-07,  # 00033
+  3.604683088901E-07,  # 00034
+  7.841190096912E-08,  # 00035
+  3.798819591854E-08,  # 00036
+  1.402806839717E-07,  # 00037
+  9.735302307162E-08,  # 00038
+  1.511604064221E-07,  # 00039
+  1.987339312360E-06,  # 00040
+  6.110760258553E-06,  # 00041
+  3.636631462906E-06,  # 00042
+  1.826943774366E-06,  # 00043
+  3.088992611807E-06,  # 00044
+  2.139126298841E-06,  # 00045
+  7.112189854091E-06,  # 00046
+  4.422889925692E-06,  # 00047
+  1.107474058344E-06,  # 00048
+  3.178029398045E-06,  # 00049
+  2.624915307579E-05,  # 00050
+  1.284090135594E-05,  # 00051
+  2.500809754259E-05,  # 00052
+  7.317410871882E-06,  # 00053
+  5.775844371308E-06,  # 00054
+  2.538071597815E-05,  # 00055
+  2.802708325806E-05,  # 00056
+  4.182211568434E-05,  # 00057
+  3.057047470286E-05,  # 00058
+  9.158472201668E-05,  # 00059
+  1.393855474229E-04,  # 00060
+  4.110276799629E-05,  # 00061
+  2.147889662041E-04,  # 00062
+  4.971430391760E-05,  # 00063
+  9.788203833552E-05,  # 00064
+  7.126407607388E-05,  # 00065
+  2.024284327214E-04,  # 00066
+  4.319107332655E-04,  # 00067
+  1.068698972526E-04,  # 00068
+  1.870465717527E-04,  # 00069
+  2.949713434584E-04,  # 00070
+  7.559777136695E-04,  # 00071
+  7.753430094134E-04,  # 00072
+  5.908735632558E-04,  # 00073
+  3.099557922477E-04,  # 00074
+  7.236881590712E-04,  # 00075
+  5.882954433326E-04,  # 00076
+  1.662899327054E-03,  # 00077
+  9.667771458089E-04,  # 00078
+  3.082997293467E-03,  # 00079
+  3.228615395029E-03,  # 00080
+  1.125099734257E-03,  # 00081
+  1.876737982349E-03,  # 00082
+  1.916591583926E-03,  # 00083
+  2.468679414944E-03,  # 00084
+  3.656225339086E-03,  # 00085
+  2.432359784755E-03,  # 00086
+  1.319004926491E-03,  # 00087
+  4.804100605141E-03,  # 00088
+  6.180667583804E-03,  # 00089
+  6.039021537822E-03,  # 00090
+  6.411556626978E-03,  # 00091
+  6.457425829205E-03,  # 00092
+  1.056334694751E-02,  # 00093
+  5.599070803850E-03,  # 00094
+  1.118920325597E-02,  # 00095
+  1.516200059431E-02,  # 00096
+  2.081107537040E-02,  # 00097
+  2.577569774316E-02,  # 00098
+  2.311775823888E-02,  # 00099
+  4.164582618108E-02,  # 00100
+  2.465084353320E-02,  # 00101
+  2.377120178873E-02,  # 00102
+  3.563556876906E-02,  # 00103
+  2.142381605723E-02,  # 00104
+  2.634678105533E-02,  # 00105
+  3.310146952124E-02,  # 00106
+  2.922545077339E-02,  # 00107
+  2.652134944888E-02,  # 00108
+  1.997478158937E-02,  # 00109
+  3.762157304019E-02,  # 00110
+  3.545854902720E-02,  # 00111
+  3.377326606236E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  4.95551874762E+01, Epot: -2.40034082696E+01, Enl:  1.03530848368E+00}, 
+ iter:  26, EKS:  2.65870876903058395E+01, gnrm:  1.14E-02, 
+ DIIS weights: [ 1.34E-01, -8.28E-01,  1.28E+00, -9.98E-01,  3.43E-01,  1.06E+00, 
+                -6.16E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 27
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.483811420097E-09,  # 00001
+  1.561289208091E-09,  # 00002
+  9.873205164321E-11,  # 00003
+  8.245069859299E-11,  # 00004
+  8.040131997974E-11,  # 00005
+  4.970522968687E-11,  # 00006
+  5.890746475777E-11,  # 00007
+  5.567848237388E-11,  # 00008
+  6.873117335946E-11,  # 00009
+  4.766486022259E-11,  # 00010
+  7.734692803797E-11,  # 00011
+  3.301146734913E-11,  # 00012
+  3.276293024487E-11,  # 00013
+  5.385518207358E-10,  # 00014
+  6.823251097173E-11,  # 00015
+  5.744852859885E-11,  # 00016
+  2.652977109672E-09,  # 00017
+  8.806949911288E-10,  # 00018
+  5.385826696941E-10,  # 00019
+  2.321176891031E-10,  # 00020
+  2.588766270651E-10,  # 00021
+  5.341115942969E-10,  # 00022
+  9.109361766573E-10,  # 00023
+  9.951757219156E-10,  # 00024
+  4.739643313640E-09,  # 00025
+  4.910399884224E-09,  # 00026
+  4.807922136327E-09,  # 00027
+  7.328042841509E-08,  # 00028
+  1.949019775301E-08,  # 00029
+  1.079910756327E-08,  # 00030
+  1.808181608099E-08,  # 00031
+  1.424001848953E-07,  # 00032
+  3.646342808739E-07,  # 00033
+  3.371745019250E-07,  # 00034
+  6.955100974758E-08,  # 00035
+  3.387390186795E-08,  # 00036
+  1.261415005637E-07,  # 00037
+  8.393473030689E-08,  # 00038
+  1.301837822480E-07,  # 00039
+  1.672074736613E-06,  # 00040
+  5.470362725046E-06,  # 00041
+  3.094744154320E-06,  # 00042
+  1.701237584023E-06,  # 00043
+  2.674093379641E-06,  # 00044
+  1.985681931467E-06,  # 00045
+  5.912759385907E-06,  # 00046
+  3.759019608774E-06,  # 00047
+  1.029209591394E-06,  # 00048
+  2.667423238279E-06,  # 00049
+  2.329485768087E-05,  # 00050
+  1.131667455553E-05,  # 00051
+  2.164264092467E-05,  # 00052
+  6.570428073009E-06,  # 00053
+  5.068105101421E-06,  # 00054
+  2.309016074944E-05,  # 00055
+  2.606615968326E-05,  # 00056
+  3.533802535299E-05,  # 00057
+  2.783260983074E-05,  # 00058
+  8.532336939522E-05,  # 00059
+  1.267836289405E-04,  # 00060
+  3.689853422138E-05,  # 00061
+  2.062433735013E-04,  # 00062
+  4.414358511285E-05,  # 00063
+  9.216066676199E-05,  # 00064
+  6.211749432320E-05,  # 00065
+  1.820087767486E-04,  # 00066
+  3.807851508853E-04,  # 00067
+  8.873408778025E-05,  # 00068
+  1.840315169584E-04,  # 00069
+  2.635385211393E-04,  # 00070
+  7.362309139160E-04,  # 00071
+  6.967300603164E-04,  # 00072
+  5.277801697955E-04,  # 00073
+  2.588098314662E-04,  # 00074
+  6.217162916668E-04,  # 00075
+  5.363320405440E-04,  # 00076
+  1.358887975397E-03,  # 00077
+  8.091883824313E-04,  # 00078
+  2.579903001285E-03,  # 00079
+  2.864578002259E-03,  # 00080
+  9.746835214089E-04,  # 00081
+  1.644637322698E-03,  # 00082
+  1.661427086265E-03,  # 00083
+  2.257590092185E-03,  # 00084
+  3.291106785513E-03,  # 00085
+  2.164553166506E-03,  # 00086
+  1.126767955142E-03,  # 00087
+  4.158018252881E-03,  # 00088
+  5.499955360706E-03,  # 00089
+  5.268251513724E-03,  # 00090
+  5.800655247657E-03,  # 00091
+  5.829202232309E-03,  # 00092
+  9.637221167023E-03,  # 00093
+  5.034031334151E-03,  # 00094
+  1.015484201693E-02,  # 00095
+  1.351488234171E-02,  # 00096
+  1.920569237954E-02,  # 00097
+  2.342963001211E-02,  # 00098
+  2.118417821597E-02,  # 00099
+  3.909052810434E-02,  # 00100
+  2.364577766944E-02,  # 00101
+  2.184935261832E-02,  # 00102
+  3.432772557419E-02,  # 00103
+  1.958821693965E-02,  # 00104
+  2.368057796076E-02,  # 00105
+  3.069140227124E-02,  # 00106
+  2.755611499489E-02,  # 00107
+  2.466922564244E-02,  # 00108
+  1.729982979648E-02,  # 00109
+  3.584482941390E-02,  # 00110
+  3.254916244983E-02,  # 00111
+  3.073615446809E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  4.94700251236E+01, Epot: -2.39335968391E+01, Enl:  1.03273791492E+00}, 
+ iter:  27, EKS:  2.65691661994270873E+01, gnrm:  1.06E-02, 
+ DIIS weights: [ 1.94E+00, -3.12E+00,  1.65E+00,  2.05E-01, -7.47E+00,  7.78E+00, 
+                -4.41E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 28
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.554523988706E-09,  # 00001
+  1.606472220932E-09,  # 00002
+  1.022916179651E-10,  # 00003
+  8.462656428486E-11,  # 00004
+  8.308958173311E-11,  # 00005
+  5.109259153127E-11,  # 00006
+  6.114568730478E-11,  # 00007
+  5.755185301417E-11,  # 00008
+  7.075016874503E-11,  # 00009
+  5.218011463739E-11,  # 00010
+  9.066390932936E-11,  # 00011
+  3.455812736153E-11,  # 00012
+  3.433304376063E-11,  # 00013
+  5.592140384997E-10,  # 00014
+  7.870471720197E-11,  # 00015
+  6.629268078538E-11,  # 00016
+  3.031977429421E-09,  # 00017
+  9.698208986082E-10,  # 00018
+  6.276667750320E-10,  # 00019
+  2.589428129035E-10,  # 00020
+  2.749666024763E-10,  # 00021
+  5.703294027485E-10,  # 00022
+  9.017969692737E-10,  # 00023
+  9.725106807748E-10,  # 00024
+  5.299170358098E-09,  # 00025
+  4.747794968909E-09,  # 00026
+  4.765463801001E-09,  # 00027
+  7.124246989181E-08,  # 00028
+  2.001529938287E-08,  # 00029
+  1.050488160268E-08,  # 00030
+  1.802267690191E-08,  # 00031
+  1.532126842519E-07,  # 00032
+  3.428960973083E-07,  # 00033
+  3.565560776276E-07,  # 00034
+  6.648153311249E-08,  # 00035
+  3.238075517193E-08,  # 00036
+  1.317775922595E-07,  # 00037
+  7.633636408301E-08,  # 00038
+  1.216982423090E-07,  # 00039
+  1.570829604369E-06,  # 00040
+  5.335370052100E-06,  # 00041
+  3.046318897470E-06,  # 00042
+  1.655227189150E-06,  # 00043
+  2.655093240172E-06,  # 00044
+  1.891855297768E-06,  # 00045
+  5.487666174976E-06,  # 00046
+  3.436957101551E-06,  # 00047
+  9.810568739523E-07,  # 00048
+  2.521156444789E-06,  # 00049
+  2.209821102094E-05,  # 00050
+  1.098167230209E-05,  # 00051
+  2.082405598418E-05,  # 00052
+  6.332073321705E-06,  # 00053
+  4.856307416580E-06,  # 00054
+  2.161380678144E-05,  # 00055
+  2.575572294303E-05,  # 00056
+  3.364179517186E-05,  # 00057
+  2.837112494435E-05,  # 00058
+  8.015383121584E-05,  # 00059
+  1.169221713647E-04,  # 00060
+  3.441905755068E-05,  # 00061
+  2.004301302743E-04,  # 00062
+  4.047798453523E-05,  # 00063
+  9.122630073152E-05,  # 00064
+  5.970602507916E-05,  # 00065
+  1.677125833543E-04,  # 00066
+  3.630256758457E-04,  # 00067
+  8.615554496332E-05,  # 00068
+  1.875683312365E-04,  # 00069
+  2.317556214237E-04,  # 00070
+  6.998307742532E-04,  # 00071
+  6.408269406854E-04,  # 00072
+  5.381621255321E-04,  # 00073
+  2.328035766562E-04,  # 00074
+  5.586530705116E-04,  # 00075
+  4.740614347376E-04,  # 00076
+  1.218880388644E-03,  # 00077
+  7.094552000970E-04,  # 00078
+  2.226313042884E-03,  # 00079
+  2.566303033907E-03,  # 00080
+  8.771921408044E-04,  # 00081
+  1.476154518483E-03,  # 00082
+  1.492974378236E-03,  # 00083
+  2.085957382107E-03,  # 00084
+  3.102447525569E-03,  # 00085
+  1.925888129096E-03,  # 00086
+  1.064926593963E-03,  # 00087
+  3.812900119178E-03,  # 00088
+  5.304589491216E-03,  # 00089
+  5.060124207831E-03,  # 00090
+  5.609049672954E-03,  # 00091
+  5.608234717747E-03,  # 00092
+  8.997074398783E-03,  # 00093
+  4.832726676606E-03,  # 00094
+  9.416157680841E-03,  # 00095
+  1.255914128350E-02,  # 00096
+  1.827130548402E-02,  # 00097
+  2.336385047350E-02,  # 00098
+  2.036207845932E-02,  # 00099
+  3.310527374980E-02,  # 00100
+  2.246160405811E-02,  # 00101
+  2.038660224581E-02,  # 00102
+  3.234341604904E-02,  # 00103
+  1.850049418910E-02,  # 00104
+  2.142039628124E-02,  # 00105
+  2.998094296601E-02,  # 00106
+  2.665884128191E-02,  # 00107
+  2.361149322608E-02,  # 00108
+  1.692152829426E-02,  # 00109
+  3.417345072407E-02,  # 00110
+  2.926209495912E-02,  # 00111
+  3.084535873908E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  4.92669656002E+01, Epot: -2.37729632631E+01, Enl:  1.02778817726E+00}, 
+ iter:  28, EKS:  2.65217905143725723E+01, gnrm:  9.96E-03, 
+ DIIS weights: [ 1.34E-01, -2.28E-01,  3.43E-01, -2.49E+00,  2.64E+00,  5.94E-01, 
+                -4.78E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 29
+ -  {Orthoconstraint:  Yes, 
+ Residues per orbital: [
+  2.484123524342E-09,  # 00001
+  1.562552399914E-09,  # 00002
+  9.885397722266E-11,  # 00003
+  8.250199852247E-11,  # 00004
+  8.045398680920E-11,  # 00005
+  4.978225155988E-11,  # 00006
+  5.891374497421E-11,  # 00007
+  5.572318738110E-11,  # 00008
+  6.887455468225E-11,  # 00009
+  4.910460318457E-11,  # 00010
+  8.262505433693E-11,  # 00011
+  3.308672429016E-11,  # 00012
+  3.276978711954E-11,  # 00013
+  5.391928562927E-10,  # 00014
+  7.390047601004E-11,  # 00015
+  6.299280440436E-11,  # 00016
+  2.843233762548E-09,  # 00017
+  9.289589927600E-10,  # 00018
+  5.891351521447E-10,  # 00019
+  2.415449821010E-10,  # 00020
+  2.523869878070E-10,  # 00021
+  5.263883842117E-10,  # 00022
+  8.443027087448E-10,  # 00023
+  8.623717341492E-10,  # 00024
+  4.862730665984E-09,  # 00025
+  4.199740464098E-09,  # 00026
+  4.576775441879E-09,  # 00027
+  6.483283210434E-08,  # 00028
+  1.811546582933E-08,  # 00029
+  9.364953941015E-09,  # 00030
+  1.706730030107E-08,  # 00031
+  1.457577649219E-07,  # 00032
+  3.086618696314E-07,  # 00033
+  3.393130581742E-07,  # 00034
+  6.238121854911E-08,  # 00035
+  3.029533105429E-08,  # 00036
+  1.233130165319E-07,  # 00037
+  7.041756390573E-08,  # 00038
+  1.079093718381E-07,  # 00039
+  1.411776065415E-06,  # 00040
+  5.058054675737E-06,  # 00041
+  2.704016361840E-06,  # 00042
+  1.641242478335E-06,  # 00043
+  2.387459353949E-06,  # 00044
+  1.877100586384E-06,  # 00045
+  4.851822874656E-06,  # 00046
+  3.126448736820E-06,  # 00047
+  9.719943756007E-07,  # 00048
+  2.220233490486E-06,  # 00049
+  2.105167923570E-05,  # 00050
+  1.028036492600E-05,  # 00051
+  1.882713133541E-05,  # 00052
+  5.919875569874E-06,  # 00053
+  4.550574049665E-06,  # 00054
+  2.113551997187E-05,  # 00055
+  2.508969603475E-05,  # 00056
+  3.006424438247E-05,  # 00057
+  2.777501864597E-05,  # 00058
+  8.128441701725E-05,  # 00059
+  1.153153623141E-04,  # 00060
+  3.370883065060E-05,  # 00061
+  2.030043656969E-04,  # 00062
+  3.939831618222E-05,  # 00063
+  9.269411339065E-05,  # 00064
+  5.576258628278E-05,  # 00065
+  1.697662589152E-04,  # 00066
+  3.586644161118E-04,  # 00067
+  8.152830908883E-05,  # 00068
+  1.963340781425E-04,  # 00069
+  2.294747410492E-04,  # 00070
+  7.408100151725E-04,  # 00071
+  6.429633275447E-04,  # 00072
+  5.323634855041E-04,  # 00073
+  2.052564240661E-04,  # 00074
+  5.182715347244E-04,  # 00075
+  4.797495228564E-04,  # 00076
+  1.059695372521E-03,  # 00077
+  6.393229099943E-04,  # 00078
+  1.971411820239E-03,  # 00079
+  2.414918059034E-03,  # 00080
+  8.135306747253E-04,  # 00081
+  1.374471606537E-03,  # 00082
+  1.364603803261E-03,  # 00083
+  1.973988861681E-03,  # 00084
+  2.928853881290E-03,  # 00085
+  1.812088472456E-03,  # 00086
+  9.581239280286E-04,  # 00087
+  3.461987815323E-03,  # 00088
+  4.974212227605E-03,  # 00089
+  4.653157526411E-03,  # 00090
+  5.369142657937E-03,  # 00091
+  5.265278476032E-03,  # 00092
+  8.491158105544E-03,  # 00093
+  4.509874345286E-03,  # 00094
+  8.860027226191E-03,  # 00095
+  1.165165668655E-02,  # 00096
+  1.736313735457E-02,  # 00097
+  2.154487476007E-02,  # 00098
+  1.888996304627E-02,  # 00099
+  3.059642647365E-02,  # 00100
+  2.174815725405E-02,  # 00101
+  1.803470703361E-02,  # 00102
+  3.130582209106E-02,  # 00103
+  1.719795446360E-02,  # 00104
+  1.987569246063E-02,  # 00105
+  2.858582414027E-02,  # 00106
+  2.548103466664E-02,  # 00107
+  2.246116844085E-02,  # 00108
+  1.481539826662E-02,  # 00109
+  3.295617217375E-02,  # 00110
+  2.677147382033E-02,  # 00111
+  2.906544174071E-02],  # 00112
+ Preconditioning:  Yes, 
+ Energies: {Ekin:  4.92185733244E+01, Epot: -2.37295193396E+01, Enl:  1.02588221695E+00}, 
+ iter:  29, EKS:  2.65149362017397863E+01, gnrm:  9.36E-03, 
+ DIIS weights: [-1.24E-01, -3.35E-01,  6.04E+00, -6.77E+00, -1.95E+00,  4.14E+00, 
+                -4.42E-04],           Orthogonalization Method:  0}
+    #------------------------------------------------------------------------------ iter= 30
+ -  {Minimization iterations required:  30, 
+ Energies: {Ekin:  4.91332510794E+01, Epot: -2.36617316199E+01, Enl:  1.02382052534E+00}, 
+ iter:  30, EKS:  2.65149362017397863E+01, gnrm:  9.36E-03, 
+ }
+    #---------------------------------------------- End of Virtual Wavefunction Optimisation
+  #WARNING: No convergence within the allowed number of minimization steps
+ Non-Hermiticity of Hamiltonian in the Subspace:  1.46E-31
+ Complete list of energy eigenvalues:
+    #Kpt #0001  BZ coord. =  [  0.000000,  0.000000,  0.000000 ]
+ - e_occ                               : -7.77581460659379E-01 # 0001
+ - e_occ                               : -6.74873431549783E-01 # 0002
+ - e_occ                               : -6.74850283565032E-01 # 0003
+ - e_occ                               : -5.44671956396896E-01 # 0004
+ - e_occ                               : -5.44656631471407E-01 # 0005
+ - e_occ                               : -4.77742310988794E-01 # 0006
+ - e_occ                               : -4.09593035209835E-01 # 0007
+ - e_occ                               : -4.06545913499761E-01 # 0008
+ - e_occ                               : -3.78034923543292E-01 # 0009
+ - e_occ                               : -3.78015916090759E-01 # 0010
+ - e_occ                               : -3.39752708583861E-01 # 0011
+ - e_occ                               : -3.04645293656053E-01 # 0012
+ - e_occ                               : -3.04574858027112E-01 # 0013
+ - e_occ                               : -2.39173365963227E-01 # 0014
+ - e_occ                               : -2.39166161272335E-01 # 0015
+ - HOMO LUMO gap (AU, eV)              :  [  1.86760615153109E-01,  5.08201501110610E+00 ]
+ - e_vrt                               : -5.24055461192261E-02 # 0001
+ - e_vrt                               : -5.24006938934406E-02 # 0002
+ - e_vrt                               : -1.33102693051162E-02 # 0003
+ - e_vrt                               :  1.05399392889367E-02 # 0004
+ - e_vrt                               :  1.05421558773150E-02 # 0005
+ - e_vrt                               :  3.17378595446825E-02 # 0006
+ - e_vrt                               :  3.48053604892792E-02 # 0007
+ - e_vrt                               :  3.48066085841444E-02 # 0008
+ - e_vrt                               :  3.69914666832870E-02 # 0009
+ - e_vrt                               :  6.19602125719274E-02 # 0010
+ - e_vrt                               :  6.19684634997575E-02 # 0011
+ - e_vrt                               :  7.19143118122060E-02 # 0012
+ - e_vrt                               :  7.57847457848981E-02 # 0013
+ - e_vrt                               :  8.48343143233431E-02 # 0014
+ - e_vrt                               :  1.00935885666300E-01 # 0015
+ - e_vrt                               :  1.00945796775395E-01 # 0016
+ - e_vrt                               :  1.08114584990071E-01 # 0017
+ - e_vrt                               :  1.08180909422327E-01 # 0018
+ - e_vrt                               :  1.08552624677822E-01 # 0019
+ - e_vrt                               :  1.09544042484526E-01 # 0020
+ - e_vrt                               :  1.20448652202002E-01 # 0021
+ - e_vrt                               :  1.20500285247430E-01 # 0022
+ - e_vrt                               :  1.36245806472071E-01 # 0023
+ - e_vrt                               :  1.36301278236613E-01 # 0024
+ - e_vrt                               :  1.48249795188766E-01 # 0025
+ - e_vrt                               :  1.51423676055939E-01 # 0026
+ - e_vrt                               :  1.51478801055151E-01 # 0027
+ - e_vrt                               :  1.54092679703942E-01 # 0028
+ - e_vrt                               :  1.55815597703926E-01 # 0029
+ - e_vrt                               :  1.62137543373408E-01 # 0030
+ - e_vrt                               :  1.62208525006871E-01 # 0031
+ - e_vrt                               :  1.67474747786286E-01 # 0032
+ - e_vrt                               :  1.67587518492953E-01 # 0033
+ - e_vrt                               :  1.71766993900382E-01 # 0034
+ - e_vrt                               :  1.76352057360835E-01 # 0035
+ - e_vrt                               :  1.76451384445450E-01 # 0036
+ - e_vrt                               :  1.79333186980379E-01 # 0037
+ - e_vrt                               :  1.81387291735343E-01 # 0038
+ - e_vrt                               :  1.84834181876552E-01 # 0039
+ - e_vrt                               :  2.04608329022150E-01 # 0040
+ - e_vrt                               :  2.04754053790505E-01 # 0041
+ - e_vrt                               :  2.04839360617475E-01 # 0042
+ - e_vrt                               :  2.04869314196053E-01 # 0043
+ - e_vrt                               :  2.08080956116174E-01 # 0044
+ - e_vrt                               :  2.08097076117421E-01 # 0045
+ - e_vrt                               :  2.11639097368208E-01 # 0046
+ - e_vrt                               :  2.15107695598238E-01 # 0047
+ - e_vrt                               :  2.19447981998428E-01 # 0048
+ - e_vrt                               :  2.19598090764562E-01 # 0049
+ - e_vrt                               :  2.24882650926005E-01 # 0050
+ - e_vrt                               :  2.25051195607984E-01 # 0051
+ - e_vrt                               :  2.29254014645463E-01 # 0052
+ - e_vrt                               :  2.34445056297027E-01 # 0053
+ - e_vrt                               :  2.34487888909903E-01 # 0054
+ - e_vrt                               :  2.39951554508006E-01 # 0055
+ - e_vrt                               :  2.42904596705406E-01 # 0056
+ - e_vrt                               :  2.52897858361976E-01 # 0057
+ - e_vrt                               :  2.52945743271830E-01 # 0058
+ - e_vrt                               :  2.55461335266331E-01 # 0059
+ - e_vrt                               :  2.63563670168961E-01 # 0060
+ - e_vrt                               :  2.63767472451409E-01 # 0061
+ - e_vrt                               :  2.64718994802966E-01 # 0062
+ - e_vrt                               :  2.64859341695483E-01 # 0063
+ - e_vrt                               :  2.69203291043423E-01 # 0064
+ - e_vrt                               :  2.72873033857765E-01 # 0065
+ - e_vrt                               :  2.73047425172298E-01 # 0066
+ - e_vrt                               :  2.78000568499666E-01 # 0067
+ - e_vrt                               :  2.78994253579049E-01 # 0068
+ - e_vrt                               :  2.84952395903094E-01 # 0069
+ - e_vrt                               :  2.85188252484238E-01 # 0070
+ - e_vrt                               :  2.93069682163298E-01 # 0071
+ - e_vrt                               :  2.93118415198771E-01 # 0072
+ - e_vrt                               :  2.97235662838737E-01 # 0073
+ - e_vrt                               :  3.02887987047120E-01 # 0074
+ - e_vrt                               :  3.03024824127068E-01 # 0075
+ - e_vrt                               :  3.05418512872315E-01 # 0076
+ - e_vrt                               :  3.05707280648473E-01 # 0077
+ - e_vrt                               :  3.19783670562972E-01 # 0078
+ - e_vrt                               :  3.21087644240603E-01 # 0079
+ - e_vrt                               :  3.26991964504901E-01 # 0080
+ - e_vrt                               :  3.28613152155339E-01 # 0081
+ - e_vrt                               :  3.34134578169762E-01 # 0082
+ - e_vrt                               :  3.34825362487772E-01 # 0083
+ - e_vrt                               :  3.36503213257063E-01 # 0084
+ - e_vrt                               :  3.37732179728076E-01 # 0085
+ - e_vrt                               :  3.37962983186093E-01 # 0086
+ - e_vrt                               :  3.41947619382312E-01 # 0087
+ - e_vrt                               :  3.44437814576580E-01 # 0088
+ - e_vrt                               :  3.45893984959920E-01 # 0089
+ - e_vrt                               :  3.46180878587177E-01 # 0090
+ - e_vrt                               :  3.47530488106211E-01 # 0091
+ - e_vrt                               :  3.51236576433245E-01 # 0092
+ - e_vrt                               :  3.54915910467637E-01 # 0093
+ - e_vrt                               :  3.61521769063136E-01 # 0094
+ - e_vrt                               :  3.66942796216567E-01 # 0095
+ - e_vrt                               :  3.69794887673859E-01 # 0096
+ - e_vrt                               :  3.70156564572810E-01 # 0097
+ - e_vrt                               :  3.72320021933791E-01 # 0098
+ - e_vrt                               :  3.76475546641215E-01 # 0099
+ - e_vrt                               :  3.79553518299052E-01 # 0100
+ - e_vrt                               :  3.81050085823451E-01 # 0101
+ - e_vrt                               :  3.83410296243645E-01 # 0102
+ - e_vrt                               :  3.84641491491368E-01 # 0103
+ - e_vrt                               :  3.85578890861921E-01 # 0104
+ - e_vrt                               :  3.94239549358329E-01 # 0105
+ - e_vrt                               :  3.99846532121179E-01 # 0106
+ - e_vrt                               :  4.04697660310662E-01 # 0107
+ - e_vrt                               :  4.10757266570961E-01 # 0108
+ - e_vrt                               :  4.21237482571030E-01 # 0109
+ - e_vrt                               :  4.23214023125176E-01 # 0110
+ - e_vrt                               :  4.30482410318630E-01 # 0111
+ - e_vrt                               :  4.38553480206538E-01 # 0112
+ Write wavefunctions to file           : ./log/data-Rmult_7.0/virtuals.*
+  # 1th wavefunction written
+  # 2th wavefunction written
+  # 3th wavefunction written
+  # 4th wavefunction written
+  # 5th wavefunction written
+  # 6th wavefunction written
+  # 7th wavefunction written
+  # 8th wavefunction written
+  # 9th wavefunction written
+  # 10th wavefunction written
+  # 11th wavefunction written
+  # 12th wavefunction written
+  # 13th wavefunction written
+  # 14th wavefunction written
+  # 15th wavefunction written
+ Write Waves Time:
+ -  {Process:  0, Timing:  [  1.104E+00,  3.112E+00 ]}
+  #-------------------------------- Warnings obtained during the run, check their relevance!
+ WARNINGS:
+ - No convergence within the allowed number of minimization steps
+  #-------------------------------------------------------------------- Timing for root process
+ Timings for root process:
+   CPU time (s)                        :  365.41
+   Elapsed time (s)                    :  357.08
+ BigDFT infocode                       :  0
+ Average noise forces: {x:  9.38870263E-07, y:  2.48719752E-06, z:  2.42544349E-06, 
+                    total:  3.59866712E-06}
+ Clean forces norm (Ha/Bohr): {maxval:  1.751007616467E-02, fnrm2:  1.998474305130E-03}
+ Raw forces norm (Ha/Bohr): {maxval:  1.750935819789E-02, fnrm2:  1.998474318086E-03}
+  #------------------------------------------------------------------------------ Atomic Forces
+ Atomic Forces (Ha/Bohr):
+ -  {C: [-1.488430194617E-07, -1.751007616201E-02,  2.666433030983E-07]} # 0001
+ -  {C: [-1.481311841631E-02, -8.425489734692E-03,  3.149845533224E-07]} # 0002
+ -  {C: [-1.481339104319E-02,  8.428194305149E-03,  3.412887788712E-07]} # 0003
+ -  {C: [-1.498758628772E-07,  1.750138837397E-02,  1.950652762059E-07]} # 0004
+ -  {C: [ 1.481414147975E-02,  8.428149846602E-03,  3.333310455962E-07]} # 0005
+ -  {C: [ 1.481351659048E-02, -8.425549364625E-03,  2.793150600495E-07]} # 0006
+ -  {H: [ 1.704108504976E-07,  6.216610290805E-03, -2.967993537288E-07]} # 0007
+ -  {H: [ 5.144569004392E-03,  3.187792886090E-03, -3.042505598012E-07]} # 0008
+ -  {H: [ 5.144592130393E-03, -3.189406612727E-03, -2.734727863799E-07]} # 0009
+ -  {H: [ 1.564190957100E-07, -6.210154348158E-03, -3.029489550742E-07]} # 0010
+ -  {H: [-5.145182276794E-03, -3.189489352061E-03, -2.681346964558E-07]} # 0011
+ -  {H: [-5.145155579787E-03,  3.188029871655E-03, -2.850216657036E-07]} # 0012
+ Energy (Hartree)                      : -3.76840916462611943E+01
+ Force Norm (Hartree/Bohr)             :  4.47042985084169370E-02
