@@ -26,14 +26,13 @@ def evalS_nvirt(data):
     print 'R = ', R
     
     S_nvirt = []
+    #S_nvirt.append(R) #for having 1.0 as first value
     s = 0.0
     for alpha in range(n_vrt):
         for q in range(n_occ):
             s += coeff_vrt[q][alpha]**2
         S_nvirt.append(R-s)
 	
-    # rescale by the number of occupied orbitals
-    #S_nvirt = [x/n_occ for x in S_nvirt]
     S_nvirt = [x/R for x in S_nvirt]	
     
     return S_nvirt
@@ -325,8 +324,8 @@ def allTransitions(excitations):
         for ind in e:
             allTr.append(ind)
     allTr=list(set(allTr))
-    #print 'Number of distinct transisitons = ', len(allTr)
-    # check that nalpha[-1] correspond to the highest value of nalpha
+    nalpha.sort()
+    print nalpha
     if nalpha[-1] != max(nalpha): print 'PROBLEM WITH NALPHA LIST SORT'
     
     # remove the transitions that do not appear for all the values of nalpha
@@ -378,6 +377,9 @@ def pltTrLabel(selLab,excitations,Data,numOrb,plotEng = True):
             for tr,v in e.iteritems():
                 if s == tr:
                     val.append(v['energy']) 
+        sortind = np.argsort(alpha)
+        alpha.sort()
+        val = [val[i] for i in sortind]
         plt.plot(alpha,val)
         plt.scatter(alpha,val,label=s)
         plt.legend(loc=(1.1,0))
