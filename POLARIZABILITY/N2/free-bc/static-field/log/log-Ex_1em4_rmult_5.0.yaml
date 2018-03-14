@@ -27,9 +27,9 @@
    |_____|_____|_____|_____|_____|______                    www.bigdft.org   "
 
  Reference Paper                       : The Journal of Chemical Physics 129, 014109 (2008)
- Version Number                        : 1.8.1
- Timestamp of this run                 : 2017-06-26 15:43:44.904
- Root process Hostname                 : DALUBUNTU
+ Version Number                        : 1.8.2
+ Timestamp of this run                 : 2018-03-06 17:49:00.594
+ Root process Hostname                 : 459c7425cd4b
  Number of MPI tasks                   :  4
  OpenMP parallelization                :  Yes
  Maximal OpenMP threads per MPI task   :  2
@@ -37,17 +37,19 @@
   #------------------------------------------------------------------ Code compiling options
  Compilation options:
    Configure arguments:
-     " '--prefix' '/home/marco/BIGDFT/binaries/v1.8.1/install' 'FC=mpif90' 
-     'FCFLAGS=-fopenmp -O2 -fPIC' '--enable-dynamic-libraries' 'CFLAGS=-O2 -fPIC' 
-     'LDFLAGS=-L/home/marco/BIGDFT/binaries/v1.8.1/install/lib ' 
-     'C_INCLUDE_PATH=/home/marco/BIGDFT/binaries/v1.8.1/install/include' 
-     'PKG_CONFIG_PATH=/home/marco/BIGDFT/binaries/v1.8.1/install/lib/pkgconfig:/home/marco/BI
-     GDFT/binaries/v1.8.1/install/share/pkgconfig:/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/li
-     b/pkgconfig:/usr/share/pkgconfig'"
+     " '--prefix' '/bigdft-sdk/build/install' 'FCFLAGS=-O2 -fPIC -fopenmp' 
+     '--enable-opencl' '--with-ocl-path=/usr/local/cuda' '--enable-cuda-gpu' 
+     '--with-cuda-path=/usr/local/cuda' 'CFLAGS=-fPIC -O2 -fopenmp' 'FC=mpif90' 
+     'F77=mpif77' 'FCLIBS= ' 'LIBS=-ldl -lstdc++ -lgfortran' 'NVCC_FLAGS=--compiler-options 
+     -fPIC' '--enable-dynamic-libraries' '--with-gobject=yes' 
+     'LDFLAGS=-L/bigdft-sdk/build/install/lib ' 
+     'C_INCLUDE_PATH=/bigdft-sdk/build/install/include' 
+     'PKG_CONFIG_PATH=/bigdft-sdk/build/install/lib/pkgconfig:/bigdft-sdk/build/install/share
+     /pkgconfig:/bigdft/lib/pkgconfig:'"
    Compilers (CC, FC, CXX)             :  [ gcc, mpif90, g++ ]
    Compiler flags:
-     CFLAGS                            : -O2 -fPIC
-     FCFLAGS                           : -fopenmp -O2 -fPIC
+     CFLAGS                            : -fPIC -O2 -fopenmp
+     FCFLAGS                           : -O2 -fPIC -fopenmp
      CXXFLAGS                          : -g -O2 -fPIC
   #------------------------------------------------------------------------ Input parameters
  radical                               : Ex_1em4_rmult_5.0
@@ -56,6 +58,7 @@
  run_from_files                        : Yes
  skip                                  : Yes
  dft:
+   gnrm_cv                             : 1.0e-08 # Convergence criterion gradient
    hgrids                              : 0.4 #    Grid spacing in the three directions (bohr)
    itermax                             : 100 #    Max. iterations of wfn. opt. steps
    elecfield: [0.0001, 0.0, 0.0] #                Electric field (Ex,Ey,Ez)
@@ -66,8 +69,7 @@
    qcharge                             : 0 #      Charge of the system. Can be integer or real.
    nspin                               : 1 #      Spin polarization treatment
    mpol                                : 0 #      Total magnetic moment
-   gnrm_cv                             : 1.e-4 #  Convergence criterion gradient
-   itermin                             : 0 #      Minimal iterations of wfn. optimzed steps
+   itermin                             : 0 #      Minimal iterations of wfn. optimized steps
    nrepmax                             : 1 #      Max. number of re-diag. runs
    ncong                               : 6 #      No. of CG it. for preconditioning eq.
    idsx                                : 6 #      Wfn. diis history
@@ -116,7 +118,7 @@
      ef_interpol_chargediff            : 1.0 #    FOE max charge difference for interpolation
      evbounds_nsatur                   : 3 #      Number of FOE cycles before the eigenvalue bounds are shrinked (linear)
      evboundsshrink_nsatur             : 4 #      Maximal number of unsuccessful eigenvalue bounds shrinkings
-     fscale                            : 5.e-2 #  Initial guess for the error fucntion decay length
+     fscale                            : 5.e-2 #  Initial guess for the error function decay length
      fscale_lowerbound                 : 5.e-3 #  Lower bound for the error function decay length
      fscale_upperbound                 : 5.e-2 #  Upper bound for the error function decay length
      eval_range_foe: [-0.5, 0.5] #                Lower and upper bound of the eigenvalue spectrum, will be adjusted 
@@ -124,10 +126,19 @@
      accuracy_foe                      : 1.e-5 #  Required accuracy for the Chebyshev fit for FOE
      accuracy_ice                      : 1.e-8 #  Required accuracy for the Chebyshev fit for ICE (calculation of matrix powers)
      accuracy_penalty                  : 1.e-5 #  Required accuracy for the Chebyshev fit for the penalty function
+     accuracy_entropy                  : 1.e-4 #  Required accuracy for the Chebyshev fit for the function to calculate the entropy term
      betax_foe                         : -1000.0 # the exponent in the exponential penalty function which is used to determine the 
       #                                            eigenvalue bounds for FOE
      betax_ice                         : -1000.0 # the exponent in the exponential penalty function which is used to determine the 
       #                                            eigenvalue bounds for ICE
+     occupation_function               : 102 #    the function to assign the occupation numbers
+     adjust_fscale                     : yes #    dynamically adjust the value of fscale or not
+     matmul_optimize_load_balancing    : no #     optimize the load balancing of the sparse matrix matrix multiplications (at the cost 
+      #                                            of memory unbalancing)
+     fscale_ediff_low                  : 5.e-5 #  lower bound for the optimal relative energy difference between the kernel and the 
+      #                                            control kernel
+     fscale_ediff_up                   : 1.e-4 #  upper bound for the optimal relative energy difference between the kernel and the 
+      #                                            control kernel
    lapack:
      blocksize_pdsyev                  : -8 #     SCALAPACK linear scaling blocksize for diagonalization
      blocksize_pdgemm                  : -8 #     SCALAPACK linear scaling blocksize for matrix matrix multiplication
@@ -179,7 +190,7 @@
    restart_pos                         : No #     Restart nuclear position information from md.restart
    restart_vel                         : No #     Restart nuclear velocities information from md.restart
  mix:
-   iscf                                : 0 #      Mixing parameters
+   iscf                                : 0 #      Mixing scheme (default=0 i.e. direct minimization)
    itrpmax                             : 1 #      Maximum number of diagonalisation iterations
    rpnrm_cv                            : 1.e-4 #  Stop criterion on the residue of potential or density
    norbsempty                          : 0 #      No. of additional bands
@@ -287,6 +298,7 @@
    multipole_centers                   : 0.0 #    Determines whether the multipole centers shall be determined automatically (i.e. 
     #                                              taking the atoms) or whether they are 
     #                                              provided manually
+   consider_entropy                    : False #  Indicate whether the entropy contribution to the total energy shall be considered
  lin_basis:
    nit: [4, 5] #                                  Maximal number of iterations in the optimization of the 
     #                                              support functions
@@ -374,7 +386,7 @@
    Boundary Conditions                 : Free #Code: F
    Number of Symmetries                :  0
    Space group                         : disabled
-  #------------------ Geometry optimization Input Parameters (file: Ex_1em4_rmult_5.0.geopt)
+  #-------------------------------------------------- Geometry optimization Input Parameters
  Geometry Optimization Parameters:
    Maximum steps                       :  1
    Algorithm                           : none
@@ -396,7 +408,7 @@
    Coarse and Fine Radii Multipliers   :  [  5.0,  9.0 ]
  Self-Consistent Cycle Parameters:
    Wavefunction:
-     Gradient Norm Threshold           :  &gnrm_cv  1.0E-04
+     Gradient Norm Threshold           :  &gnrm_cv  1.0E-08
      CG Steps for Preconditioner       :  6
      DIIS History length               :  6
      Max. Wfn Iterations               :  &itermax  100
@@ -569,7 +581,7 @@
    Expected kinetic energy             :  13.9048146790
    Energies: {Ekin:  1.39067358556E+01, Epot: -2.18677678628E+01, Enl:  2.33281104646E+00, 
                 EH:  2.73028544675E+01,  EXC: -4.69895898207E+00, EvXC: -6.15428231406E+00}
-   EKS                                 : -1.96106857539983892E+01
+   EKS                                 : -1.96106857539983750E+01
    Input Guess Overlap Matrices: {Calculated:  Yes, Diagonalized:  Yes}
     #Eigenvalues and New Occupation Numbers
    Orbitals: [
@@ -591,12 +603,12 @@
    - Subspace Optimization: &itrep001-01
        Wavefunctions Iterations:
        -  { #---------------------------------------------------------------------- iter: 1
- GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999701154, 
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999701155, 
  Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.31546659193E+01, Epot: -2.15796210212E+01, Enl:  1.86095968578E+00, 
               EH:  2.63309604361E+01,  EXC: -4.58255168043E+00, EvXC: -6.00059089064E+00}, 
- iter:  1, EKS: -1.96118502996993129E+01, gnrm:  3.17E-01, D: -1.16E-03, 
+ iter:  1, EKS: -1.96118502996992703E+01, gnrm:  3.17E-01, D: -1.16E-03, 
  DIIS weights: [ 1.00E+00,  1.00E+00], Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 2
  GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999703893, 
@@ -604,7 +616,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.44267782852E+01, Epot: -2.17303422683E+01, Enl:  1.88375203829E+00, 
               EH:  2.77985457368E+01,  EXC: -4.80580668565E+00, EvXC: -6.29532210462E+00}, 
- iter:  2, EKS: -1.98637759203609932E+01, gnrm:  1.08E-01, D: -2.52E-01, 
+ iter:  2, EKS: -1.98637759203609505E+01, gnrm:  1.08E-01, D: -2.52E-01, 
  DIIS weights: [-6.42E-02,  1.06E+00, -3.43E-03], Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 3
  GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999693434, 
@@ -612,7 +624,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.44609624325E+01, Epot: -2.17552315761E+01, Enl:  1.75823287264E+00, 
               EH:  2.76928030892E+01,  EXC: -4.77880407249E+00, EvXC: -6.25974898516E+00}, 
- iter:  3, EKS: -1.98828281052580849E+01, gnrm:  4.45E-02, D: -1.91E-02, 
+ iter:  3, EKS: -1.98828281052580422E+01, gnrm:  4.45E-02, D: -1.91E-02, 
  DIIS weights: [-3.32E-02, -3.50E-01,  1.38E+00, -1.78E-04], Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 4
  GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999679236, 
@@ -620,7 +632,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45415118499E+01, Epot: -2.18399832804E+01, Enl:  1.76803668597E+00, 
               EH:  2.77011522317E+01,  EXC: -4.77778034299E+00, EvXC: -6.25844613889E+00}, 
- iter:  4, EKS: -1.98858548380314062E+01, gnrm:  1.34E-02, D: -3.03E-03, 
+ iter:  4, EKS: -1.98858548380313493E+01, gnrm:  1.34E-02, D: -3.03E-03, 
  DIIS weights: [ 7.79E-03, -1.91E-02, -1.20E-01,  1.13E+00, -1.34E-05], 
      Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 5
@@ -638,7 +650,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45638126938E+01, Epot: -2.18609447601E+01, Enl:  1.75435803542E+00, 
               EH:  2.76884618230E+01,  EXC: -4.77598814289E+00, EvXC: -6.25608699195E+00}, 
- iter:  6, EKS: -1.98860706625087218E+01, gnrm:  2.03E-03, D: -2.98E-05, 
+ iter:  6, EKS: -1.98860706625086863E+01, gnrm:  2.03E-03, D: -2.98E-05, 
  DIIS weights: [-5.31E-04, -6.91E-03,  3.32E-02, -1.72E-02, -5.20E-01,  1.51E+00, 
                 -1.96E-07],           Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 7
@@ -647,7 +659,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45680307445E+01, Epot: -2.18640425507E+01, Enl:  1.75337173056E+00, 
               EH:  2.76886410089E+01,  EXC: -4.77610022651E+00, EvXC: -6.25623540149E+00}, 
- iter:  7, EKS: -1.98860795672875668E+01, gnrm:  1.13E-03, D: -8.90E-06, 
+ iter:  7, EKS: -1.98860795672874886E+01, gnrm:  1.13E-03, D: -8.90E-06, 
  DIIS weights: [-7.10E-04,  4.18E-03, -9.45E-03,  1.17E-01, -7.26E-01,  1.62E+00, 
                 -5.89E-08],           Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 8
@@ -656,7 +668,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45694708514E+01, Epot: -2.18648617274E+01, Enl:  1.75267144828E+00, 
               EH:  2.76885765030E+01,  EXC: -4.77613670727E+00, EvXC: -6.25628365000E+00}, 
- iter:  8, EKS: -1.98860826456686723E+01, gnrm:  5.64E-04, D: -3.08E-06, 
+ iter:  8, EKS: -1.98860826456686866E+01, gnrm:  5.64E-04, D: -3.08E-06, 
  DIIS weights: [-3.01E-04, -1.42E-03, -1.84E-02,  2.13E-01, -1.06E+00,  1.87E+00, 
                 -1.23E-08],           Orthogonalization Method:  0}
        -  { #---------------------------------------------------------------------- iter: 9
@@ -665,7 +677,7 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45700781944E+01, Epot: -2.18652022646E+01, Enl:  1.75226507625E+00, 
               EH:  2.76884409069E+01,  EXC: -4.77614579178E+00, EvXC: -6.25629572925E+00}, 
- iter:  9, EKS: -1.98860836210353398E+01, gnrm:  1.96E-04, D: -9.75E-07, 
+ iter:  9, EKS: -1.98860836210353824E+01, gnrm:  1.96E-04, D: -9.75E-07, 
  DIIS weights: [-1.13E-03, -1.61E-02,  9.01E-02, -7.19E-02, -4.38E-01,  1.44E+00, 
                 -1.33E-09],           Orthogonalization Method:  0}
        -  { #--------------------------------------------------------------------- iter: 10
@@ -674,62 +686,180 @@
  Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45702115109E+01, Epot: -2.18652703315E+01, Enl:  1.75214542492E+00, 
               EH:  2.76883871052E+01,  EXC: -4.77614723534E+00, EvXC: -6.25629767225E+00}, 
- iter:  10, EKS: -1.98860837217790873E+01, gnrm:  5.26E-05, D: -1.01E-07, 
+ iter:  10, EKS: -1.98860837217790944E+01, gnrm:  5.26E-05, D: -1.01E-07, 
  DIIS weights: [ 4.32E-03, -2.03E-02,  3.55E-02,  1.09E-01, -6.24E-01,  1.50E+00, 
                 -1.59E-10],           Orthogonalization Method:  0}
-       -  &FINAL001  { #---------------------------------------------------------- iter: 11
+       -  { #--------------------------------------------------------------------- iter: 11
  GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674787, 
  Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
- Hamiltonian Applied:  Yes, 
- iter:  11, EKS: -1.98860837273501332E+01, gnrm:  5.26E-05, D: -5.57E-09,  #FINAL
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
  Energies: {Ekin:  1.45701847429E+01, Epot: -2.18652492770E+01, Enl:  1.75213346201E+00, 
-              EH:  2.76883684936E+01,  EXC: -4.77614428633E+00, EvXC: -6.25629378235E+00, 
+              EH:  2.76883684936E+01,  EXC: -4.77614428633E+00, EvXC: -6.25629378234E+00}, 
+ iter:  11, EKS: -1.98860837273501119E+01, gnrm:  2.26E-05, D: -5.57E-09, 
+ DIIS weights: [-1.69E-03,  2.84E-03, -2.82E-02,  1.43E-01, -5.67E-01,  1.45E+00, 
+                -3.35E-11],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 12
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701848538E+01, Epot: -2.18652477713E+01, Enl:  1.75213179340E+00, 
+              EH:  2.76883684157E+01,  EXC: -4.77614420643E+00, EvXC: -6.25629367553E+00}, 
+ iter:  12, EKS: -1.98860837284178373E+01, gnrm:  1.23E-05, D: -1.07E-09, 
+ DIIS weights: [ 1.00E-03, -1.49E-02,  5.43E-02, -6.54E-02, -5.40E-01,  1.56E+00, 
+                -1.13E-11],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 13
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701863768E+01, Epot: -2.18652479402E+01, Enl:  1.75213072146E+00, 
+              EH:  2.76883687041E+01,  EXC: -4.77614422865E+00, EvXC: -6.25629370352E+00}, 
+ iter:  13, EKS: -1.98860837288901351E+01, gnrm:  7.34E-06, D: -4.72E-10, 
+ DIIS weights: [ 1.77E-02, -7.99E-02,  1.91E-01,  2.09E-01, -1.77E+00,  2.43E+00, 
+                -2.51E-12],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 14
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701871863E+01, Epot: -2.18652484822E+01, Enl:  1.75213191923E+00, 
+              EH:  2.76883702451E+01,  EXC: -4.77614446673E+00, EvXC: -6.25629401714E+00}, 
+ iter:  14, EKS: -1.98860837291370345E+01, gnrm:  3.23E-06, D: -2.47E-10, 
+ DIIS weights: [ 1.13E-03, -1.22E-02,  5.29E-02,  5.85E-02, -5.95E-01,  1.49E+00, 
+                -4.67E-13],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 15
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701853915E+01, Epot: -2.18652474634E+01, Enl:  1.75213269069E+00, 
+              EH:  2.76883702219E+01,  EXC: -4.77614440803E+00, EvXC: -6.25629393971E+00}, 
+ iter:  15, EKS: -1.98860837291714319E+01, gnrm:  1.17E-06, D: -3.44E-11, 
+ DIIS weights: [-1.12E-03, -3.11E-02,  1.10E-01, -2.86E-02, -4.83E-01,  1.43E+00, 
+                -1.25E-13],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 16
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701841792E+01, Epot: -2.18652467152E+01, Enl:  1.75213300052E+00, 
+              EH:  2.76883700509E+01,  EXC: -4.77614435554E+00, EvXC: -6.25629387050E+00}, 
+ iter:  16, EKS: -1.98860837291755743E+01, gnrm:  7.10E-07, D: -4.14E-12, 
+ DIIS weights: [ 1.56E-02, -6.60E-02,  5.27E-02,  2.09E-01, -1.14E+00,  1.93E+00, 
+                -6.01E-14],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 17
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701837157E+01, Epot: -2.18652463816E+01, Enl:  1.75213303364E+00, 
+              EH:  2.76883699466E+01,  EXC: -4.77614433212E+00, EvXC: -6.25629383955E+00}, 
+ iter:  17, EKS: -1.98860837291779262E+01, gnrm:  5.15E-07, D: -2.35E-12, 
+ DIIS weights: [ 2.32E-02, -5.39E-02,  2.99E-02,  4.20E-01, -1.97E+00,  2.55E+00, 
+                -2.42E-14],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 18
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701836964E+01, Epot: -2.18652463505E+01, Enl:  1.75213302423E+00, 
+              EH:  2.76883699490E+01,  EXC: -4.77614433217E+00, EvXC: -6.25629383959E+00}, 
+ iter:  18, EKS: -1.98860837291796884E+01, gnrm:  3.05E-07, D: -1.76E-12, 
+ DIIS weights: [ 3.38E-03, -4.82E-02,  2.40E-01, -1.40E-02, -1.14E+00,  1.96E+00, 
+                -5.02E-15],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 19
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701839360E+01, Epot: -2.18652465081E+01, Enl:  1.75213299970E+00, 
+              EH:  2.76883700106E+01,  EXC: -4.77614434521E+00, EvXC: -6.25629385680E+00}, 
+ iter:  19, EKS: -1.98860837291804415E+01, gnrm:  1.36E-07, D: -7.53E-13, 
+ DIIS weights: [ 2.07E-02, -1.45E-01,  1.83E-01,  3.09E-01, -1.10E+00,  1.73E+00, 
+                -9.46E-16],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 20
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701839755E+01, Epot: -2.18652465479E+01, Enl:  1.75213298840E+00, 
+              EH:  2.76883699986E+01,  EXC: -4.77614434404E+00, EvXC: -6.25629385528E+00}, 
+ iter:  20, EKS: -1.98860837291803563E+01, gnrm:  6.24E-08, D:  8.53E-14, 
+ DIIS weights: [ 7.05E-03, -3.90E-02,  6.06E-02,  3.13E-02, -5.25E-01,  1.46E+00, 
+                -2.33E-16],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 21
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701839647E+01, Epot: -2.18652465463E+01, Enl:  1.75213299356E+00, 
+              EH:  2.76883699946E+01,  EXC: -4.77614434385E+00, EvXC: -6.25629385503E+00}, 
+ iter:  21, EKS: -1.98860837291804415E+01, gnrm:  2.86E-08, D: -8.53E-14, 
+ DIIS weights: [-8.92E-03, -4.57E-03,  4.64E-02,  2.32E-02, -7.01E-01,  1.65E+00, 
+                -5.42E-17],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 22
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701839464E+01, Epot: -2.18652465311E+01, Enl:  1.75213299043E+00, 
+              EH:  2.76883699881E+01,  EXC: -4.77614434268E+00, EvXC: -6.25629385349E+00}, 
+ iter:  22, EKS: -1.98860837291805765E+01, gnrm:  1.63E-08, D: -1.35E-13, 
+ DIIS weights: [ 2.60E-02, -8.14E-02,  1.21E-01,  1.44E-01, -1.09E+00,  1.88E+00, 
+                -1.80E-17],           Orthogonalization Method:  0}
+       -  { #--------------------------------------------------------------------- iter: 23
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, Orthoconstraint:  Yes, Preconditioning:  Yes, 
+ Energies: {Ekin:  1.45701839486E+01, Epot: -2.18652465306E+01, Enl:  1.75213299094E+00, 
+              EH:  2.76883699914E+01,  EXC: -4.77614434320E+00, EvXC: -6.25629385417E+00}, 
+ iter:  23, EKS: -1.98860837291805765E+01, gnrm:  9.05E-09, D:  0.00E+00, 
+ DIIS weights: [ 7.49E-03, -4.06E-02,  1.07E-01,  5.34E-02, -8.73E-01,  1.75E+00, 
+                -6.47E-18],           Orthogonalization Method:  0}
+       -  &FINAL001  { #---------------------------------------------------------- iter: 24
+ GPU acceleration:  No, Rho Commun: RED_SCT, Total electronic charge:  9.999999674789, 
+ Poisson Solver: {BC: Free, Box:  [  99,  99,  109 ], MPI tasks:  4}, 
+ Hamiltonian Applied:  Yes, 
+ iter:  24, EKS: -1.98860837291805979E+01, gnrm:  9.05E-09, D: -2.13E-14,  #FINAL
+ Energies: {Ekin:  1.45701839513E+01, Epot: -2.18652465324E+01, Enl:  1.75213298976E+00, 
+              EH:  2.76883699910E+01,  EXC: -4.77614434311E+00, EvXC: -6.25629385405E+00, 
             Eion:  1.18650663423E+01}, 
  }
-       Non-Hermiticity of Hamiltonian in the Subspace:  1.06E-31
+       Non-Hermiticity of Hamiltonian in the Subspace:  2.08E-30
         #Eigenvalues and New Occupation Numbers
        Orbitals: [
- {e: -1.031768405445E+00, f:  2.0000},  # 00001
- {e: -4.969413096211E-01, f:  2.0000},  # 00002
- {e: -4.307625400687E-01, f:  2.0000},  # 00003
- {e: -4.307623407498E-01, f:  2.0000},  # 00004
- {e: -3.812309401222E-01, f:  2.0000}] # 00005
+ {e: -1.031768307093E+00, f:  2.0000},  # 00001
+ {e: -4.969411781298E-01, f:  2.0000},  # 00002
+ {e: -4.307623112023E-01, f:  2.0000},  # 00003
+ {e: -4.307621052706E-01, f:  2.0000},  # 00004
+ {e: -3.812308940027E-01, f:  2.0000}] # 00005
  Last Iteration                        : *FINAL001
   #---------------------------------------------------------------------- Forces Calculation
  GPU acceleration                      :  No
  Rho Commun                            : RED_SCT
- Total electronic charge               :  9.999999674787
+ Total electronic charge               :  9.999999674789
  Poisson Solver:
    BC                                  : Free
    Box                                 :  [  99,  99,  109 ]
    MPI tasks                           :  4
  Multipole analysis origin             :  [  6.8E+00,  6.800000E+00,  7.800000E+00 ]
  Electric Dipole Moment (AU):
-   P vector                            :  [  5.9325E-04, -4.7408E-04, -3.7019E-04 ]
-   norm(P)                             :  8.448309E-04
+   P vector                            :  [  5.857E-04, -4.7680E-04, -4.2587E-04 ]
+   norm(P)                             :  8.670363E-04
  Electric Dipole Moment (Debye):
-   P vector                            :  [  1.5079E-03, -1.2050E-03, -9.4092E-04 ]
-   norm(P)                             :  2.147346E-03
+   P vector                            :  [  1.4887E-03, -1.2119E-03, -1.0825E-03 ]
+   norm(P)                             :  2.203786E-03
  Quadrupole Moment (AU):
    Q matrix:
-   -  [ 1.1012E+00,  1.0756E-04,  1.6016E-04]
-   -  [ 1.0756E-04,  1.1012E+00,  1.5474E-04]
-   -  [ 1.6016E-04,  1.5474E-04, -2.2025E+00]
-   trace                               : -8.19E-13
+   -  [ 1.1012E+00,  1.0577E-04,  1.0381E-04]
+   -  [ 1.0577E-04,  1.1012E+00,  9.8518E-05]
+   -  [ 1.0381E-04,  9.8518E-05, -2.2024E+00]
+   trace                               : -3.55E-15
+ Spreads of the electronic density (AU):  [  8.735587E-01,  8.735589E-01,  1.408230E+00 ]
  Calculate local forces                :  Yes
  Calculate Non Local forces            :  Yes
   #-------------------------------------------------------------------- Timing for root process
  Timings for root process:
-   CPU time (s)                        :  7.21
-   Elapsed time (s)                    :  4.31
+   CPU time (s)                        :  16.44
+   Elapsed time (s)                    :  9.41
  BigDFT infocode                       :  0
- Average noise forces: {x:  2.36924361E-05, y:  1.99942213E-05, z:  1.20862044E-05, 
-                    total:  3.32742656E-05}
- Clean forces norm (Ha/Bohr): {maxval:  5.829175276412E-02, fnrm2:  6.795856880626E-03}
- Raw forces norm (Ha/Bohr): {maxval:  5.830030555645E-02, fnrm2:  6.795858053707E-03}
+ Average noise forces: {x:  1.98483464E-05, y:  1.93382490E-05, z:  2.27137388E-05, 
+                    total:  3.58306944E-05}
+ Clean forces norm (Ha/Bohr): {maxval:  5.828009386093E-02, fnrm2:  6.793138680877E-03}
+ Raw forces norm (Ha/Bohr): {maxval:  5.829615840864E-02, fnrm2:  6.793139965514E-03}
   #------------------------------------------------------------------------------ Atomic Forces
  Atomic Forces (Ha/Bohr):
- -  {N: [ 8.470329472543E-22,  8.470329472543E-22,  5.829175276412E-02]} # 0001
- -  {N: [-8.470329472543E-22, -8.470329472543E-22, -5.829175276412E-02]} # 0002
- Energy (Hartree)                      : -1.98860837273501332E+01
- Force Norm (Hartree/Bohr)             :  8.24369873335112913E-02
+ -  {N: [ 5.293955920339E-23,  1.058791184068E-22,  5.828009386093E-02]} # 0001
+ -  {N: [-5.293955920339E-23, -1.058791184068E-22, -5.828009386093E-02]} # 0002
+ Energy (Hartree)                      : -1.98860837291805979E+01
+ Force Norm (Hartree/Bohr)             :  8.24204991545010590E-02
