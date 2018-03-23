@@ -85,7 +85,100 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     inds=numpy.array(transition_indexes(np,nalpha,harvest))
     return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
-def solveEigenProblems(numOrb,virtMax,Cmat,dipoles,nalpha):
+def write_input_for(virtMax,rVal,outp):
+    from futile import Yaml
+    inp={'dft':
+         {'rmult': [rVal, 9.0],
+          'itermax_virt' : 1},
+         'output': {
+          'orbitals' : 'No',
+          'verbosity' : 3}, 
+         'radical': 'Rmult_'+str(rVal)}
+    inp['dft']['norbv'] = -virtMax
+    inpname = 'Rmult_'+str(rVal)+'_numVirt_'+str(virtMax)
+    Yaml.dump(inp,outp + inpname + '.yaml')
+    print 'input written in the file',outp+inpname+'.yaml'
+
+def solveEigenProblems(numOrb,dict_box,nalpha):
+    from futile.Utils import write
+    """
+    Build the dictionary with the solutions of the eigenproblems for each choice of na
+    We perform the transpose of the matrix with eigenvectors to have them sorted as row vectors
+    """
+    eigenproblems = {}
+    for na in nalpha:
+        if na > dict_box['nvirt']:
+            print 'There are not enough virtual states for', na
+            continue
+        C_ext,dipoles_ext=extract_subset([numOrb],[dict_box['nvirt']],dict_box['C'],dict_box['T'],[na])
+        newdipole=[]
+        for line in dipoles_ext:
+            newdipole.append(line[0]*np.array(line[1:]))
+        newdipole=np.array(newdipole)
+        #print C_ext.shape
+        E2,C_E2 = np.linalg.eigh(C_ext)
+        C_E2 = C_E2.T
+        write('Eigensystem solved for',na)
+    	eigenproblems[na] = {'Cmat':C_ext,'eigenvalues':E2,'eigenvectors':C_E2,'transitions':newdipole}
+    return eigenproblems
+
+def get_alpha_energy(log,norb,nalpha):
+    return log.evals[0][0][norb+nalpha-1]
+
+def get_oscillator_strengths(evect,trans):
+    scpr=np.dot(evect,trans)
+    os=[np.array(t[0:3])**2 for t in scpr]
+    return np.array(os)
+
+def get_oscillator_strenght_avg(os):
+    os_avg = []
+    for vet in os:
+        avg = 0.0
+        for comp in vet:
+            avg+=comp
+        os_avg.append(avg/3.0)
+    return np.array(os_avg)
+
+def static_polarizabilities(e2,os):
+    val=0.0
+    for e,f in zip(e2,os):
+        val+= 2.0*f/e
+    return val
+
+def gather_excitation_informations(dict_casida):
+    """
+    Gived a Casida's eigeproblem (a diagonalized set of eigenvalues of the casida matrix)
+    It provides the information needed to extract absorption spectra and susceptivity-related quantities
+    """
+    os=get_oscillator_strengths(dict_casida['eigenvectors'],dict_casida['transitions'])
+    dict_casida['oscillator_strengths']=os
+    dict_casida['oscillator_strength_avg']=get_oscillator_strenght_avg(os)
+    dict_casida['alpha_xyz']=static_polarizabilities(dict_casida['eigenvalues'],os)
+
+def get_spectrum(e2,f,domega = 0.005,eta = 1.0e-2):
+    """
+    return a dictionary with the values of omega (in eV) and the real and
+    imaginary part of the spectrum
+    """
+    spectrum = {}
+    omegaMax = np.sqrt(e2[-1])
+    npoint = int(omegaMax/domega)
+    print 'numpoint = ', npoint, ' omegaMax (eV) = ', 27.211*omegaMax
+    omega = np.linspace(0.0,omegaMax,npoint)
+    spectrum['omega'] = 27.211*omega
+    
+    sp = np.zeros(npoint,dtype=np.complex)
+    for ind,o in enumerate(omega):
+        for ff,e in zip(f,e2):
+            sp[ind]+=2.0*ff/((o+1j*2.0*eta)**2-e)
+    spectrum['realPart'] = -np.real(sp)
+    spectrum['imagPart'] = -np.imag(sp)
+    return spectrum
+
+
+########################################################################
+
+def solveEigenProblems_old(numOrb,virtMax,Cmat,dipoles,nalpha):
     """
     Build the dictionary with the solutions of the eigenproblems for each choice of na
     We perform the transpose of the matrix with eigenvectors to have them sorted as row vectors
