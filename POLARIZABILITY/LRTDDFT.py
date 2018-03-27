@@ -72,6 +72,9 @@ def diagonalize_CM(norb,syst,nalpha,addBoxNivrt = True):
 def get_alpha_energy(log,norb,nalpha):
     return log.evals[0][0][norb+nalpha-1]
 
+def get_p_energy(log,norb):
+    return log.evals[0][0][0:norb]
+
 def get_oscillator_strengths(evect,trans):
     scpr=np.dot(evect,trans)
     os=[np.array(t[0:3])**2 for t in scpr]
@@ -160,6 +163,43 @@ def collect_spectrum(syst,domega = 0.005,eta = 1.0e-2):
         e2 = syst[rVal]['eigenproblems'][nvirt]['eigenvalues']
         sp[rVal] = get_spectrum(e2,f,domega,eta)
     return sp
+
+def identify_contributions(numOrb,na,exc,C_E2):
+    pProj = np.zeros(numOrb*2)
+    for p in range(numOrb):
+        for spin in [0,1]:
+                # sum over all the virtual orbital and spin 
+            for alpha in range(na):                 
+                # extract the value of the index of C_E2
+                elements = transition_indexes([numOrb],[na],[[p,alpha,spin]])
+                for el in elements:
+                    pProj[p+numOrb*spin] += C_E2[exc][el]**2
+    return pProj
+
+def get_p_energy(log,norb):
+    return log.evals[0][0][0:norb]
+
+def get_threshold(pProj,evals,tol):
+    norb=len(evals)
+    spinup=pProj[0:norb].tolist()
+    spindw=pProj[norb:2*norb].tolist()
+    spinup.reverse()
+    spindw.reverse()
+    imax=norb-1
+    for valu,vald in zip(spinup,spindw):
+        if max(valu,vald) > tol: break
+        imax-=1
+    return [imax+1,-evals[imax]]
+
+def find_excitation_thr(dict_casida,na,nexc,evals,tol=1.e-3):
+    norb=len(evals)
+    thrs=[]
+    for a in range(nexc):
+        proj=identify_contributions(norb,na,a,dict_casida['eigenvectors'])
+        th=get_threshold(proj,evals,tol)
+        thrs.append(th)
+    dict_casida['thresholds']=np.array(thrs)
+
 
 
 
