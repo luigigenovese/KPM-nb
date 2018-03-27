@@ -117,6 +117,7 @@ def collect_Alpha(syst,norb):
     Build a dictionary with the statical polarizabilities written in function on nalpha, for
     each choice of rmult
     """
+    HaeV=27.21138386
     alpha={}
     for rVal in syst:
         alpha[rVal]={}
@@ -129,7 +130,7 @@ def collect_Alpha(syst,norb):
             eng.append(get_alpha_energy(syst[rVal]['logfile'],norb,na))
             for ind in range(3):
                 val[ind].append(syst[rVal]['eigenproblems'][na]['alpha_xyz'][ind])
-        alpha[rVal]['naEnergy'] = eng
+        alpha[rVal]['naEnergy'] = HaeV*np.array(eng)
         alpha[rVal]['alphaX'] = val[0]
         alpha[rVal]['alphaY'] = val[1]
         alpha[rVal]['alphaZ'] = val[2]
@@ -191,7 +192,7 @@ def get_threshold(pProj,evals,tol):
         imax-=1
     return [imax+1,-evals[imax]]
 
-def find_excitation_thr(dict_casida,na,nexc,evals,tol=1.e-3):
+def find_excitation_thr(dict_casida,na,nexc,evals,tol=5.e-2):
     norb=len(evals)
     thrs=[]
     for a in range(nexc):
