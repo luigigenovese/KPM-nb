@@ -1,6 +1,7 @@
 
 import numpy as np
 from futile.Utils import write
+HaeV=27.21138386
 
 def transition_indexes(np,nalpha,indexes):
     """
@@ -117,7 +118,6 @@ def collect_Alpha(syst,norb):
     Build a dictionary with the statical polarizabilities written in function on nalpha, for
     each choice of rmult
     """
-    HaeV=27.21138386
     alpha={}
     for rVal in syst:
         alpha[rVal]={}
@@ -136,17 +136,17 @@ def collect_Alpha(syst,norb):
         alpha[rVal]['alphaZ'] = val[2]
     return alpha
 
-def get_spectrum(e2,f,domega = 0.005,eta = 1.0e-2):
+def get_spectrum(e2,f,omegaMax,domega = 0.005,eta = 1.0e-2):
     """
     Given a single Casida solution, return a dictionary with the values of omega (in eV) and the real and
     imaginary part of the spectrum
     """
     spectrum = {}
-    omegaMax = np.sqrt(e2[-1])
+    #omegaMax = np.sqrt(e2[-1])
     npoint = int(omegaMax/domega)
-    print 'numpoint = ', npoint, ' omegaMax (eV) = ', 27.211*omegaMax
+    print 'numpoint = ', npoint, ' omegaMax (eV) = ', HaeV*omegaMax
     omega = np.linspace(0.0,omegaMax,npoint)
-    spectrum['omega'] = 27.211*omega
+    spectrum['omega'] = HaeV*omega
     
     sp = np.zeros(npoint,dtype=np.complex)
     for ind,o in enumerate(omega):
@@ -162,7 +162,8 @@ def collect_spectrum(syst,domega = 0.005,eta = 1.0e-2):
         nvirt = syst[rVal]['nvirt']
         f = syst[rVal]['eigenproblems'][nvirt]['oscillator_strength_avg']
         e2 = syst[rVal]['eigenproblems'][nvirt]['eigenvalues']
-        sp[rVal] = get_spectrum(e2,f,domega,eta)
+        omegaMax = np.sqrt(e2[-1])
+        sp[rVal] = get_spectrum(e2,f,omegaMax,domega,eta)
     return sp
 
 def identify_contributions(numOrb,na,exc,C_E2):
@@ -192,7 +193,7 @@ def get_threshold(pProj,evals,tol):
         imax-=1
     return [imax+1,-evals[imax]]
 
-def find_excitation_thr(dict_casida,na,nexc,evals,tol=5.e-2):
+def find_excitation_thr(dict_casida,na,nexc,evals,tol):
     norb=len(evals)
     thrs=[]
     for a in range(nexc):
@@ -200,6 +201,56 @@ def find_excitation_thr(dict_casida,na,nexc,evals,tol=5.e-2):
         th=get_threshold(proj,evals,tol)
         thrs.append(th)
     dict_casida['thresholds']=np.array(thrs)
+
+def collect_excitation_thr(syst,numOrb,tol=5e-2):
+    for rVal in syst:
+        nvirt=syst[rVal]['nvirt']
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        numExc = len(dict_casida['eigenvalues'])
+        pEng = get_p_energy(syst[rVal]['logfile'],numOrb)
+        find_excitation_thr(dict_casida,nvirt,numExc,pEng,tol)  
+
+def split_channels(dict_casida,numOrb,numExc):
+    channels = [[] for i in range(numOrb)]
+    for exc in range(numExc):
+        ind = np.rint(dict_casida['thresholds'][exc][0]-1)
+        channels[ind.astype(int)].append(HaeV*np.sqrt(dict_casida['eigenvalues'][exc]))
+    return channels  
+
+def collect_channels(syst,numOrb,numExc):
+    channels = {}
+    for rVal in syst:
+        nvirt = syst[rVal]['nvirt']
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        channels[rVal] = split_channels(dict_casida,numOrb,numExc)
+    return channels
+
+def split_excitations_osStrenght(dict_casida):
+    exc_bt = []
+    exc_at = []
+    f_bt = []
+    f_at = []
+    for ind,e2 in enumerate(dict_casida['eigenvalues']):
+        if np.sqrt(e2) < dict_casida['thresholds'][ind][1]:
+            exc_bt.append(e2)
+            f_bt.append(dict_casida['oscillator_strength_avg'][ind])
+        else :
+            exc_at.append(e2)
+            f_at.append(dict_casida['oscillator_strength_avg'][ind])
+    return exc_bt,exc_at,f_bt,f_at
+
+def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
+    sp_bt = {}
+    sp_at = {}
+    for rVal in syst:
+        nvirt = syst[rVal]['nvirt']
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        exc_bt,exc_at,f_bt,f_at = split_excitations_osStrenght(dict_casida)
+        omegaMax = np.sqrt(dict_casida['eigenvalues'][-1])
+        sp_bt[rVal] = get_spectrum(exc_bt,f_bt,omegaMax,domega,eta)
+        sp_at[rVal] = get_spectrum(exc_at,f_at,omegaMax,domega,eta)
+    return sp_bt,sp_at
+
 
 
 
