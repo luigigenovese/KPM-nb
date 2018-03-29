@@ -142,7 +142,6 @@ def get_spectrum(e2,f,omegaMax,domega = 0.005,eta = 1.0e-2):
     imaginary part of the spectrum
     """
     spectrum = {}
-    #omegaMax = np.sqrt(e2[-1])
     npoint = int(omegaMax/domega)
     print 'numpoint = ', npoint, ' omegaMax (eV) = ', HaeV*omegaMax
     omega = np.linspace(0.0,omegaMax,npoint)
@@ -202,11 +201,11 @@ def find_excitation_thr(dict_casida,na,nexc,evals,tol):
         thrs.append(th)
     dict_casida['thresholds']=np.array(thrs)
 
-def collect_excitation_thr(syst,numOrb,tol=5e-2):
+def collect_excitation_thr(syst,numOrb,numExc,tol=5e-2):
     for rVal in syst:
         nvirt=syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
-        numExc = len(dict_casida['eigenvalues'])
+        #numExc = len(dict_casida['eigenvalues'])
         pEng = get_p_energy(syst[rVal]['logfile'],numOrb)
         find_excitation_thr(dict_casida,nvirt,numExc,pEng,tol)  
 
@@ -225,21 +224,17 @@ def collect_channels(syst,numOrb,numExc):
         channels[rVal] = split_channels(dict_casida,numOrb,numExc)
     return channels
 
-def split_excitations_osStrenght(dict_casida):
-    exc_bt = []
-    exc_at = []
-    f_bt = []
-    f_at = []
-    for ind,e2 in enumerate(dict_casida['eigenvalues']):
-        if np.sqrt(e2) < dict_casida['thresholds'][ind][1]:
-            exc_bt.append(e2)
-            f_bt.append(dict_casida['oscillator_strength_avg'][ind])
-        else :
-            exc_at.append(e2)
-            f_at.append(dict_casida['oscillator_strength_avg'][ind])
-    return exc_bt,exc_at,f_bt,f_at
+def split_excitations_index(dict_casida):
+    ind_bt = []
+    ind_at = []
+    numExc = len(dict_casida['thresholds'])
+    for ind in range(numExc):
+        if np.sqrt(dict_casida['eigenvalues'][ind]) < dict_casida['thresholds'][ind][1]:
+            ind_bt.append(ind)
+        else : ind_at.append(ind)
+    return ind_bt,ind_at
 
-def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
+def collect_spectrum_bt_at_old(syst,domega = 0.005,eta = 1.0e-2):
     sp_bt = {}
     sp_at = {}
     for rVal in syst:
@@ -249,6 +244,19 @@ def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
         omegaMax = np.sqrt(dict_casida['eigenvalues'][-1])
         sp_bt[rVal] = get_spectrum(exc_bt,f_bt,omegaMax,domega,eta)
         sp_at[rVal] = get_spectrum(exc_at,f_at,omegaMax,domega,eta)
+    return sp_bt,sp_at
+
+def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
+    sp_bt = {}
+    sp_at = {}
+    for rVal in syst:
+        nvirt = syst[rVal]['nvirt']
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        numExc = len(dict_casida['thresholds'])
+        ind_bt,ind_at = split_excitations_index(dict_casida)
+        omegaMax = np.sqrt(dict_casida['eigenvalues'][numExc-1])
+        sp_bt[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_bt],dict_casida['oscillator_strength_avg'][ind_bt],omegaMax,domega,eta)
+        sp_at[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_at],dict_casida['oscillator_strength_avg'][ind_at],omegaMax,domega,eta)
     return sp_bt,sp_at
 
 
