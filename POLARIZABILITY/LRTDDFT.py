@@ -61,13 +61,14 @@ def solveEigenProblems(numOrb,box,nalpha):
     	eigenproblems[na] = {'Cmat':C_ext,'eigenvalues':E2,'eigenvectors':C_E2,'transitions':newdipole}
     return eigenproblems
 
-def diagonalize_CM(norb,syst,nalpha,addBoxNivrt = True):
+def diagonalize_CM(norb,syst,naSmall,nalphaEmax):
     for rVal,box in syst.iteritems():
         write('Solve for rVal = ', rVal)   
-	if addBoxNivrt : 
-           ep = solveEigenProblems(norb,box,nalpha+[box['nvirt']])
-        else :
-           ep = solveEigenProblems(norb,box,nalpha)
+        nalpha = []
+        for na in naSmall:
+            if na < nalphaEmax[rVal]: nalpha.append(na)
+        nalpha.append(nalphaEmax[rVal])
+        ep = solveEigenProblems(norb,box,nalpha)
         box['eigenproblems'] = ep
 
 def get_alpha_energy(log,norb,nalpha):
@@ -156,9 +157,15 @@ def get_spectrum(e2,f,omegaMax,domega = 0.005,eta = 1.0e-2):
     return spectrum
 
 def collect_spectrum(syst,domega = 0.005,eta = 1.0e-2):
+    """
+    Collect the spectrum in all the box using the highest number of virtual orbitals
+    """
     sp = {}
     for rVal in syst:
-        nvirt = syst[rVal]['nvirt']
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]
+        print 'Compute for rVal = ', rVal,' with nalpha = ', nvirt
         f = syst[rVal]['eigenproblems'][nvirt]['oscillator_strength_avg']
         e2 = syst[rVal]['eigenproblems'][nvirt]['eigenvalues']
         omegaMax = np.sqrt(e2[-1])
@@ -203,9 +210,11 @@ def find_excitation_thr(dict_casida,na,nexc,evals,tol):
 
 def collect_excitation_thr(syst,numOrb,numExc,tol=5e-2):
     for rVal in syst:
-        nvirt=syst[rVal]['nvirt']
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]
+        #nvirt=syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
-        #numExc = len(dict_casida['eigenvalues'])
         pEng = get_p_energy(syst[rVal]['logfile'],numOrb)
         find_excitation_thr(dict_casida,nvirt,numExc,pEng,tol)  
 
@@ -219,7 +228,10 @@ def split_channels(dict_casida,numOrb,numExc):
 def collect_channels(syst,numOrb,numExc):
     channels = {}
     for rVal in syst:
-        nvirt = syst[rVal]['nvirt']
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]   
+        #nvirt = syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
         channels[rVal] = split_channels(dict_casida,numOrb,numExc)
     return channels
@@ -234,23 +246,14 @@ def split_excitations_index(dict_casida):
         else : ind_at.append(ind)
     return ind_bt,ind_at
 
-def collect_spectrum_bt_at_old(syst,domega = 0.005,eta = 1.0e-2):
-    sp_bt = {}
-    sp_at = {}
-    for rVal in syst:
-        nvirt = syst[rVal]['nvirt']
-        dict_casida = syst[rVal]['eigenproblems'][nvirt]
-        exc_bt,exc_at,f_bt,f_at = split_excitations_osStrenght(dict_casida)
-        omegaMax = np.sqrt(dict_casida['eigenvalues'][-1])
-        sp_bt[rVal] = get_spectrum(exc_bt,f_bt,omegaMax,domega,eta)
-        sp_at[rVal] = get_spectrum(exc_at,f_at,omegaMax,domega,eta)
-    return sp_bt,sp_at
-
 def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
     sp_bt = {}
     sp_at = {}
     for rVal in syst:
-        nvirt = syst[rVal]['nvirt']
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]   
+        #nvirt = syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
         numExc = len(dict_casida['thresholds'])
         ind_bt,ind_at = split_excitations_index(dict_casida)
