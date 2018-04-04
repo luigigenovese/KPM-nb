@@ -40,25 +40,28 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     inds=numpy.array(transition_indexes(np,nalpha,harvest))
     return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
-def solveEigenProblems(numOrb,box,nalpha):
+def build_eigenp_dict(numOrb,nvirt,Cbig,Dbig,na):
     """
     Build the dictionary with the solutions of the eigenproblems for each choice of na
     We perform the transpose of the matrix with eigenvectors to have them sorted as row vectors
     """
+    C_ext,dipoles_ext=extract_subset([numOrb],[nvirt],Cbig,Dbig,[na])
+    E2,C_E2 = np.linalg.eigh(C_ext)
+    C_E2 = C_E2.T
+    newdipole=[]
+    for line in dipoles_ext:
+        newdipole.append(line[0]*np.array(line[1:]))
+    newdipole=np.array(newdipole)
+    write('Eigensystem solved for',na)
+    return {'Cmat':C_ext,'eigenvalues':E2,'eigenvectors':C_E2,'transitions':newdipole}
+
+def solveEigenProblems(numOrb,box,nalpha):
     eigenproblems = {}
     for na in nalpha:
         if na > box['nvirt']:
             print 'There are not enough virtual states for', na
             continue
-        C_ext,dipoles_ext=extract_subset([numOrb],[box['nvirt']],box['C'],box['T'],[na])
-        newdipole=[]
-        for line in dipoles_ext:
-            newdipole.append(line[0]*np.array(line[1:]))
-        newdipole=np.array(newdipole)
-        E2,C_E2 = np.linalg.eigh(C_ext)
-        C_E2 = C_E2.T
-        write('Eigensystem solved for',na)
-    	eigenproblems[na] = {'Cmat':C_ext,'eigenvalues':E2,'eigenvectors':C_E2,'transitions':newdipole}
+        eigenproblems[na]=build_eigenp_dict(numOrb,box['nvirt'],box['C'],box['T'],na)
     return eigenproblems
 
 def diagonalize_CM(norb,syst,naSmall,nalphaEmax):
