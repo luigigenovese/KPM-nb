@@ -185,12 +185,13 @@ def identify_contributions(numOrb,na,exc,C_E2):
                 elements = transition_indexes([numOrb],[na],[[p,alpha,spin]])
                 for el in elements:
                     pProj[p+numOrb*spin] += C_E2[exc][el]**2
+    pProj = pProj[0:numOrb]+pProj[numOrb:2*numOrb] # halves the components 
     return pProj
 
 def get_p_energy(log,norb):
     return log.evals[0][0][0:norb]
 
-def get_threshold(pProj,evals,tol):
+def get_threshold_old(pProj,evals,tol):
     norb=len(evals)
     spinup=pProj[0:norb].tolist()
     spindw=pProj[norb:2*norb].tolist()
@@ -202,52 +203,77 @@ def get_threshold(pProj,evals,tol):
         imax-=1
     return [imax+1,-evals[imax]]
 
-def find_excitation_thr(dict_casida,na,nexc,evals,tol):
-    norb=len(evals)
+def get_threshold(pProj,th_energies,th_levels,tol):
+    norb=len(th_energies)
+    pProj = pProj.tolist()
+    pProj.reverse()
+    imax=norb-1
+    for val in pProj:
+        if val > tol: break
+        imax-=1
+    return [th_levels[imax],th_energies[imax]]
+    #return th_levels[imax]
+
+def find_excitation_thr(dict_casida,na,nexc,th_energies,th_levels,tol):
+    norb=len(th_energies)
     thrs=[]
     for a in range(nexc):
         proj=identify_contributions(norb,na,a,dict_casida['eigenvectors'])
-        th=get_threshold(proj,evals,tol)
+        th=get_threshold(proj,th_energies,th_levels,tol)
         thrs.append(th)
     dict_casida['thresholds']=np.array(thrs)
 
-def collect_excitation_thr(syst,numOrb,numExc,tol=5e-2):
+def collect_excitation_thr(syst,numOrb,numExc,th_levels,tol):
     for rVal in syst:
         nalpha = syst[rVal]['eigenproblems'].keys()
         nalpha.sort()
         nvirt = nalpha[-1]
-        #nvirt=syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
-        pEng = get_p_energy(syst[rVal]['logfile'],numOrb)
-        find_excitation_thr(dict_casida,nvirt,numExc,pEng,tol)  
+        th_energies = HaeV*abs(get_p_energy(syst[rVal]['logfile'],numOrb))
+        find_excitation_thr(dict_casida,nvirt,numExc,th_energies,th_levels,tol)  
 
-def split_channels(dict_casida,numOrb,numExc):
-    channels = [[] for i in range(numOrb)]
+def identify_channels(dict_casida,numOrb,numExc,th_levels):
+    chn = {}
+    for lev in th_levels:
+        chn[lev] = []
     for exc in range(numExc):
-        ind = np.rint(dict_casida['thresholds'][exc][0]-1)
-        channels[ind.astype(int)].append(HaeV*np.sqrt(dict_casida['eigenvalues'][exc]))
-    return channels  
+        lev = dict_casida['thresholds'][exc][0]
+        #lev = dict_casida['thresholds'][exc]
+        chn[lev].append([exc,HaeV*np.sqrt(dict_casida['eigenvalues'][exc])])
+    return chn  
 
-def collect_channels(syst,numOrb,numExc):
+def collect_channels(syst,numOrb,numExc,th_levels):
     channels = {}
     for rVal in syst:
         nalpha = syst[rVal]['eigenproblems'].keys()
         nalpha.sort()
         nvirt = nalpha[-1]   
-        #nvirt = syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
-        channels[rVal] = split_channels(dict_casida,numOrb,numExc)
+        channels[rVal] = identify_channels(dict_casida,numOrb,numExc,th_levels)
     return channels
 
-def split_excitations_index(dict_casida):
-    ind_bt = []
-    ind_at = []
+def build_index_bt_at(dict_casida):
+    index_bt = []
+    index_at = []
     numExc = len(dict_casida['thresholds'])
     for ind in range(numExc):
-        if np.sqrt(dict_casida['eigenvalues'][ind]) < dict_casida['thresholds'][ind][1]:
-            ind_bt.append(ind)
-        else : ind_at.append(ind)
-    return ind_bt,ind_at
+        if HaeV*np.sqrt(dict_casida['eigenvalues'][ind]) < dict_casida['thresholds'][ind][1]:
+            index_bt.append(ind)
+        else : index_at.append(ind)
+    return index_bt,index_at
+
+def collect_index_bt_at(syst):
+    index_bt = {}
+    index_at = {}
+    for rVal in syst:
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]   
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        ind_bt,ind_at = build_index_bt_at(dict_casida)
+        index_bt[rVal] = ind_bt
+        index_at[rVal] = ind_at
+    return index_bt,index_at
 
 def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
     sp_bt = {}
@@ -256,7 +282,6 @@ def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
         nalpha = syst[rVal]['eigenproblems'].keys()
         nalpha.sort()
         nvirt = nalpha[-1]   
-        #nvirt = syst[rVal]['nvirt']
         dict_casida = syst[rVal]['eigenproblems'][nvirt]
         numExc = len(dict_casida['thresholds'])
         ind_bt,ind_at = split_excitations_index(dict_casida)
