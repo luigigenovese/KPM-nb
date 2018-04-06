@@ -212,7 +212,6 @@ def get_threshold(pProj,th_energies,th_levels,tol):
         if val > tol: break
         imax-=1
     return [th_levels[imax],th_energies[imax]]
-    #return th_levels[imax]
 
 def find_excitation_thr(dict_casida,na,nexc,th_energies,th_levels,tol):
     norb=len(th_energies)
@@ -238,7 +237,6 @@ def identify_channels(dict_casida,numOrb,numExc,th_levels):
         chn[lev] = []
     for exc in range(numExc):
         lev = dict_casida['thresholds'][exc][0]
-        #lev = dict_casida['thresholds'][exc]
         chn[lev].append([exc,HaeV*np.sqrt(dict_casida['eigenvalues'][exc])])
     return chn  
 
@@ -275,7 +273,7 @@ def collect_index_bt_at(syst):
         index_at[rVal] = ind_at
     return index_bt,index_at
 
-def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
+def collect_spectrum_bt_at_old(syst,domega = 0.005,eta = 1.0e-2):
     sp_bt = {}
     sp_at = {}
     for rVal in syst:
@@ -288,6 +286,20 @@ def collect_spectrum_bt_at(syst,domega = 0.005,eta = 1.0e-2):
         omegaMax = np.sqrt(dict_casida['eigenvalues'][numExc-1])
         sp_bt[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_bt],dict_casida['oscillator_strength_avg'][ind_bt],omegaMax,domega,eta)
         sp_at[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_at],dict_casida['oscillator_strength_avg'][ind_at],omegaMax,domega,eta)
+    return sp_bt,sp_at
+
+def collect_spectrum_bt_at(syst,ind_bt,ind_at,domega = 0.005,eta = 1.0e-2):
+    sp_bt = {}
+    sp_at = {} 
+    for rVal in syst:
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]   
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        numExc = len(dict_casida['thresholds'])
+        omegaMax = np.sqrt(dict_casida['eigenvalues'][numExc-1])
+        sp_bt[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_bt[rVal]],dict_casida['oscillator_strength_avg'][ind_bt[rVal]],omegaMax,domega,eta)
+        sp_at[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_at[rVal]],dict_casida['oscillator_strength_avg'][ind_at[rVal]],omegaMax,domega,eta)
     return sp_bt,sp_at
 
 
