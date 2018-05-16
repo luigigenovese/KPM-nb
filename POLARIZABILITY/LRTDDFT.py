@@ -302,6 +302,24 @@ def collect_spectrum_bt_at(syst,ind_bt,ind_at,domega = 0.005,eta = 1.0e-2):
         sp_at[rVal] = get_spectrum(dict_casida['eigenvalues'][ind_at[rVal]],dict_casida['oscillator_strength_avg'][ind_at[rVal]],omegaMax,domega,eta)
     return sp_bt,sp_at
 
+def write_dos(d,outf,sigma):
+    import sys
+    oldstdout= sys.stdout
+    sys.stdout = open(outf , 'w') 
+    d.dump(sigma)
+    sys.stdout=oldstdout
+
+def read_dos(outf):
+    d = np.loadtxt(outf)
+    omega = np.array([d[i][0] for i in range(len(d))])
+    dos = np.array([d[i][1] for i in range(len(d))])
+    return omega, dos
+
+def extract_dos_val(d,sigma):
+    outf = 'dos.txt'
+    write_dos(d,outf,sigma)
+    omega, dos = read_dos(outf)
+    return omega, dos
 
 
 

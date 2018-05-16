@@ -147,7 +147,7 @@ def static_polarizabilities(e2,os):
 
 def gather_excitation_informations(dict_casida):
     """
-    Gived a Casida's eigeproblem (a diagonalized set of eigenvalues of the casida matrix)
+    Gived a Casida's eigenproblem (a diagonalized set of eigenvalues of the casida matrix)
     It provides the information needed to extract absorption spectra and susceptivity-related quantities
     """
     os=get_oscillator_strengths(dict_casida['eigenvectors'],dict_casida['transitions'])
