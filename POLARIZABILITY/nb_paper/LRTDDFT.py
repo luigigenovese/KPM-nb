@@ -21,7 +21,6 @@ def transition_indexes(np,nalpha,indexes):
     return inds
 
 def collection_indexes(np,nalpha,nvirt_small):
-    #ugly triple loop
     harvest=[]
     for ispin in [0,1]:
         jspin=ispin if len(np)==2 else 0
@@ -35,10 +34,9 @@ def extract_subset(np,nalpha,Cbig,Dbig,nvirt_small):
     Extract from a large Coupling Matrix a submatrix that only consider a subset of the original vectors.
     Use the convention of the transition_indices function for np and nalpha and nvirt_small
     """
-    import numpy
     harvest=collection_indexes(np,nalpha,nvirt_small)
-    inds=numpy.array(transition_indexes(np,nalpha,harvest))
-    return numpy.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
+    inds=np.array(transition_indexes(np,nalpha,harvest))
+    return np.array([row[inds] for row in Cbig[inds]]),numpy.array(Dbig[inds])
 
 def build_eigenp_dict(numOrb,nvirt,Cbig,Dbig,na):
     """
@@ -215,6 +213,29 @@ def collect_excitation_thr(syst,numOrb,numExc,th_levels,tol):
         th_energies = HaeV*abs(get_p_energy(syst[rVal]['logfile'],numOrb))
         find_excitation_thr(dict_casida,nvirt,numExc,th_energies,th_levels,tol)  
 
+def build_index_bt_at(dict_casida):
+    index_bt = []
+    index_at = []
+    numExc = len(dict_casida['thresholds'])
+    for ind in range(numExc):
+        if HaeV*np.sqrt(dict_casida['eigenvalues'][ind]) < dict_casida['thresholds'][ind][1]:
+            index_bt.append(ind)
+        else : index_at.append(ind)
+    return index_bt,index_at
+
+def collect_index_bt_at(syst):
+    index_bt = {}
+    index_at = {}
+    for rVal in syst:
+        nalpha = syst[rVal]['eigenproblems'].keys()
+        nalpha.sort()
+        nvirt = nalpha[-1]   
+        dict_casida = syst[rVal]['eigenproblems'][nvirt]
+        ind_bt,ind_at = build_index_bt_at(dict_casida)
+        index_bt[rVal] = ind_bt
+        index_at[rVal] = ind_at
+    return index_bt,index_at
+
 def identify_channels(dict_casida,numOrb,numExc,th_levels):
     chn = {}
     for lev in th_levels:
@@ -234,24 +255,6 @@ def collect_channels(syst,numOrb,numExc,th_levels):
         channels[rVal] = identify_channels(dict_casida,numOrb,numExc,th_levels)
     return channels
 
-def write_dos(d,outf,sigma):
-    import sys
-    oldstdout= sys.stdout
-    sys.stdout = open(outf , 'w') 
-    d.dump(sigma)
-    sys.stdout=oldstdout
-
-def read_dos(outf):
-    d = np.loadtxt(outf)
-    omega = np.array([d[i][0] for i in range(len(d))])
-    dos = np.array([d[i][1] for i in range(len(d))])
-    return omega, dos
-
-def extract_dos_val(d,sigma):
-    outf = 'dos.txt'
-    write_dos(d,outf,sigma)
-    omega, dos = read_dos(outf)
-    return omega, dos
 
 
 
