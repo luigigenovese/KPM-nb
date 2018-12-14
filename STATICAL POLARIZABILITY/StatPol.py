@@ -61,6 +61,35 @@ def eval_alpha(study):
     alpha = alpha.T / (2.0*f)
     return alpha
 
+def eval_alpha_avg(a):
+    """
+    Return the average diagonal component of the polarizability tensor
+    """
+    avg = a.trace()/3.
+    return avg[0,0]
+
+def iterate_parameter(**kwargs):
+    """
+    Perform the iteration over the values of a parameter and compute the polarizability
+    tensor. Return a dictionary with the same structure of the output of seek_convergence
+    Args:
+        kwargs['label']     : the name of the parameter
+        kwargs['values']    : the array with the values of the parameter
+        kwargs['data']      : the array with the dataset buit with kwargs['values']
+    """
+
+    label = kwargs['label']
+    values = kwargs['values']
+    data = kwargs['data']
+    results = {}
+    for ind,v in enumerate(values):
+        print 'Run the dataset with', label, v
+        results[v] = data[ind].run()
+
+    out = {'label':label,'values':values,'results':results,'converged':None,'converged_values':None}
+
+    return out
+
 def seek_convergence(at=1e-3,rt=1e-2,**kwargs):
     """
     Perform a convergence procedure by using 3 values of a parameter.
@@ -108,5 +137,117 @@ def seek_convergence(at=1e-3,rt=1e-2,**kwargs):
             write('Return the value associated to',label,values[2],'. Perform further check!!!')
             out['converged'] = False
             out['converged_value'] = values[2]
+    return out
 
+def perform_field_iteration(**kwargs):
+    """
+    Perform the iteration w.r.t. the intensity of the static field to extract the
+    result of the polarizability tensor.
+
+    Args:
+        kwargs['field_int'] : list with the intensity of the field
+        kwargs['input']     : the input file
+        kwargs['posinp']    : the posinp
+        kwargs['ppf']       : the postprocessing function
+        kwargs['runner']    : the instance of SystemCalculator
+    """
+    code=kwargs['runner']
+    field_int=kwargs['field_int']
+    code.update_global_options(verbose=False)
+
+    data = []
+    for f in field_int:
+        data.append(build_alpha_dataset(intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+    out = iterate_parameter(label='field_int',values=field_int,data=data)
+    return out
+
+def perform_field_convergence(at=1e-3,rt=1e-2,field_int=[1e-2,5e-3,1e-3],**kwargs):
+    """
+    Perform the convergence procedure w.r.t. the intensity of the static field to extract the
+    result of the polarizability tensor.
+
+    Args:
+        kwargs['input']     : the input file
+        kwargs['posinp']    : the posinp
+        kwargs['ppf']       : the postprocessing function
+        kwargs['runner']    : the instance of SystemCalculator
+        at,rt               : absolute and relative tol of np.allclose
+    """
+    code=kwargs['runner']
+    code.update_global_options(verbose=False)
+
+    data = []
+    for f in field_int:
+        data.append(build_alpha_dataset(intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+    out = seek_convergence(rt=rt,label='field_int',values=field_int,data=data)
+    return out
+
+def build_rmult_list(gs):
+    """
+    Return a set of values of rmult. The set starts at the value of rmult of the gs
+    calculation and contains 3 values to perform a convergence procedure analogous
+    to the one performed w.r.t. the field intensity
+    """
+
+    r0 = gs.log['dft']['rmult']
+    rmult_list = []
+    for incr in range(3):
+        rmult_list.append([r0[0]+incr,r0[1]])
+    return rmult_list
+
+def perform_rmult_iteration(**kwargs):
+    """
+    Perform the iteration w.r.t. the coarse value of rmult to extract the
+    result of the polarizability tensor.
+
+    Args:
+        kwargs['rmult']     : list of values of rmult in the form [coarse,fine]
+        kwargs['intensity'] : intensity of the field
+        kwargs['input']     : the input file
+        kwargs['posinp']    : the posinp
+        kwargs['ppf']       : the postprocessing function
+        kwargs['runner']    : the instance of SystemCalculator
+    """
+    rmult=kwargs['rmult']
+    f=kwargs['intensity']
+    inp=kwargs['input']
+    code=kwargs['runner']
+    code.update_global_options(verbose=False)
+
+    data = []
+    coarse = []
+    for r in rmult:
+        coarse.append(r[0])
+        inp.set_rmult(r)
+        data.append(build_alpha_dataset(intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+    out = iterate_parameter(label='rmult',values=coarse,data=data)
+    return out
+
+def perform_rmult_convergence(at=1e-3,rt=1e-2,**kwargs):
+    """
+    Perform the convergence procedure w.r.t. the coarse value of rmult to extract the
+    result of the polarizability tensor.
+
+    Args:
+        kwargs['rmult']     : list of values of rmult in the form [coarse,fine] (3 values for coarse)
+        kwargs['intensity'] : intensity of the field
+        kwargs['input']     : the input file
+        kwargs['posinp']    : the posinp
+        kwargs['ppf']       : the postprocessing function
+        kwargs['runner']    : the instance of SystemCalculator
+        at,rt               : absolute and relative tol of np.allclose
+    """
+    rmult=kwargs['rmult']
+    f=kwargs['intensity']
+    inp=kwargs['input']
+    code=kwargs['runner']
+    code.update_global_options(verbose=False)
+
+    data = []
+    coarse = []
+    for r in rmult:
+        coarse.append(r[0])
+        inp.set_rmult(r)
+        data.append(build_alpha_dataset(intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+    out = seek_convergence(rt=rt,label='rmult',values=coarse,data=data)
     return out
