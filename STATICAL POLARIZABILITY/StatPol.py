@@ -3,6 +3,14 @@ from futile.Utils import write
 import numpy as np
 import os
 
+def get_energy(dataset):
+    energy = dataset.fetch_results(attribute='energy')
+    return energy[0]
+
+def get_dipole(dataset):
+    dipole = dataset.fetch_results(attribute='dipole')
+    return dipole
+
 def get_molecule_database():
     """
     Scan the working directory and store in a list the name of folder.
@@ -26,6 +34,7 @@ def build_alpha_dataset(**kwargs):
     to extract the value of alpha.
 
     Args:
+        kwargs['run_dir']   : th run_dir
         kwargs['intensity'] : the intensity of the field
         kwargs['input']     : the input file
         kwargs['posinp']    : the posinp
@@ -33,7 +42,7 @@ def build_alpha_dataset(**kwargs):
         kwargs['runner']    : the instance of SystemCalculator
     """
     lbl = 'alpha_'+str(kwargs['intensity'])
-    study = D.Dataset(label=lbl,run_dir='alpha',intensity=kwargs['intensity'],posinp=kwargs['posinp'])
+    study = D.Dataset(label=lbl,run_dir=kwargs['run_dir'],intensity=kwargs['intensity'],posinp=kwargs['posinp'])
     study.set_postprocessing_function(kwargs['ppf'])
 
     f = kwargs['intensity']
@@ -91,6 +100,56 @@ def iterate_parameter(**kwargs):
     return out
 
 def seek_convergence(at=1e-3,rt=1e-2,**kwargs):
+    """
+    Perform a convergence procedure by using a list of (ordered) values of a parameter.
+    Take as input a list of instances of runner built with the values of the convergence parameter.
+    These objects have to provide as the result of runner.run() a quantity that can be compared.
+    The convergence is performed by comparing the results associated to two (subsequent) values of the
+    parameter. The procedures stop if the difference between the result is below a given tolerance, if not
+    further run are performed using the values of the parameter in the list.
+    The method returns a dictionary with the input parameters, the results of all the computation performed,
+    the value of the convergence parameter and a boolean that states if the convergence procedure succeeds
+    or not.
+
+    Args:
+        kwargs['label']     : the name of the convergence parameter
+        kwargs['values']    : the array with the (ordered) values of the convergence parameter
+        kwargs['data']      : the array with the dataset buit with kwargs['values']
+        at,rt               : absolute and relative tol of np.allclose
+    """
+    label = kwargs['label']
+    values = kwargs['values']
+    data = kwargs['data']
+    results = {}
+    for v in values:
+        results[v] = None
+    out = {'label':label,'values':values}
+
+    print 'Perform the run with', label, values[0]
+    results[values[0]] = data[0].run()
+
+    for ind in range(1,len(values)):
+        print 'Perform the run with', label, values[ind]
+        results[values[ind]] = data[ind].run()
+        convergence = np.allclose(results[values[ind-1]],results[values[ind]],atol = at, rtol = rt)
+        if convergence:
+            write('Convergence achieved for', label ,values[ind-1])
+            out['results'] = results
+            out['converged'] = True
+            out['converged_value'] = values[ind-1]
+            break
+        else:
+            write('Convergence for', label,values[ind-1],'failed')
+
+    if convergence==False:
+        write('Return the value associated to',label,values[-1],'. Perform further check!!!')
+        out['results'] = results
+        out['converged'] = False
+        out['converged_value'] = values[-1]
+
+    return out
+
+def seek_convergence_old(at=1e-3,rt=1e-2,**kwargs):
     """
     Perform a convergence procedure by using 3 values of a parameter.
     Return a dictionary with the input parameters, the results of all
@@ -157,7 +216,7 @@ def perform_field_iteration(**kwargs):
 
     data = []
     for f in field_int:
-        data.append(build_alpha_dataset(intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+        data.append(build_alpha_dataset(run_dir=kwargs['run_dir'],intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
     out = iterate_parameter(label='field_int',values=field_int,data=data)
     return out
 
@@ -178,21 +237,21 @@ def perform_field_convergence(at=1e-3,rt=1e-2,field_int=[1e-2,5e-3,1e-3],**kwarg
 
     data = []
     for f in field_int:
-        data.append(build_alpha_dataset(intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+        data.append(build_alpha_dataset(run_dir=kwargs['run_dir'],intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
     out = seek_convergence(rt=rt,label='field_int',values=field_int,data=data)
     return out
 
 def build_rmult_list(gs):
     """
     Return a set of values of rmult. The set starts at the value of rmult of the gs
-    calculation and contains 3 values to perform a convergence procedure analogous
-    to the one performed w.r.t. the field intensity
+    calculation and contains the values (up to rmult=11) to perform a convergence procedure
+    analogous to the one performed w.r.t. the field intensity
     """
 
     r0 = gs.log['dft']['rmult']
     rmult_list = []
-    for incr in range(3):
-        rmult_list.append([r0[0]+incr,r0[1]])
+    for coarse in range(int(r0[0]),12):
+        rmult_list.append([1.0*coarse,r0[1]])
     return rmult_list
 
 def perform_rmult_iteration(**kwargs):
@@ -219,7 +278,7 @@ def perform_rmult_iteration(**kwargs):
     for r in rmult:
         coarse.append(r[0])
         inp.set_rmult(r)
-        data.append(build_alpha_dataset(intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+        data.append(build_alpha_dataset(run_dir=kwargs['run_dir'],intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
     out = iterate_parameter(label='rmult',values=coarse,data=data)
     return out
 
@@ -248,6 +307,6 @@ def perform_rmult_convergence(at=1e-3,rt=1e-2,**kwargs):
     for r in rmult:
         coarse.append(r[0])
         inp.set_rmult(r)
-        data.append(build_alpha_dataset(intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
+        data.append(build_alpha_dataset(run_dir=kwargs['run_dir'],intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
     out = seek_convergence(rt=rt,label='rmult',values=coarse,data=data)
     return out
