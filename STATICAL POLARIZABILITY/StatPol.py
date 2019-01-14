@@ -99,7 +99,7 @@ def iterate_parameter(**kwargs):
 
     return out
 
-def seek_convergence(at=1e-3,rt=1e-2,**kwargs):
+def seek_convergence(at=1e-3,rt=1e-2,term_verb=True,**kwargs):
     """
     Perform a convergence procedure by using a list of (ordered) values of a parameter.
     Take as input a list of instances of runner built with the values of the convergence parameter.
@@ -125,77 +125,28 @@ def seek_convergence(at=1e-3,rt=1e-2,**kwargs):
         results[v] = None
     out = {'label':label,'values':values}
 
-    print 'Perform the run with', label, values[0]
+    if term_verb: print 'Perform the run with', label, values[0]
     results[values[0]] = data[0].run()
 
     for ind in range(1,len(values)):
-        print 'Perform the run with', label, values[ind]
+        if term_verb : print 'Perform the run with', label, values[ind]
         results[values[ind]] = data[ind].run()
         convergence = np.allclose(results[values[ind-1]],results[values[ind]],atol = at, rtol = rt)
         if convergence:
-            write('Convergence achieved for', label ,values[ind-1])
+            if term_verb : write('Convergence achieved for', label ,values[ind-1])
             out['results'] = results
             out['converged'] = True
             out['converged_value'] = values[ind-1]
             break
         else:
-            write('Convergence for', label,values[ind-1],'failed')
+            if term_verb : write('Convergence for', label,values[ind-1],'failed')
 
     if convergence==False:
-        write('Return the value associated to',label,values[-1],'. Perform further check!!!')
+        print 'Return the value associated to',label,values[-1],'. Perform further check!!!'
         out['results'] = results
         out['converged'] = False
         out['converged_value'] = values[-1]
 
-    return out
-
-def seek_convergence_old(at=1e-3,rt=1e-2,**kwargs):
-    """
-    Perform a convergence procedure by using 3 values of a parameter.
-    Return a dictionary with the input parameters, the results of all
-    the computation performed, the value of the convergence parameter and a
-    boolean that states if the convergence procedure succeeds or not
-
-    Args:
-        kwargs['label']     : the name of the convergence parameter
-        kwargs['values']    : the array with the 3 ordered values of the convergence parameter
-        kwargs['data']      : the array with the dataset buit with kwargs['values']
-        at,rt               : absolute and relative tol of np.allclose
-    """
-    label = kwargs['label']
-    values = kwargs['values']
-    data = kwargs['data']
-    results = {}
-    for ind,v in enumerate(values[:2]):
-        print 'Run the dataset with', label, v
-        results[v] = data[ind].run()
-
-    out = {'label':label,'values':values}
-
-    convergence = np.allclose(results[values[0]],results[values[1]],atol = at, rtol = rt)
-    if convergence:
-        write('Convergence achieved for', label ,values[0])
-        results[values[2]] = None
-        out['results'] = results
-        out['converged'] = True
-        out['converged_value'] = values[0]
-    else:
-        write('Convergence for', label,values[0],'failed')
-        write('Set the value of the parameter to', values[1])
-        write('')
-        print 'Run the dataset with', label, values[2]
-        results[values[2]]=data[2].run()
-        out['results'] = results
-        convergence = np.allclose(results[values[1]],results[values[2]],atol = at, rtol = rt)
-        if convergence:
-            write('Convergence achieved for', label ,values[1])
-            out['converged'] = True
-            out['converged_value'] = values[1]
-        else:
-            write('Convergence for', label,values[1],'failed')
-            write('Return the value associated to',label,values[2],'. Perform further check!!!')
-            out['converged'] = False
-            out['converged_value'] = values[2]
     return out
 
 def perform_field_iteration(**kwargs):
@@ -220,7 +171,7 @@ def perform_field_iteration(**kwargs):
     out = iterate_parameter(label='field_int',values=field_int,data=data)
     return out
 
-def perform_field_convergence(at=1e-3,rt=1e-2,field_int=[1e-2,5e-3,1e-3],**kwargs):
+def perform_field_convergence(at=1e-3,rt=1e-2,term_verb=True,field_int=[1e-2,5e-3,1e-3],**kwargs):
     """
     Perform the convergence procedure w.r.t. the intensity of the static field to extract the
     result of the polarizability tensor.
@@ -238,7 +189,7 @@ def perform_field_convergence(at=1e-3,rt=1e-2,field_int=[1e-2,5e-3,1e-3],**kwarg
     data = []
     for f in field_int:
         data.append(build_alpha_dataset(run_dir=kwargs['run_dir'],intensity=f,input=kwargs['input'],runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
-    out = seek_convergence(rt=rt,label='field_int',values=field_int,data=data)
+    out = seek_convergence(rt=rt,term_verb=term_verb,label='field_int',values=field_int,data=data)
     return out
 
 def build_rmult_list(gs):
@@ -282,7 +233,7 @@ def perform_rmult_iteration(**kwargs):
     out = iterate_parameter(label='rmult',values=coarse,data=data)
     return out
 
-def perform_rmult_convergence(at=1e-3,rt=1e-2,**kwargs):
+def perform_rmult_convergence(at=1e-3,rt=1e-2,term_verb=True,**kwargs):
     """
     Perform the convergence procedure w.r.t. the coarse value of rmult to extract the
     result of the polarizability tensor.
@@ -308,5 +259,5 @@ def perform_rmult_convergence(at=1e-3,rt=1e-2,**kwargs):
         coarse.append(r[0])
         inp.set_rmult(r)
         data.append(build_alpha_dataset(run_dir=kwargs['run_dir'],intensity=f,input=inp,runner=code,posinp=kwargs['posinp'],ppf=kwargs['ppf']))
-    out = seek_convergence(rt=rt,label='rmult',values=coarse,data=data)
+    out = seek_convergence(rt=rt,term_verb=term_verb,label='rmult',values=coarse,data=data)
     return out
