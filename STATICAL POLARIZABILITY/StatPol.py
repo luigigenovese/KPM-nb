@@ -171,7 +171,7 @@ def perform_field_iteration(**kwargs):
     out = iterate_parameter(label='field_int',values=field_int,data=data)
     return out
 
-def perform_field_convergence(at=1e-3,rt=1e-2,term_verb=True,field_int=[1e-2,5e-3,1e-3],**kwargs):
+def perform_field_convergence(at=1e-3,rt=1e-2,term_verb=True,field_int=[1e-2,5e-3,1e-3,5e-4],**kwargs):
     """
     Perform the convergence procedure w.r.t. the intensity of the static field to extract the
     result of the polarizability tensor.
